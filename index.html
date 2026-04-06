@@ -9,7 +9,9 @@
 </head>
 <body>
 
-  <!-- LOGIN -->
+  <!-- ═══════════════════════════════════════ -->
+  <!-- LOGIN                                   -->
+  <!-- ═══════════════════════════════════════ -->
   <div id="screen-login" class="screen active">
     <div class="login-bg"></div>
     <div class="login-card">
@@ -24,14 +26,95 @@
       </div>
       <div class="field">
         <label>Contraseña</label>
-        <input type="password" id="login-pass" placeholder="••••••••" />
+        <div class="pass-field">
+          <input type="password" id="login-pass" placeholder="••••••••" />
+          <button class="btn-eye" type="button" onclick="togglePass('login-pass', this)">👁️</button>
+        </div>
       </div>
       <div id="login-error" class="error-msg hidden"></div>
       <button class="btn-primary" onclick="doLogin()">ENTRAR</button>
+      <div class="login-divider"><span>¿No tienes cuenta?</span></div>
+      <button class="btn-secondary" onclick="showScreen('screen-registro')">CREAR CUENTA</button>
     </div>
   </div>
 
-  <!-- INICIO -->
+  <!-- ═══════════════════════════════════════ -->
+  <!-- REGISTRO                                -->
+  <!-- ═══════════════════════════════════════ -->
+  <div id="screen-registro" class="screen">
+    <div class="login-bg"></div>
+    <div class="login-card registro-card">
+      <div class="logo-block">
+        <span class="logo-icon">⚡</span>
+        <h1 class="logo-title">RUTASKATE</h1>
+      </div>
+      <p class="login-sub">Crea tu cuenta</p>
+
+      <div class="field">
+        <label>Nombre de usuario <span class="label-hint">(tu @, debe ser único)</span></label>
+        <div class="username-field">
+          <span class="at-prefix">@</span>
+          <input type="text" id="reg-username" placeholder="tunombre" oninput="verificarUsername()" autocomplete="off" />
+          <span class="username-status" id="username-status"></span>
+        </div>
+        <p class="field-hint" id="username-hint"></p>
+      </div>
+
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="reg-email" placeholder="correo@email.com" />
+      </div>
+
+      <div class="field">
+        <label>Fecha de nacimiento</label>
+        <div class="fecha-nacimiento-row">
+          <input type="number" id="reg-dia" placeholder="DD" min="1" max="31" />
+          <input type="number" id="reg-mes" placeholder="MM" min="1" max="12" />
+          <input type="number" id="reg-anio" placeholder="AAAA" min="1900" max="2099" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Número de teléfono</label>
+        <input type="tel" id="reg-telefono" placeholder="+34 600 000 000" />
+      </div>
+
+      <div class="field">
+        <label>Sexo</label>
+        <div class="sexo-grid">
+          <button class="sexo-btn" data-sexo="hombre" onclick="selectSexo(this)">👨 Hombre</button>
+          <button class="sexo-btn" data-sexo="mujer"  onclick="selectSexo(this)">👩 Mujer</button>
+          <button class="sexo-btn" data-sexo="otro"   onclick="selectSexo(this)">🧑 Otro</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Contraseña</label>
+        <div class="pass-field">
+          <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" />
+          <button class="btn-eye" type="button" onclick="togglePass('reg-pass', this)">👁️</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Repetir contraseña</label>
+        <div class="pass-field">
+          <input type="password" id="reg-pass2" placeholder="Repite la contraseña" />
+          <button class="btn-eye" type="button" onclick="togglePass('reg-pass2', this)">👁️</button>
+        </div>
+      </div>
+
+      <div id="reg-error" class="error-msg hidden"></div>
+      <div id="reg-ok"    class="ok-msg hidden">¡Cuenta creada! Entrando... 🛼</div>
+      <button class="btn-primary" onclick="doRegistro()">CREAR CUENTA</button>
+      <div class="login-divider"><span>¿Ya tienes cuenta?</span></div>
+      <button class="btn-secondary" onclick="showScreen('screen-login')">INICIAR SESIÓN</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- INICIO                                  -->
+  <!-- ═══════════════════════════════════════ -->
   <div id="screen-inicio" class="screen">
     <header class="top-bar">
       <span class="logo-title small">RUTASKATE</span>
@@ -62,6 +145,11 @@
           <span class="chat-badge hidden" id="home-chat-badge">0</span>
           <span class="action-arrow">→</span>
         </button>
+        <button class="action-card buscar" onclick="showScreen('screen-buscar'); initBuscar()">
+          <span class="action-icon">🔍</span>
+          <span class="action-label">BUSCAR</span>
+          <span class="action-arrow">→</span>
+        </button>
         <button class="action-card ajustes" onclick="showScreen('screen-ajustes'); loadAjustes()">
           <span class="action-icon">⚙️</span>
           <span class="action-label">AJUSTES</span>
@@ -71,7 +159,9 @@
     </main>
   </div>
 
-  <!-- CONVOCAR RUTA -->
+  <!-- ═══════════════════════════════════════ -->
+  <!-- CONVOCAR RUTA                           -->
+  <!-- ═══════════════════════════════════════ -->
   <div id="screen-convocar" class="screen">
     <header class="top-bar">
       <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
@@ -126,7 +216,9 @@
     </main>
   </div>
 
-  <!-- VER RUTAS -->
+  <!-- ═══════════════════════════════════════ -->
+  <!-- VER RUTAS                               -->
+  <!-- ═══════════════════════════════════════ -->
   <div id="screen-ver" class="screen">
     <header class="top-bar">
       <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
@@ -139,7 +231,9 @@
     </main>
   </div>
 
-  <!-- CHATS: LISTA DE CONVERSACIONES -->
+  <!-- ═══════════════════════════════════════ -->
+  <!-- CHATS: LISTA                            -->
+  <!-- ═══════════════════════════════════════ -->
   <div id="screen-chats" class="screen">
     <header class="top-bar">
       <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
@@ -152,7 +246,9 @@
     </main>
   </div>
 
-  <!-- NUEVO CHAT: SELECCIONAR USUARIO -->
+  <!-- ═══════════════════════════════════════ -->
+  <!-- NUEVO CHAT: SELECCIONAR USUARIO         -->
+  <!-- ═══════════════════════════════════════ -->
   <div id="screen-nuevo-chat" class="screen">
     <header class="top-bar">
       <button class="btn-back" onclick="showScreen('screen-chats'); loadChats()">← Volver</button>
@@ -169,7 +265,30 @@
     </main>
   </div>
 
-  <!-- CONVERSACIÓN 1A1 -->
+  <!-- ═══════════════════════════════════════ -->
+  <!-- BUSCAR USUARIOS                         -->
+  <!-- ═══════════════════════════════════════ -->
+  <div id="screen-buscar" class="screen">
+    <header class="top-bar">
+      <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+      <span class="logo-title small">BUSCAR</span>
+      <div></div>
+    </header>
+    <main class="buscar-main">
+      <div class="buscar-input-wrap">
+        <span class="buscar-icon-prefix">🔍</span>
+        <input type="text" id="buscar-rt-input" placeholder="Busca por @usuario o nombre..." oninput="buscarTiempoReal()" autocomplete="off" />
+        <button class="buscar-clear hidden" id="buscar-clear" onclick="limpiarBuscar()">✕</button>
+      </div>
+      <div id="buscar-results"></div>
+      <div id="buscar-empty" class="empty-msg hidden">Sin resultados 🤷</div>
+      <div id="buscar-inicial" class="empty-msg">Escribe para buscar patinadores 🛼</div>
+    </main>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- CONVERSACIÓN 1A1                        -->
+  <!-- ═══════════════════════════════════════ -->
   <div id="screen-conversacion" class="screen">
     <header class="top-bar">
       <button class="btn-back" onclick="cerrarConversacion()">← Volver</button>
@@ -179,7 +298,7 @@
       </div>
       <div></div>
     </header>
-    <main class="conv-main">
+    <main class="conv-main" id="conv-main">
       <div id="mensajes-container"></div>
     </main>
     <footer class="conv-footer">
@@ -188,7 +307,9 @@
     </footer>
   </div>
 
-  <!-- AJUSTES -->
+  <!-- ═══════════════════════════════════════ -->
+  <!-- AJUSTES                                 -->
+  <!-- ═══════════════════════════════════════ -->
   <div id="screen-ajustes" class="screen">
     <header class="top-bar">
       <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
@@ -197,7 +318,6 @@
     </header>
     <main class="ajustes-main">
 
-      <!-- Perfil -->
       <section class="ajustes-section">
         <h3 class="ajustes-section-title">Mi perfil</h3>
         <div class="perfil-avatar-block">
@@ -228,7 +348,6 @@
         <button class="btn-primary" onclick="guardarPerfil()">GUARDAR PERFIL</button>
       </section>
 
-      <!-- Cuenta -->
       <section class="ajustes-section">
         <h3 class="ajustes-section-title">Cuenta</h3>
         <div class="field">
@@ -252,12 +371,11 @@
             <button class="btn-eye" type="button" onclick="togglePass('aj-pass-repite', this)">👁️</button>
           </div>
         </div>
-        <div id="aj-pass-ok" class="ok-msg hidden">¡Contraseña actualizada! ✓</div>
+        <div id="aj-pass-ok"  class="ok-msg hidden">¡Contraseña actualizada! ✓</div>
         <div id="aj-pass-err" class="error-msg hidden"></div>
         <button class="btn-secondary" onclick="cambiarPassword()">CAMBIAR CONTRASEÑA</button>
       </section>
 
-      <!-- Sesión -->
       <section class="ajustes-section">
         <h3 class="ajustes-section-title">Sesión</h3>
         <button class="btn-danger" onclick="doLogout()">CERRAR SESIÓN</button>
