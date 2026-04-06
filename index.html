@@ -56,6 +56,17 @@
           <span class="action-label">VER<br>RUTAS</span>
           <span class="action-arrow">→</span>
         </button>
+        <button class="action-card chats" onclick="showScreen('screen-chats'); loadChats()">
+          <span class="action-icon">💬</span>
+          <span class="action-label">CHATS</span>
+          <span class="chat-badge hidden" id="home-chat-badge">0</span>
+          <span class="action-arrow">→</span>
+        </button>
+        <button class="action-card ajustes" onclick="showScreen('screen-ajustes'); loadAjustes()">
+          <span class="action-icon">⚙️</span>
+          <span class="action-label">AJUSTES</span>
+          <span class="action-arrow">→</span>
+        </button>
       </div>
     </main>
   </div>
@@ -125,6 +136,116 @@
     <main class="ver-main">
       <div id="rutas-list"></div>
       <div id="rutas-empty" class="empty-msg hidden">No hay rutas convocadas aún. ¡Sé el primero! 🛼</div>
+    </main>
+  </div>
+
+  <!-- CHATS: LISTA DE CONVERSACIONES -->
+  <div id="screen-chats" class="screen">
+    <header class="top-bar">
+      <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+      <span class="logo-title small">CHATS</span>
+      <button class="btn-icon" onclick="showScreen('screen-nuevo-chat'); loadUsuarios()" title="Nuevo chat">✏️</button>
+    </header>
+    <main class="chats-main">
+      <div id="chats-list"></div>
+      <div id="chats-empty" class="empty-msg hidden">No tienes conversaciones aún.<br>Pulsa ✏️ para empezar una.</div>
+    </main>
+  </div>
+
+  <!-- NUEVO CHAT: SELECCIONAR USUARIO -->
+  <div id="screen-nuevo-chat" class="screen">
+    <header class="top-bar">
+      <button class="btn-back" onclick="showScreen('screen-chats'); loadChats()">← Volver</button>
+      <span class="logo-title small">NUEVO CHAT</span>
+      <div></div>
+    </header>
+    <main class="form-main">
+      <div class="field">
+        <label>Buscar usuario</label>
+        <input type="text" id="buscar-usuario" placeholder="Nombre o correo..." oninput="filtrarUsuarios()" />
+      </div>
+      <div id="usuarios-list"></div>
+      <div id="usuarios-empty" class="empty-msg hidden">No se encontraron usuarios.</div>
+    </main>
+  </div>
+
+  <!-- CONVERSACIÓN 1A1 -->
+  <div id="screen-conversacion" class="screen">
+    <header class="top-bar">
+      <button class="btn-back" onclick="cerrarConversacion()">← Volver</button>
+      <div class="chat-header-info">
+        <div class="chat-avatar-sm" id="conv-avatar">?</div>
+        <span id="conv-nombre-header">—</span>
+      </div>
+      <div></div>
+    </header>
+    <main class="conv-main">
+      <div id="mensajes-container"></div>
+    </main>
+    <footer class="conv-footer">
+      <input type="text" id="msg-input" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')enviarMensaje()" />
+      <button class="btn-send" onclick="enviarMensaje()">➤</button>
+    </footer>
+  </div>
+
+  <!-- AJUSTES -->
+  <div id="screen-ajustes" class="screen">
+    <header class="top-bar">
+      <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+      <span class="logo-title small">AJUSTES</span>
+      <div></div>
+    </header>
+    <main class="ajustes-main">
+
+      <!-- Perfil -->
+      <section class="ajustes-section">
+        <h3 class="ajustes-section-title">Mi perfil</h3>
+        <div class="perfil-avatar-block">
+          <div class="perfil-avatar" id="perfil-avatar-display">?</div>
+          <div>
+            <p class="perfil-nombre" id="perfil-nombre-display">—</p>
+            <p class="perfil-email" id="perfil-email-display">—</p>
+          </div>
+        </div>
+        <div class="field">
+          <label>Nombre para mostrar</label>
+          <input type="text" id="aj-nombre" placeholder="Tu nombre visible" />
+        </div>
+        <div class="field">
+          <label>Bio (opcional)</label>
+          <textarea id="aj-bio" rows="2" placeholder="Cuéntanos algo sobre ti..."></textarea>
+        </div>
+        <div class="field">
+          <label>Nivel de patinaje</label>
+          <div class="nivel-grid">
+            <button class="nivel-btn" data-nivel="aprendiendo" onclick="selectNivelAj(this)">🐣 Aprendiendo</button>
+            <button class="nivel-btn" data-nivel="principiante" onclick="selectNivelAj(this)">🟢 Principiante</button>
+            <button class="nivel-btn" data-nivel="medio" onclick="selectNivelAj(this)">🟡 Medio</button>
+            <button class="nivel-btn" data-nivel="cañero" onclick="selectNivelAj(this)">🔥 Cañero</button>
+          </div>
+        </div>
+        <div id="aj-ok" class="ok-msg hidden">¡Perfil guardado! ✓</div>
+        <button class="btn-primary" onclick="guardarPerfil()">GUARDAR PERFIL</button>
+      </section>
+
+      <!-- Cuenta -->
+      <section class="ajustes-section">
+        <h3 class="ajustes-section-title">Cuenta</h3>
+        <div class="field">
+          <label>Nueva contraseña</label>
+          <input type="password" id="aj-pass-nueva" placeholder="Mínimo 6 caracteres" />
+        </div>
+        <div id="aj-pass-ok" class="ok-msg hidden">¡Contraseña actualizada! ✓</div>
+        <div id="aj-pass-err" class="error-msg hidden"></div>
+        <button class="btn-secondary" onclick="cambiarPassword()">CAMBIAR CONTRASEÑA</button>
+      </section>
+
+      <!-- Sesión -->
+      <section class="ajustes-section">
+        <h3 class="ajustes-section-title">Sesión</h3>
+        <button class="btn-danger" onclick="doLogout()">CERRAR SESIÓN</button>
+      </section>
+
     </main>
   </div>
 
