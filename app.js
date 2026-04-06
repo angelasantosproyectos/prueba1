@@ -1,14 +1,6 @@
 // =============================================
-// CONFIGURACIÓN FIREBASE
+// CONFIGURACIÓN FIREBASE (compat SDK, sin import)
 // =============================================
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCrHNCVGF9kNpjhmjqMm5nmlF5aXHStPYg",
   authDomain: "prueba1-a0ad3.firebaseapp.com",
@@ -19,12 +11,7 @@ const firebaseConfig = {
   measurementId: "G-THBB5HNVJL"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-
-// firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
@@ -33,7 +20,7 @@ const db = firebase.firestore();
 // =============================================
 let currentUser = null;
 let selectedNivel = null;
-let rutasDisponibles = []; // Lista de nombres de rutas
+let rutasDisponibles = [];
 
 // =============================================
 // AUTH: observador de sesión
@@ -70,7 +57,7 @@ async function doLogin() {
   try {
     await auth.signInWithEmailAndPassword(email, pass);
   } catch (e) {
-    errEl.textContent = 'Credenciales incorrectas. Prueba con asantoshbst@gmail.com / abc123';
+    errEl.textContent = 'Credenciales incorrectas. Comprueba el usuario en Firebase Auth.';
     errEl.classList.remove('hidden');
   }
 }
@@ -91,7 +78,6 @@ function showScreen(id) {
   target.style.display = 'flex';
   target.classList.add('active');
 
-  // Resetear form al volver a convocar
   if (id === 'screen-convocar') {
     resetForm();
     loadRutaNames();
@@ -99,7 +85,7 @@ function showScreen(id) {
 }
 
 // =============================================
-// CARGAR NOMBRES DE RUTAS (para el desplegable)
+// CARGAR NOMBRES DE RUTAS
 // =============================================
 async function loadRutaNames() {
   try {
@@ -123,7 +109,7 @@ function renderSelectRuta() {
 }
 
 // =============================================
-// NUEVA RUTA (añadir al desplegable y a Firestore)
+// NUEVA RUTA
 // =============================================
 function toggleNuevaRuta() {
   const block = document.getElementById('nueva-ruta-block');
@@ -135,7 +121,6 @@ async function addNuevaRuta() {
   const nombre = input.value.trim();
   if (!nombre) return;
 
-  // Comprobar duplicado local
   if (rutasDisponibles.find(r => r.nombre.toLowerCase() === nombre.toLowerCase())) {
     alert('Esa ruta ya existe en la lista.');
     return;
@@ -145,10 +130,7 @@ async function addNuevaRuta() {
     const docRef = await db.collection('ruta_nombres').add({ nombre });
     rutasDisponibles.push({ id: docRef.id, nombre });
     renderSelectRuta();
-
-    // Seleccionarla automáticamente
     document.getElementById('select-ruta').value = nombre;
-
     input.value = '';
     document.getElementById('nueva-ruta-block').classList.add('hidden');
   } catch (e) {
@@ -188,7 +170,6 @@ async function convocarRuta() {
   if (!lugarDesc) { showError(errEl, 'Añade una descripción del lugar.'); return; }
   if (!nivel) { showError(errEl, 'Selecciona el nivel de la ruta.'); return; }
 
-  // Formatear fecha para mostrar: DD/MM/YYYY
   const [y, m, d] = fecha.split('-');
   const fechaDisplay = `${d}/${m}/${y}`;
 
