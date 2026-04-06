@@ -232,8 +232,25 @@
       <section class="ajustes-section">
         <h3 class="ajustes-section-title">Cuenta</h3>
         <div class="field">
+          <label>Contraseña actual</label>
+          <div class="pass-field">
+            <input type="password" id="aj-pass-actual" placeholder="Tu contraseña actual" />
+            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-actual', this)">👁️</button>
+          </div>
+        </div>
+        <div class="field">
           <label>Nueva contraseña</label>
-          <input type="password" id="aj-pass-nueva" placeholder="Mínimo 6 caracteres" />
+          <div class="pass-field">
+            <input type="password" id="aj-pass-nueva" placeholder="Mínimo 6 caracteres" />
+            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-nueva', this)">👁️</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Repetir nueva contraseña</label>
+          <div class="pass-field">
+            <input type="password" id="aj-pass-repite" placeholder="Repite la nueva contraseña" />
+            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-repite', this)">👁️</button>
+          </div>
         </div>
         <div id="aj-pass-ok" class="ok-msg hidden">¡Contraseña actualizada! ✓</div>
         <div id="aj-pass-err" class="error-msg hidden"></div>

@@ -539,3 +539,23 @@ textarea { resize: vertical; }
 @media (max-width: 480px) {
   .action-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* =============================================
+   CAMPO CONTRASEÑA CON OJO
+   ============================================= */
+.pass-field {
+  position: relative; display: flex; align-items: center;
+}
+.pass-field input {
+  flex: 1; padding-right: 44px;
+}
+.btn-eye {
+  position: absolute; right: 10px;
+  background: none; border: none;
+  cursor: pointer; font-size: 1rem;
+  opacity: 0.5; transition: opacity 0.2s;
+  padding: 4px; line-height: 1;
+  user-select: none;
+}
+.btn-eye:hover { opacity: 1; }
+.btn-eye.visible::after { content: ''; }

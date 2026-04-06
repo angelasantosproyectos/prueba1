@@ -503,12 +503,14 @@ function selectNivelAj(btn) {
 }
 
 async function guardarPerfil() {
-  const nombre = document.getElementById('aj-nombre').value.trim();
-  const bio    = document.getElementById('aj-bio').value.trim();
-  const okEl   = document.getElementById('aj-ok');
+  const nombre    = document.getElementById('aj-nombre').value.trim();
+  const bio       = document.getElementById('aj-bio').value.trim();
+  const okEl      = document.getElementById('aj-ok');
   okEl.classList.add('hidden');
 
   if (!nombre) { alert('El nombre no puede estar vacío.'); return; }
+
+  const nombreAnterior = getNombre(currentUser);
 
   try {
     const datos = {
@@ -517,6 +519,18 @@ async function guardarPerfil() {
     };
     await db.collection('usuarios').doc(currentUser.uid).set(datos, { merge: true });
     await currentUser.updateProfile({ displayName: nombre });
+
+    // Actualizar nombre en las rutas que convocó este usuario
+    if (nombre !== nombreAnterior) {
+      const rutasSnap = await db.collection('rutas')
+        .where('convocadoPorEmail', '==', currentUser.email)
+        .get();
+      const batch = db.batch();
+      rutasSnap.docs.forEach(doc => {
+        batch.update(doc.ref, { convocadoPor: nombre });
+      });
+      if (!rutasSnap.empty) await batch.commit();
+    }
 
     document.getElementById('user-display').textContent = nombre;
     document.getElementById('perfil-nombre-display').textContent = nombre;
@@ -527,25 +541,58 @@ async function guardarPerfil() {
   } catch(e) { alert('Error guardando perfil: ' + e.message); }
 }
 
+function togglePass(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const visible = input.type === 'text';
+  input.type = visible ? 'password' : 'text';
+  btn.textContent = visible ? '👁️' : '🚫';
+  btn.title = visible ? 'Mostrar contraseña' : 'Ocultar contraseña';
+}
+
 async function cambiarPassword() {
-  const pass   = document.getElementById('aj-pass-nueva').value;
-  const okEl   = document.getElementById('aj-pass-ok');
-  const errEl  = document.getElementById('aj-pass-err');
+  const actual  = document.getElementById('aj-pass-actual').value;
+  const nueva   = document.getElementById('aj-pass-nueva').value;
+  const repite  = document.getElementById('aj-pass-repite').value;
+  const okEl    = document.getElementById('aj-pass-ok');
+  const errEl   = document.getElementById('aj-pass-err');
   okEl.classList.add('hidden'); errEl.classList.add('hidden');
 
-  if (pass.length < 6) {
-    errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+  if (!actual) {
+    errEl.textContent = 'Introduce tu contraseña actual.';
     errEl.classList.remove('hidden'); return;
   }
+  if (nueva.length < 6) {
+    errEl.textContent = 'La nueva contraseña debe tener al menos 6 caracteres.';
+    errEl.classList.remove('hidden'); return;
+  }
+  if (nueva !== repite) {
+    errEl.textContent = 'Las contraseñas nuevas no coinciden.';
+    errEl.classList.remove('hidden'); return;
+  }
+  if (actual === nueva) {
+    errEl.textContent = 'La nueva contraseña debe ser diferente a la actual.';
+    errEl.classList.remove('hidden'); return;
+  }
+
   try {
-    await currentUser.updatePassword(pass);
-    document.getElementById('aj-pass-nueva').value = '';
+    // Reautenticar con la contraseña actual antes de cambiarla
+    const credential = firebase.auth.EmailAuthProvider.credential(currentUser.email, actual);
+    await currentUser.reauthenticateWithCredential(credential);
+    await currentUser.updatePassword(nueva);
+
+    document.getElementById('aj-pass-actual').value = '';
+    document.getElementById('aj-pass-nueva').value  = '';
+    document.getElementById('aj-pass-repite').value = '';
     okEl.classList.remove('hidden');
     setTimeout(() => okEl.classList.add('hidden'), 2500);
   } catch(e) {
-    errEl.textContent = e.code === 'auth/requires-recent-login'
-      ? 'Por seguridad, cierra sesión y vuelve a entrar antes de cambiar la contraseña.'
-      : 'Error: ' + e.message;
+    if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
+      errEl.textContent = 'La contraseña actual no es correcta.';
+    } else if (e.code === 'auth/too-many-requests') {
+      errEl.textContent = 'Demasiados intentos. Espera unos minutos.';
+    } else {
+      errEl.textContent = 'Error: ' + e.message;
+    }
     errEl.classList.remove('hidden');
   }
 }
