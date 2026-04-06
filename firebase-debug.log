@@ -1,0 +1,44 @@
+[debug] [2026-04-06T21:14:30.877Z] ----------------------------------------------------------------------
+[debug] [2026-04-06T21:14:30.880Z] Command:       C:\nvm4w\nodejs\node.exe C:\nvm4w\nodejs\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2026-04-06T21:14:30.880Z] CLI Version:   15.13.0
+[debug] [2026-04-06T21:14:30.881Z] Platform:      win32
+[debug] [2026-04-06T21:14:30.881Z] Node Version:  v20.19.6
+[debug] [2026-04-06T21:14:30.881Z] Time:          Mon Apr 06 2026 23:14:30 GMT+0200 (hora de verano de Europa central)
+[debug] [2026-04-06T21:14:30.881Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-04-06T21:14:30.883Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\ansac\OneDrive\Escritorio\ProyectosPersonales\prueba1
+
+[debug] [2026-04-06T21:14:58.941Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-04-06T21:14:58.941Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[info] i  If you want to create a project in a Google Cloud organization or folder, please use "firebase projects:create" instead, and return to this command when you've created the project. 
+[debug] [2026-04-06T21:16:23.201Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-04-06T21:16:23.202Z] > authorizing via signed-in user (angela.santos@campusfp.es)
+[debug] [2026-04-06T21:16:41.255Z] ExitPromptError: User force closed the prompt with SIGINT
+    at Interface.sigint (C:\Users\ansac\AppData\Local\nvm\v20.19.6\node_modules\firebase-tools\node_modules\@inquirer\core\dist\commonjs\lib\create-prompt.js:101:37)
+    at Interface.emit (node:events:524:28)
+    at [_ttyWrite] [as _ttyWrite] (node:internal/readline/interface:1134:18)
+    at ReadStream.onkeypress (node:internal/readline/interface:267:20)
+    at ReadStream.emit (node:events:536:35)
+    at emitKeys (node:internal/readline/utils:371:14)
+    at emitKeys.next (<anonymous>)
+    at ReadStream.onData (node:internal/readline/emitKeypressEvents:64:36)
+    at ReadStream.emit (node:events:524:28)
+    at addChunk (node:internal/streams/readable:561:12)
+[error] 
+[error] Error: An unexpected error has occurred.
