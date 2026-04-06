@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RutaSkate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="screen-login" class="screen active">
+    <div class="login-bg"></div>
+    <div class="login-card">
+      <div class="logo-block">
+        <span class="logo-icon">⚡</span>
+        <h1 class="logo-title">RUTASKATE</h1>
+      </div>
+      <p class="login-sub">Accede con tu cuenta</p>
+      <div class="field">
+        <label>Correo</label>
+        <input type="email" id="login-email" placeholder="correo@email.com" />
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="login-pass" placeholder="••••••••" />
+      </div>
+      <div id="login-error" class="error-msg hidden"></div>
+      <button class="btn-primary" onclick="doLogin()">ENTRAR</button>
+    </div>
+  </div>
+
+  <!-- INICIO -->
+  <div id="screen-inicio" class="screen">
+    <header class="top-bar">
+      <span class="logo-title small">RUTASKATE</span>
+      <div class="user-pill">
+        <span id="user-display">—</span>
+        <button class="btn-logout" onclick="doLogout()">✕</button>
+      </div>
+    </header>
+    <main class="home-main">
+      <div class="hero-text">
+        <p class="hero-label">¿Qué hacemos hoy?</p>
+        <h2 class="hero-heading">ELIGE TU<br>MOVIMIENTO</h2>
+      </div>
+      <div class="action-grid">
+        <button class="action-card convocar" onclick="showScreen('screen-convocar')">
+          <span class="action-icon">📣</span>
+          <span class="action-label">CONVOCAR<br>RUTA</span>
+          <span class="action-arrow">→</span>
+        </button>
+        <button class="action-card ver" onclick="showScreen('screen-ver'); loadRutas()">
+          <span class="action-icon">🗺️</span>
+          <span class="action-label">VER<br>RUTAS</span>
+          <span class="action-arrow">→</span>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <!-- CONVOCAR RUTA -->
+  <div id="screen-convocar" class="screen">
+    <header class="top-bar">
+      <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+      <span class="logo-title small">CONVOCAR RUTA</span>
+      <div></div>
+    </header>
+    <main class="form-main">
+      <div class="field">
+        <label>Nombre de la ruta</label>
+        <div class="select-row">
+          <select id="select-ruta">
+            <option value="">— Selecciona ruta existente —</option>
+          </select>
+          <button class="btn-add-ruta" onclick="toggleNuevaRuta()">+ Nueva</button>
+        </div>
+        <div id="nueva-ruta-block" class="hidden" style="margin-top:8px">
+          <input type="text" id="nueva-ruta-input" placeholder="Nombre de la nueva ruta" />
+          <button class="btn-mini" onclick="addNuevaRuta()">Añadir a lista</button>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Hora (HH:MM)</label>
+          <input type="time" id="conv-hora" />
+        </div>
+        <div class="field">
+          <label>Fecha</label>
+          <input type="date" id="conv-fecha" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Lugar</label>
+        <input type="url" id="conv-lugar-url" placeholder="URL del lugar (Google Maps, web...)" />
+        <input type="text" id="conv-lugar-desc" placeholder="Descripción del lugar" style="margin-top:6px"/>
+      </div>
+      <div class="field">
+        <label>Descripción</label>
+        <textarea id="conv-desc" placeholder="Describe la ruta..." rows="3"></textarea>
+      </div>
+      <div class="field">
+        <label>Nivel</label>
+        <div class="nivel-grid">
+          <button class="nivel-btn" data-nivel="aprendiendo" onclick="selectNivel(this)">🐣 Aprendiendo</button>
+          <button class="nivel-btn" data-nivel="principiante" onclick="selectNivel(this)">🟢 Principiante</button>
+          <button class="nivel-btn" data-nivel="medio" onclick="selectNivel(this)">🟡 Medio</button>
+          <button class="nivel-btn" data-nivel="cañero" onclick="selectNivel(this)">🔥 Cañero</button>
+        </div>
+      </div>
+      <div id="conv-error" class="error-msg hidden"></div>
+      <div id="conv-ok" class="ok-msg hidden">¡Ruta convocada! 🛼</div>
+      <button class="btn-primary" onclick="convocarRuta()">CONVOCAR RUTA</button>
+    </main>
+  </div>
+
+  <!-- VER RUTAS -->
+  <div id="screen-ver" class="screen">
+    <header class="top-bar">
+      <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+      <span class="logo-title small">RUTAS CONVOCADAS</span>
+      <div></div>
+    </header>
+    <main class="ver-main">
+      <div id="rutas-list"></div>
+      <div id="rutas-empty" class="empty-msg hidden">No hay rutas convocadas aún. ¡Sé el primero! 🛼</div>
+    </main>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
