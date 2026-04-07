@@ -9,451 +9,404 @@
 </head>
 <body>
 
-  <!-- ═══════════════════════════════════════ -->
-  <!-- LOGIN                                   -->
-  <!-- ═══════════════════════════════════════ -->
-  <div id="screen-login" class="screen active">
-    <div class="login-bg"></div>
-    <div class="login-card">
-      <div class="logo-block">
-        <span class="logo-icon">⚡</span>
-        <h1 class="logo-title">RUTASKATE</h1>
-      </div>
-      <p class="login-sub">Accede con tu cuenta</p>
-      <div class="field">
-        <label>Correo</label>
-        <input type="email" id="login-email" placeholder="correo@email.com" />
-      </div>
-      <div class="field">
-        <label>Contraseña</label>
-        <div class="pass-field">
-          <input type="password" id="login-pass" placeholder="••••••••" />
-          <button class="btn-eye" type="button" onclick="togglePass('login-pass', this)" aria-label="Mostrar contraseña">
-            <svg class="eye-icon eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <svg class="eye-icon eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-          </button>
-        </div>
-      </div>
-      <div id="login-error" class="error-msg hidden"></div>
-      <button class="btn-primary" onclick="doLogin()">ENTRAR</button>
-      <div class="login-divider"><span>¿No tienes cuenta?</span></div>
-      <button class="btn-secondary" onclick="showScreen('screen-registro')">CREAR CUENTA</button>
+<!-- ════════════════ LOGIN ════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-bg"></div>
+  <div class="login-card">
+    <div class="logo-block"><span class="logo-icon">⚡</span><h1 class="logo-title">RUTASKATE</h1></div>
+    <p class="login-sub">Accede con tu cuenta</p>
+    <div class="field">
+      <label>Correo</label>
+      <input type="email" id="login-email" placeholder="correo@email.com" />
     </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════ -->
-  <!-- REGISTRO                                -->
-  <!-- ═══════════════════════════════════════ -->
-  <div id="screen-registro" class="screen">
-    <div class="login-bg"></div>
-    <div class="login-card registro-card">
-      <div class="logo-block">
-        <span class="logo-icon">⚡</span>
-        <h1 class="logo-title">RUTASKATE</h1>
+    <div class="field">
+      <label>Contraseña</label>
+      <div class="pass-field">
+        <input type="password" id="login-pass" placeholder="••••••••" />
+        <button class="btn-eye" type="button" onclick="togglePass('login-pass',this)">
+          <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
       </div>
-      <p class="login-sub">Crea tu cuenta</p>
-
-      <!-- USERNAME -->
-      <div class="field">
-        <label>Nombre de usuario <span class="label-hint">(tu @, único)</span></label>
-        <div class="username-field">
-          <span class="at-prefix">@</span>
-          <input type="text" id="reg-username" placeholder="tunombre" oninput="verificarUsername()" autocomplete="off" spellcheck="false" />
-          <span class="username-status" id="username-status">
-            <!-- SVG inyectado por JS -->
-          </span>
-        </div>
-        <p class="field-hint" id="username-hint"></p>
-      </div>
-
-      <!-- EMAIL -->
-      <div class="field">
-        <label>Correo electrónico</label>
-        <input type="email" id="reg-email" placeholder="correo@email.com" />
-      </div>
-
-      <!-- FECHA NACIMIENTO -->
-      <div class="field">
-        <label>Fecha de nacimiento</label>
-        <div class="fecha-nacimiento-row">
-          <div class="fecha-col">
-            <input type="number" id="reg-dia" placeholder="Día" min="1" max="31"
-              oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,2)" />
-            <span class="fecha-label">1 – 31</span>
-          </div>
-          <div class="fecha-col">
-            <input type="number" id="reg-mes" placeholder="Mes" min="1" max="12"
-              oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,2)" />
-            <span class="fecha-label">1 – 12</span>
-          </div>
-          <div class="fecha-col">
-            <input type="number" id="reg-anio" placeholder="Año" min="1920" max="2099"
-              oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" />
-            <span class="fecha-label">4 dígitos</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- TELÉFONO CON PREFIJO -->
-      <div class="field">
-        <label>Número de teléfono</label>
-        <div class="telefono-row">
-          <select id="reg-prefijo" class="prefijo-select">
-            <option value="+34" data-flag="🇪🇸">🇪🇸 +34 España</option>
-            <option value="+1"  data-flag="🇺🇸">🇺🇸 +1 EE.UU.</option>
-            <option value="+44" data-flag="🇬🇧">🇬🇧 +44 Reino Unido</option>
-            <option value="+33" data-flag="🇫🇷">🇫🇷 +33 Francia</option>
-            <option value="+49" data-flag="🇩🇪">🇩🇪 +49 Alemania</option>
-            <option value="+39" data-flag="🇮🇹">🇮🇹 +39 Italia</option>
-            <option value="+351" data-flag="🇵🇹">🇵🇹 +351 Portugal</option>
-            <option value="+52" data-flag="🇲🇽">🇲🇽 +52 México</option>
-            <option value="+54" data-flag="🇦🇷">🇦🇷 +54 Argentina</option>
-            <option value="+56" data-flag="🇨🇱">🇨🇱 +56 Chile</option>
-            <option value="+57" data-flag="🇨🇴">🇨🇴 +57 Colombia</option>
-            <option value="+58" data-flag="🇻🇪">🇻🇪 +58 Venezuela</option>
-            <option value="+51" data-flag="🇵🇪">🇵🇪 +51 Perú</option>
-            <option value="+593" data-flag="🇪🇨">🇪🇨 +593 Ecuador</option>
-            <option value="+55" data-flag="🇧🇷">🇧🇷 +55 Brasil</option>
-            <option value="+598" data-flag="🇺🇾">🇺🇾 +598 Uruguay</option>
-            <option value="+595" data-flag="🇵🇾">🇵🇾 +595 Paraguay</option>
-            <option value="+591" data-flag="🇧🇴">🇧🇴 +591 Bolivia</option>
-            <option value="+34" data-flag="🇲🇦">🇲🇦 +212 Marruecos</option>
-            <option value="+81" data-flag="🇯🇵">🇯🇵 +81 Japón</option>
-            <option value="+86" data-flag="🇨🇳">🇨🇳 +86 China</option>
-          </select>
-          <input type="tel" id="reg-telefono" placeholder="600 000 000"
-            oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,9)"
-            maxlength="9" />
-        </div>
-        <p class="field-hint">Solo dígitos, sin el prefijo</p>
-      </div>
-
-      <!-- SEXO -->
-      <div class="field">
-        <label>Sexo</label>
-        <div class="sexo-grid">
-          <button class="sexo-btn" data-sexo="hombre" onclick="selectSexo(this)">Hombre</button>
-          <button class="sexo-btn" data-sexo="mujer"  onclick="selectSexo(this)">Mujer</button>
-          <button class="sexo-btn" data-sexo="otro"   onclick="selectSexo(this)">Otro</button>
-        </div>
-      </div>
-
-      <!-- CONTRASEÑA -->
-      <div class="field">
-        <label>Contraseña</label>
-        <div class="pass-field">
-          <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" />
-          <button class="btn-eye" type="button" onclick="togglePass('reg-pass', this)" aria-label="Mostrar contraseña">
-            <svg class="eye-icon eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <svg class="eye-icon eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- REPETIR CONTRASEÑA -->
-      <div class="field">
-        <label>Repetir contraseña</label>
-        <div class="pass-field">
-          <input type="password" id="reg-pass2" placeholder="Repite la contraseña" />
-          <button class="btn-eye" type="button" onclick="togglePass('reg-pass2', this)" aria-label="Mostrar contraseña">
-            <svg class="eye-icon eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <svg class="eye-icon eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div id="reg-error" class="error-msg hidden"></div>
-      <div id="reg-ok"    class="ok-msg hidden">¡Cuenta creada! Entrando... 🛼</div>
-      <button class="btn-primary" onclick="doRegistro()">CREAR CUENTA</button>
-      <div class="login-divider"><span>¿Ya tienes cuenta?</span></div>
-      <button class="btn-secondary" onclick="showScreen('screen-login')">INICIAR SESIÓN</button>
     </div>
+    <div id="login-error" class="error-msg hidden"></div>
+    <button class="btn-primary" onclick="doLogin()">ENTRAR</button>
+    <div class="login-divider"><span>¿No tienes cuenta?</span></div>
+    <button class="btn-secondary" onclick="showScreen('screen-registro')">CREAR CUENTA</button>
   </div>
+</div>
 
-  <!-- ═══════════════════════════════════════ -->
-  <!-- INICIO                                  -->
-  <!-- ═══════════════════════════════════════ -->
-  <div id="screen-inicio" class="screen">
-    <header class="top-bar">
-      <span class="logo-title small">RUTASKATE</span>
-      <div class="user-pill">
-        <span id="user-display">—</span>
-        <button class="btn-logout" onclick="doLogout()">✕</button>
+<!-- ════════════════ REGISTRO ════════════════ -->
+<div id="screen-registro" class="screen">
+  <div class="login-bg"></div>
+  <div class="login-card registro-card">
+    <div class="logo-block"><span class="logo-icon">⚡</span><h1 class="logo-title">RUTASKATE</h1></div>
+    <p class="login-sub">Crea tu cuenta</p>
+
+    <div class="field">
+      <label>Nombre de usuario <span class="label-hint">(tu @, único)</span></label>
+      <div class="username-field">
+        <span class="at-prefix">@</span>
+        <input type="text" id="reg-username" placeholder="tunombre" oninput="verificarUsername()" autocomplete="off" spellcheck="false"/>
+        <span class="username-status" id="username-status"></span>
       </div>
-    </header>
-    <main class="home-main">
-      <div class="hero-text">
-        <p class="hero-label">¿Qué hacemos hoy?</p>
-        <h2 class="hero-heading">ELIGE TU<br>MOVIMIENTO</h2>
+      <p class="field-hint" id="username-hint"></p>
+    </div>
+
+    <div class="field">
+      <label>Correo electrónico</label>
+      <input type="email" id="reg-email" placeholder="correo@email.com"/>
+    </div>
+
+    <div class="field">
+      <label>Fecha de nacimiento</label>
+      <div class="fecha-nacimiento-row">
+        <div class="fecha-col">
+          <input type="number" id="reg-dia" placeholder="Día" min="1" max="31" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,2)"/>
+          <span class="fecha-label">1 – 31</span>
+        </div>
+        <div class="fecha-col">
+          <input type="number" id="reg-mes" placeholder="Mes" min="1" max="12" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,2)"/>
+          <span class="fecha-label">1 – 12</span>
+        </div>
+        <div class="fecha-col">
+          <input type="number" id="reg-anio" placeholder="Año" min="1920" max="2099" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)"/>
+          <span class="fecha-label">4 dígitos</span>
+        </div>
       </div>
-      <div class="action-grid">
-        <button class="action-card convocar" onclick="showScreen('screen-convocar')">
-          <span class="action-icon">📣</span>
-          <span class="action-label">CONVOCAR<br>RUTA</span>
-          <span class="action-arrow">→</span>
-        </button>
-        <button class="action-card ver" onclick="showScreen('screen-ver'); loadRutas()">
-          <span class="action-icon">🗺️</span>
-          <span class="action-label">VER<br>RUTAS</span>
-          <span class="action-arrow">→</span>
-        </button>
-        <button class="action-card chats" onclick="showScreen('screen-chats'); loadChats()">
-          <span class="action-icon">💬</span>
-          <span class="action-label">CHATS</span>
-          <span class="chat-badge hidden" id="home-chat-badge">0</span>
-          <span class="action-arrow">→</span>
-        </button>
-        <button class="action-card buscar" onclick="showScreen('screen-buscar'); initBuscar()">
-          <span class="action-icon">🔍</span>
-          <span class="action-label">BUSCAR</span>
-          <span class="action-arrow">→</span>
-        </button>
-        <button class="action-card ajustes" onclick="showScreen('screen-ajustes'); loadAjustes()">
-          <span class="action-icon">⚙️</span>
-          <span class="action-label">AJUSTES</span>
-          <span class="action-arrow">→</span>
+    </div>
+
+    <div class="field">
+      <label>Número de teléfono</label>
+      <div class="telefono-row">
+        <select id="reg-prefijo" class="prefijo-select">
+          <option value="+34">🇪🇸 +34 España</option>
+          <option value="+1">🇺🇸 +1 EE.UU.</option>
+          <option value="+44">🇬🇧 +44 Reino Unido</option>
+          <option value="+33">🇫🇷 +33 Francia</option>
+          <option value="+49">🇩🇪 +49 Alemania</option>
+          <option value="+39">🇮🇹 +39 Italia</option>
+          <option value="+351">🇵🇹 +351 Portugal</option>
+          <option value="+52">🇲🇽 +52 México</option>
+          <option value="+54">🇦🇷 +54 Argentina</option>
+          <option value="+56">🇨🇱 +56 Chile</option>
+          <option value="+57">🇨🇴 +57 Colombia</option>
+          <option value="+55">🇧🇷 +55 Brasil</option>
+          <option value="+51">🇵🇪 +51 Perú</option>
+          <option value="+58">🇻🇪 +58 Venezuela</option>
+          <option value="+593">🇪🇨 +593 Ecuador</option>
+          <option value="+598">🇺🇾 +598 Uruguay</option>
+          <option value="+595">🇵🇾 +595 Paraguay</option>
+          <option value="+591">🇧🇴 +591 Bolivia</option>
+          <option value="+212">🇲🇦 +212 Marruecos</option>
+          <option value="+81">🇯🇵 +81 Japón</option>
+          <option value="+86">🇨🇳 +86 China</option>
+        </select>
+        <input type="tel" id="reg-telefono" placeholder="600 000 000" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,9)" maxlength="9"/>
+      </div>
+      <p class="field-hint">Solo dígitos, sin el prefijo</p>
+    </div>
+
+    <div class="field">
+      <label>Sexo</label>
+      <div class="sexo-grid">
+        <button class="sexo-btn" data-sexo="hombre" onclick="selectSexo(this)">Hombre</button>
+        <button class="sexo-btn" data-sexo="mujer"  onclick="selectSexo(this)">Mujer</button>
+        <button class="sexo-btn" data-sexo="otro"   onclick="selectSexo(this)">Otro</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Contraseña</label>
+      <div class="pass-field">
+        <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres"/>
+        <button class="btn-eye" type="button" onclick="togglePass('reg-pass',this)">
+          <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
         </button>
       </div>
-    </main>
+    </div>
+
+    <div class="field">
+      <label>Repetir contraseña</label>
+      <div class="pass-field">
+        <input type="password" id="reg-pass2" placeholder="Repite la contraseña"/>
+        <button class="btn-eye" type="button" onclick="togglePass('reg-pass2',this)">
+          <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="reg-error" class="error-msg hidden"></div>
+    <div id="reg-ok"    class="ok-msg hidden">¡Cuenta creada! Entrando... 🛼</div>
+    <button class="btn-primary" onclick="doRegistro()">CREAR CUENTA</button>
+    <div class="login-divider"><span>¿Ya tienes cuenta?</span></div>
+    <button class="btn-secondary" onclick="showScreen('screen-login')">INICIAR SESIÓN</button>
   </div>
+</div>
 
-  <!-- ═══════════════════════════════════════ -->
-  <!-- CONVOCAR RUTA                           -->
-  <!-- ═══════════════════════════════════════ -->
-  <div id="screen-convocar" class="screen">
-    <header class="top-bar">
-      <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
-      <span class="logo-title small">CONVOCAR RUTA</span>
-      <div></div>
-    </header>
-    <main class="form-main">
-      <div class="field">
-        <label>Nombre de la ruta</label>
-        <div class="select-row">
-          <select id="select-ruta">
-            <option value="">— Selecciona ruta existente —</option>
-          </select>
-          <button class="btn-add-ruta" onclick="toggleNuevaRuta()">+ Nueva</button>
-        </div>
-        <div id="nueva-ruta-block" class="hidden" style="margin-top:8px">
-          <input type="text" id="nueva-ruta-input" placeholder="Nombre de la nueva ruta" />
-          <button class="btn-mini" onclick="addNuevaRuta()">Añadir a lista</button>
+<!-- ════════════════ INICIO ════════════════ -->
+<div id="screen-inicio" class="screen">
+  <header class="top-bar">
+    <span class="logo-title small">RUTASKATE</span>
+    <div class="user-pill">
+      <span id="user-display">—</span>
+      <button class="btn-logout" onclick="doLogout()">✕</button>
+    </div>
+  </header>
+  <main class="home-main">
+    <div class="hero-text">
+      <p class="hero-label">¿Qué hacemos hoy?</p>
+      <h2 class="hero-heading">ELIGE TU<br>MOVIMIENTO</h2>
+    </div>
+    <div class="action-grid">
+      <button class="action-card convocar" onclick="showScreen('screen-convocar')">
+        <span class="action-icon">📣</span><span class="action-label">CONVOCAR<br>RUTA</span><span class="action-arrow">→</span>
+      </button>
+      <button class="action-card ver" onclick="showScreen('screen-ver');loadRutas()">
+        <span class="action-icon">🗺️</span><span class="action-label">VER<br>RUTAS</span><span class="action-arrow">→</span>
+      </button>
+      <button class="action-card chats" onclick="showScreen('screen-chats');loadChats()">
+        <span class="action-icon">💬</span><span class="action-label">CHATS</span>
+        <span class="chat-badge hidden" id="home-chat-badge">0</span>
+        <span class="action-arrow">→</span>
+      </button>
+      <button class="action-card buscar" onclick="showScreen('screen-buscar');initBuscar()">
+        <span class="action-icon">🔍</span><span class="action-label">BUSCAR</span><span class="action-arrow">→</span>
+      </button>
+      <button class="action-card seguidores" onclick="showScreen('screen-seguidores');loadSeguidores()">
+        <span class="action-icon">👥</span><span class="action-label">SEGUIDORES</span><span class="action-arrow">→</span>
+      </button>
+      <button class="action-card ajustes" onclick="showScreen('screen-ajustes');loadAjustes()">
+        <span class="action-icon">⚙️</span><span class="action-label">AJUSTES</span><span class="action-arrow">→</span>
+      </button>
+    </div>
+  </main>
+</div>
+
+<!-- ════════════════ CONVOCAR RUTA ════════════════ -->
+<div id="screen-convocar" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <span class="logo-title small" id="convocar-titulo">CONVOCAR RUTA</span>
+    <div></div>
+  </header>
+  <main class="form-main">
+    <div class="field">
+      <label>Nombre de la ruta</label>
+      <div class="select-row">
+        <select id="select-ruta"><option value="">— Selecciona ruta existente —</option></select>
+        <button class="btn-add-ruta" onclick="toggleNuevaRuta()">+ Nueva</button>
+      </div>
+      <div id="nueva-ruta-block" class="hidden" style="margin-top:8px">
+        <input type="text" id="nueva-ruta-input" placeholder="Nombre de la nueva ruta"/>
+        <button class="btn-mini" onclick="addNuevaRuta()">Añadir a lista</button>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Hora (HH:MM)</label><input type="time" id="conv-hora"/></div>
+      <div class="field"><label>Fecha</label><input type="date" id="conv-fecha"/></div>
+    </div>
+    <div class="field">
+      <label>Lugar</label>
+      <input type="url" id="conv-lugar-url" placeholder="URL del lugar (Google Maps, web...)"/>
+      <input type="text" id="conv-lugar-desc" placeholder="Descripción del lugar" style="margin-top:6px"/>
+    </div>
+    <div class="field">
+      <label>Descripción</label>
+      <textarea id="conv-desc" placeholder="Describe la ruta..." rows="3"></textarea>
+    </div>
+    <div class="field">
+      <label>Nivel</label>
+      <div class="nivel-grid">
+        <button class="nivel-btn" data-nivel="aprendiendo" onclick="selectNivel(this)">🐣 Aprendiendo</button>
+        <button class="nivel-btn" data-nivel="principiante" onclick="selectNivel(this)">🟢 Principiante</button>
+        <button class="nivel-btn" data-nivel="medio" onclick="selectNivel(this)">🟡 Medio</button>
+        <button class="nivel-btn" data-nivel="cañero" onclick="selectNivel(this)">🔥 Cañero</button>
+      </div>
+    </div>
+    <input type="hidden" id="editando-ruta-id"/>
+    <div id="conv-error" class="error-msg hidden"></div>
+    <div id="conv-ok" class="ok-msg hidden">¡Ruta guardada! 🛼</div>
+    <button class="btn-primary" id="btn-convocar-submit" onclick="convocarRuta()">CONVOCAR RUTA</button>
+  </main>
+</div>
+
+<!-- ════════════════ VER RUTAS ════════════════ -->
+<div id="screen-ver" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <span class="logo-title small">RUTAS CONVOCADAS</span>
+    <div></div>
+  </header>
+  <main class="ver-main">
+    <div id="rutas-list"></div>
+    <div id="rutas-empty" class="empty-msg hidden">No hay rutas convocadas aún. ¡Sé el primero! 🛼</div>
+  </main>
+</div>
+
+<!-- ════════════════ SEGUIDORES ════════════════ -->
+<div id="screen-seguidores" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <span class="logo-title small">SEGUIDORES</span>
+    <div></div>
+  </header>
+  <main class="seguidores-main">
+    <div class="seg-tabs">
+      <button class="seg-tab active" onclick="switchSegTab('siguiendo',this)">Siguiendo</button>
+      <button class="seg-tab" onclick="switchSegTab('seguidores',this)">Seguidores</button>
+    </div>
+    <div id="seg-list"></div>
+    <div id="seg-empty" class="empty-msg hidden">Nada aquí aún 🛼</div>
+  </main>
+</div>
+
+<!-- ════════════════ CHATS LISTA ════════════════ -->
+<div id="screen-chats" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <span class="logo-title small">CHATS</span>
+    <button class="btn-icon" onclick="showScreen('screen-nuevo-chat');loadUsuarios()" title="Nuevo chat">✏️</button>
+  </header>
+  <main class="chats-main">
+    <div id="chats-list"></div>
+    <div id="chats-empty" class="empty-msg hidden">No tienes conversaciones aún.<br>Pulsa ✏️ para empezar una.</div>
+  </main>
+</div>
+
+<!-- ════════════════ NUEVO CHAT ════════════════ -->
+<div id="screen-nuevo-chat" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" onclick="showScreen('screen-chats');loadChats()">← Volver</button>
+    <span class="logo-title small">NUEVO CHAT</span>
+    <div></div>
+  </header>
+  <main class="form-main">
+    <div class="field">
+      <label>Buscar usuario</label>
+      <input type="text" id="buscar-usuario" placeholder="@usuario..." oninput="filtrarUsuarios()"/>
+    </div>
+    <div id="usuarios-list"></div>
+    <div id="usuarios-empty" class="empty-msg hidden">No se encontraron usuarios.</div>
+  </main>
+</div>
+
+<!-- ════════════════ BUSCAR ════════════════ -->
+<div id="screen-buscar" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <span class="logo-title small">BUSCAR</span>
+    <div></div>
+  </header>
+  <main class="buscar-main">
+    <div class="buscar-input-wrap">
+      <span class="buscar-icon-prefix">🔍</span>
+      <input type="text" id="buscar-rt-input" placeholder="Busca por @usuario..." oninput="buscarTiempoReal()" autocomplete="off"/>
+      <button class="buscar-clear hidden" id="buscar-clear" onclick="limpiarBuscar()">✕</button>
+    </div>
+    <div id="buscar-results"></div>
+    <div id="buscar-empty" class="empty-msg hidden">Sin resultados</div>
+    <div id="buscar-inicial" class="empty-msg">Escribe para buscar patinadores 🛼</div>
+  </main>
+</div>
+
+<!-- ════════════════ CONVERSACIÓN ════════════════ -->
+<div id="screen-conversacion" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" onclick="cerrarConversacion()">← Volver</button>
+    <div class="chat-header-info">
+      <div class="chat-avatar-sm" id="conv-avatar">?</div>
+      <span id="conv-nombre-header">—</span>
+    </div>
+    <div></div>
+  </header>
+  <main class="conv-main" id="conv-main">
+    <div id="mensajes-container"></div>
+  </main>
+  <footer class="conv-footer">
+    <input type="text" id="msg-input" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')enviarMensaje()"/>
+    <button class="btn-send" onclick="enviarMensaje()">➤</button>
+  </footer>
+</div>
+
+<!-- ════════════════ AJUSTES ════════════════ -->
+<div id="screen-ajustes" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <span class="logo-title small">AJUSTES</span>
+    <div></div>
+  </header>
+  <main class="ajustes-main">
+    <section class="ajustes-section">
+      <h3 class="ajustes-section-title">Mi perfil</h3>
+      <div class="perfil-avatar-block">
+        <div class="perfil-avatar" id="perfil-avatar-display">?</div>
+        <div>
+          <p class="perfil-nombre" id="perfil-nombre-display">—</p>
+          <p class="perfil-email"  id="perfil-email-display">—</p>
         </div>
       </div>
-      <div class="field-row">
-        <div class="field">
-          <label>Hora (HH:MM)</label>
-          <input type="time" id="conv-hora" />
-        </div>
-        <div class="field">
-          <label>Fecha</label>
-          <input type="date" id="conv-fecha" />
-        </div>
-      </div>
+      <div class="field"><label>Nombre para mostrar</label><input type="text" id="aj-nombre" placeholder="Tu nombre visible"/></div>
+      <div class="field"><label>Bio (opcional)</label><textarea id="aj-bio" rows="2" placeholder="Cuéntanos algo sobre ti..."></textarea></div>
       <div class="field">
-        <label>Lugar</label>
-        <input type="url" id="conv-lugar-url" placeholder="URL del lugar (Google Maps, web...)" />
-        <input type="text" id="conv-lugar-desc" placeholder="Descripción del lugar" style="margin-top:6px"/>
-      </div>
-      <div class="field">
-        <label>Descripción</label>
-        <textarea id="conv-desc" placeholder="Describe la ruta..." rows="3"></textarea>
-      </div>
-      <div class="field">
-        <label>Nivel</label>
+        <label>Nivel de patinaje</label>
         <div class="nivel-grid">
-          <button class="nivel-btn" data-nivel="aprendiendo" onclick="selectNivel(this)">🐣 Aprendiendo</button>
-          <button class="nivel-btn" data-nivel="principiante" onclick="selectNivel(this)">🟢 Principiante</button>
-          <button class="nivel-btn" data-nivel="medio" onclick="selectNivel(this)">🟡 Medio</button>
-          <button class="nivel-btn" data-nivel="cañero" onclick="selectNivel(this)">🔥 Cañero</button>
+          <button class="nivel-btn" data-nivel="aprendiendo" onclick="selectNivelAj(this)">🐣 Aprendiendo</button>
+          <button class="nivel-btn" data-nivel="principiante" onclick="selectNivelAj(this)">🟢 Principiante</button>
+          <button class="nivel-btn" data-nivel="medio" onclick="selectNivelAj(this)">🟡 Medio</button>
+          <button class="nivel-btn" data-nivel="cañero" onclick="selectNivelAj(this)">🔥 Cañero</button>
         </div>
       </div>
-      <div id="conv-error" class="error-msg hidden"></div>
-      <div id="conv-ok" class="ok-msg hidden">¡Ruta convocada! 🛼</div>
-      <button class="btn-primary" onclick="convocarRuta()">CONVOCAR RUTA</button>
-    </main>
-  </div>
+      <div id="aj-ok" class="ok-msg hidden">¡Perfil guardado! ✓</div>
+      <button class="btn-primary" onclick="guardarPerfil()">GUARDAR PERFIL</button>
+    </section>
 
-  <!-- ═══════════════════════════════════════ -->
-  <!-- VER RUTAS                               -->
-  <!-- ═══════════════════════════════════════ -->
-  <div id="screen-ver" class="screen">
-    <header class="top-bar">
-      <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
-      <span class="logo-title small">RUTAS CONVOCADAS</span>
-      <div></div>
-    </header>
-    <main class="ver-main">
-      <div id="rutas-list"></div>
-      <div id="rutas-empty" class="empty-msg hidden">No hay rutas convocadas aún. ¡Sé el primero! 🛼</div>
-    </main>
-  </div>
-
-  <!-- ═══════════════════════════════════════ -->
-  <!-- CHATS: LISTA                            -->
-  <!-- ═══════════════════════════════════════ -->
-  <div id="screen-chats" class="screen">
-    <header class="top-bar">
-      <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
-      <span class="logo-title small">CHATS</span>
-      <button class="btn-icon" onclick="showScreen('screen-nuevo-chat'); loadUsuarios()" title="Nuevo chat">✏️</button>
-    </header>
-    <main class="chats-main">
-      <div id="chats-list"></div>
-      <div id="chats-empty" class="empty-msg hidden">No tienes conversaciones aún.<br>Pulsa ✏️ para empezar una.</div>
-    </main>
-  </div>
-
-  <!-- ═══════════════════════════════════════ -->
-  <!-- NUEVO CHAT: SELECCIONAR USUARIO         -->
-  <!-- ═══════════════════════════════════════ -->
-  <div id="screen-nuevo-chat" class="screen">
-    <header class="top-bar">
-      <button class="btn-back" onclick="showScreen('screen-chats'); loadChats()">← Volver</button>
-      <span class="logo-title small">NUEVO CHAT</span>
-      <div></div>
-    </header>
-    <main class="form-main">
-      <div class="field">
-        <label>Buscar usuario</label>
-        <input type="text" id="buscar-usuario" placeholder="Nombre o correo..." oninput="filtrarUsuarios()" />
-      </div>
-      <div id="usuarios-list"></div>
-      <div id="usuarios-empty" class="empty-msg hidden">No se encontraron usuarios.</div>
-    </main>
-  </div>
-
-  <!-- ═══════════════════════════════════════ -->
-  <!-- BUSCAR USUARIOS                         -->
-  <!-- ═══════════════════════════════════════ -->
-  <div id="screen-buscar" class="screen">
-    <header class="top-bar">
-      <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
-      <span class="logo-title small">BUSCAR</span>
-      <div></div>
-    </header>
-    <main class="buscar-main">
-      <div class="buscar-input-wrap">
-        <span class="buscar-icon-prefix">🔍</span>
-        <input type="text" id="buscar-rt-input" placeholder="Busca por @usuario o nombre..." oninput="buscarTiempoReal()" autocomplete="off" />
-        <button class="buscar-clear hidden" id="buscar-clear" onclick="limpiarBuscar()">✕</button>
-      </div>
-      <div id="buscar-results"></div>
-      <div id="buscar-empty" class="empty-msg hidden">Sin resultados 🤷</div>
-      <div id="buscar-inicial" class="empty-msg">Escribe para buscar patinadores 🛼</div>
-    </main>
-  </div>
-
-  <!-- ═══════════════════════════════════════ -->
-  <!-- CONVERSACIÓN 1A1                        -->
-  <!-- ═══════════════════════════════════════ -->
-  <div id="screen-conversacion" class="screen">
-    <header class="top-bar">
-      <button class="btn-back" onclick="cerrarConversacion()">← Volver</button>
-      <div class="chat-header-info">
-        <div class="chat-avatar-sm" id="conv-avatar">?</div>
-        <span id="conv-nombre-header">—</span>
-      </div>
-      <div></div>
-    </header>
-    <main class="conv-main" id="conv-main">
-      <div id="mensajes-container"></div>
-    </main>
-    <footer class="conv-footer">
-      <input type="text" id="msg-input" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')enviarMensaje()" />
-      <button class="btn-send" onclick="enviarMensaje()">➤</button>
-    </footer>
-  </div>
-
-  <!-- ═══════════════════════════════════════ -->
-  <!-- AJUSTES                                 -->
-  <!-- ═══════════════════════════════════════ -->
-  <div id="screen-ajustes" class="screen">
-    <header class="top-bar">
-      <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
-      <span class="logo-title small">AJUSTES</span>
-      <div></div>
-    </header>
-    <main class="ajustes-main">
-
-      <section class="ajustes-section">
-        <h3 class="ajustes-section-title">Mi perfil</h3>
-        <div class="perfil-avatar-block">
-          <div class="perfil-avatar" id="perfil-avatar-display">?</div>
-          <div>
-            <p class="perfil-nombre" id="perfil-nombre-display">—</p>
-            <p class="perfil-email" id="perfil-email-display">—</p>
-          </div>
-        </div>
-        <div class="field">
-          <label>Nombre para mostrar</label>
-          <input type="text" id="aj-nombre" placeholder="Tu nombre visible" />
-        </div>
-        <div class="field">
-          <label>Bio (opcional)</label>
-          <textarea id="aj-bio" rows="2" placeholder="Cuéntanos algo sobre ti..."></textarea>
-        </div>
-        <div class="field">
-          <label>Nivel de patinaje</label>
-          <div class="nivel-grid">
-            <button class="nivel-btn" data-nivel="aprendiendo" onclick="selectNivelAj(this)">🐣 Aprendiendo</button>
-            <button class="nivel-btn" data-nivel="principiante" onclick="selectNivelAj(this)">🟢 Principiante</button>
-            <button class="nivel-btn" data-nivel="medio" onclick="selectNivelAj(this)">🟡 Medio</button>
-            <button class="nivel-btn" data-nivel="cañero" onclick="selectNivelAj(this)">🔥 Cañero</button>
-          </div>
-        </div>
-        <div id="aj-ok" class="ok-msg hidden">¡Perfil guardado! ✓</div>
-        <button class="btn-primary" onclick="guardarPerfil()">GUARDAR PERFIL</button>
-      </section>
-
-      <section class="ajustes-section">
-        <h3 class="ajustes-section-title">Cuenta</h3>
-        <div class="field">
-          <label>Contraseña actual</label>
-          <div class="pass-field">
-            <input type="password" id="aj-pass-actual" placeholder="Tu contraseña actual" />
-            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-actual', this)" aria-label="Mostrar contraseña">
-            <svg class="eye-icon eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <svg class="eye-icon eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+    <section class="ajustes-section">
+      <h3 class="ajustes-section-title">Cuenta</h3>
+      <div class="field"><label>Contraseña actual</label>
+        <div class="pass-field">
+          <input type="password" id="aj-pass-actual" placeholder="Tu contraseña actual"/>
+          <button class="btn-eye" type="button" onclick="togglePass('aj-pass-actual',this)">
+            <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
           </button>
-          </div>
         </div>
-        <div class="field">
-          <label>Nueva contraseña</label>
-          <div class="pass-field">
-            <input type="password" id="aj-pass-nueva" placeholder="Mínimo 6 caracteres" />
-            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-nueva', this)" aria-label="Mostrar contraseña">
-            <svg class="eye-icon eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <svg class="eye-icon eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+      </div>
+      <div class="field"><label>Nueva contraseña</label>
+        <div class="pass-field">
+          <input type="password" id="aj-pass-nueva" placeholder="Mínimo 6 caracteres"/>
+          <button class="btn-eye" type="button" onclick="togglePass('aj-pass-nueva',this)">
+            <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
           </button>
-          </div>
         </div>
-        <div class="field">
-          <label>Repetir nueva contraseña</label>
-          <div class="pass-field">
-            <input type="password" id="aj-pass-repite" placeholder="Repite la nueva contraseña" />
-            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-repite', this)" aria-label="Mostrar contraseña">
-            <svg class="eye-icon eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <svg class="eye-icon eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+      </div>
+      <div class="field"><label>Repetir nueva contraseña</label>
+        <div class="pass-field">
+          <input type="password" id="aj-pass-repite" placeholder="Repite la nueva contraseña"/>
+          <button class="btn-eye" type="button" onclick="togglePass('aj-pass-repite',this)">
+            <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
           </button>
-          </div>
         </div>
-        <div id="aj-pass-ok"  class="ok-msg hidden">¡Contraseña actualizada! ✓</div>
-        <div id="aj-pass-err" class="error-msg hidden"></div>
-        <button class="btn-secondary" onclick="cambiarPassword()">CAMBIAR CONTRASEÑA</button>
-      </section>
+      </div>
+      <div id="aj-pass-ok"  class="ok-msg hidden">¡Contraseña actualizada! ✓</div>
+      <div id="aj-pass-err" class="error-msg hidden"></div>
+      <button class="btn-secondary" onclick="cambiarPassword()">CAMBIAR CONTRASEÑA</button>
+    </section>
 
-      <section class="ajustes-section">
-        <h3 class="ajustes-section-title">Sesión</h3>
-        <button class="btn-danger" onclick="doLogout()">CERRAR SESIÓN</button>
-      </section>
+    <section class="ajustes-section">
+      <h3 class="ajustes-section-title">Sesión</h3>
+      <button class="btn-danger" onclick="doLogout()">CERRAR SESIÓN</button>
+    </section>
+  </main>
+</div>
 
-    </main>
-  </div>
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

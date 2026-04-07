@@ -563,3 +563,110 @@ textarea { resize: vertical; }
   .nivel-grid   { grid-template-columns: 1fr 1fr; }
   .sexo-grid    { grid-template-columns: 1fr 1fr 1fr; }
 }
+
+/* ── SEGUIDORES ─────────────────────────── */
+.seguidores-main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.seg-tabs {
+  display:flex; border-bottom:1px solid var(--border);
+  background:var(--bg2); flex-shrink:0;
+}
+.seg-tab {
+  flex:1; padding:14px; background:none; border:none; border-bottom:3px solid transparent;
+  color:var(--text-muted); font-family:var(--font-display); font-size:1rem; letter-spacing:1px;
+  cursor:pointer; transition:all 0.2s;
+}
+.seg-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+#seg-list { flex:1; overflow-y:auto; }
+
+.seg-user-item {
+  display:flex; align-items:center; gap:14px;
+  padding:14px 20px; border-bottom:1px solid var(--border);
+  animation:fadeUp 0.2s ease forwards; opacity:0;
+}
+.seg-user-info { flex:1; }
+.seg-username  { font-weight:700; font-size:0.95rem; color:var(--accent); }
+.seg-realname  { font-size:0.82rem; color:var(--text-muted); }
+.btn-seguir {
+  border:none; border-radius:50px; font-family:var(--font-body);
+  font-size:0.8rem; font-weight:600; padding:6px 16px; cursor:pointer; transition:all 0.15s;
+}
+.btn-seguir.siguiendo {
+  background:transparent; border:1px solid var(--border); color:var(--text-muted);
+}
+.btn-seguir.siguiendo:hover { border-color:#ff5e5e; color:#ff5e5e; }
+.btn-seguir.no-siguiendo  { background:var(--accent); color:#0d0d12; }
+.btn-seguir.no-siguiendo:hover { opacity:0.85; }
+
+/* ── ACCIÓN GRID + BOTÓN SEGUIDORES ──────── */
+.action-card.seguidores::after { background:#00d4ff; }
+.action-card.seguidores:hover  { border-color:#00d4ff; box-shadow:0 8px 30px rgba(0,212,255,0.1); }
+.action-card.seguidores:hover::after { opacity:1; }
+.action-card.seguidores .action-arrow { color:#00d4ff; }
+
+/* ── RUTAS: PASADA / APUNTARSE ───────────── */
+.ruta-card.pasada {
+  opacity:0.45; filter:grayscale(60%);
+}
+.ruta-card.pasada::after {
+  content:'FINALIZADA'; position:absolute; top:14px; right:16px;
+  font-family:var(--font-display); font-size:0.7rem; letter-spacing:1px;
+  color:var(--text-muted); background:var(--bg2); border:1px solid var(--border);
+  border-radius:50px; padding:2px 8px;
+}
+.ruta-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-top:12px; padding-top:10px; border-top:1px solid var(--border);
+}
+.ruta-counter {
+  font-size:0.82rem; color:var(--text-muted);
+  display:flex; align-items:center; gap:5px;
+}
+.ruta-counter strong { color:var(--text); font-weight:700; }
+.btn-apuntarse {
+  border:none; border-radius:50px; padding:7px 18px;
+  font-family:var(--font-body); font-size:0.82rem; font-weight:600;
+  cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:5px;
+}
+.btn-apuntarse.apuntado   { background:rgba(200,255,0,0.15); color:var(--accent); border:1px solid var(--accent); }
+.btn-apuntarse.apuntado:hover { background:rgba(200,255,0,0.05); }
+.btn-apuntarse.no-apuntado { background:var(--accent); color:#0d0d12; }
+.btn-apuntarse.no-apuntado:hover { opacity:0.85; }
+
+.btn-editar-ruta {
+  background:none; border:1px solid var(--border); border-radius:8px;
+  color:var(--text-muted); font-size:0.78rem; padding:5px 12px;
+  cursor:pointer; transition:all 0.15s; margin-left:8px;
+}
+.btn-editar-ruta:hover { border-color:var(--accent); color:var(--accent); }
+
+/* ── OJO SVG ─────────────────────────────── */
+.pass-field { position:relative; display:flex; align-items:center; }
+.pass-field input { flex:1; padding-right:44px; }
+.btn-eye {
+  position:absolute; right:10px; background:none; border:none;
+  cursor:pointer; padding:5px; display:flex; align-items:center; justify-content:center;
+  color:var(--text-muted); transition:color 0.2s;
+}
+.btn-eye:hover { color:var(--text); }
+.btn-eye svg { width:20px; height:20px; display:block; stroke:currentColor; }
+.btn-eye .eye-hide { display:none; }
+
+/* ── USERNAME STATUS ─────────────────────── */
+.username-status { position:absolute; right:12px; display:flex; align-items:center; width:20px; height:20px; }
+.username-status svg { width:18px; height:18px; }
+
+/* ── FECHA NACIMIENTO ────────────────────── */
+.fecha-nacimiento-row { display:grid; grid-template-columns:1fr 1fr 1.4fr; gap:8px; }
+.fecha-col { display:flex; flex-direction:column; gap:3px; }
+.fecha-col input { text-align:center; }
+.fecha-label { font-size:0.68rem; color:var(--text-muted); text-align:center; }
+
+/* ── TELÉFONO ────────────────────────────── */
+.telefono-row { display:flex; gap:8px; }
+.prefijo-select {
+  flex:0 0 auto; max-width:170px; background:var(--bg2); border:1px solid var(--border);
+  border-radius:var(--radius); color:var(--text); font-family:var(--font-body);
+  font-size:0.85rem; padding:12px 10px; outline:none; cursor:pointer; transition:border-color 0.2s;
+}
+.prefijo-select:focus { border-color:var(--accent); }
+.telefono-row input { flex:1; }
