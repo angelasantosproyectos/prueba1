@@ -81,89 +81,133 @@ function selectSexo(btn) {
   selectedSexo = btn.dataset.sexo;
 }
 
+// SVG icons para username status
+const SVG_OK = `<svg viewBox="0 0 24 24" fill="none" stroke="#c8ff00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+const SVG_ERR = `<svg viewBox="0 0 24 24" fill="none" stroke="#ff5e5e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+const SVG_WAIT = `<svg viewBox="0 0 24 24" fill="none" stroke="#888899" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+
 async function verificarUsername() {
   clearTimeout(usernameTimeout);
-  const raw    = document.getElementById('reg-username').value.trim().toLowerCase().replace(/[^a-z0-9._]/g, '');
+  // Limpiar caracteres no permitidos al vuelo
+  const input  = document.getElementById('reg-username');
+  const raw    = input.value.toLowerCase().replace(/[^a-z0-9._]/g, '');
+  input.value  = raw;
+
   const status = document.getElementById('username-status');
   const hint   = document.getElementById('username-hint');
   usernameValido = false;
+  status.innerHTML = '';
 
-  document.getElementById('reg-username').value = raw;
-
-  if (!raw || raw.length < 3) {
-    status.textContent = '';
-    hint.textContent = raw ? 'Mínimo 3 caracteres' : '';
-    hint.style.color = 'var(--text-muted)';
+  if (!raw) { hint.textContent = ''; hint.style.color = 'var(--text-muted)'; return; }
+  if (raw.length < 3) {
+    hint.textContent  = 'Mínimo 3 caracteres';
+    hint.style.color  = 'var(--text-muted)';
     return;
   }
 
-  status.textContent = '⏳';
-  hint.textContent = 'Comprobando disponibilidad...';
-  hint.style.color = 'var(--text-muted)';
+  status.innerHTML  = SVG_WAIT;
+  hint.textContent  = 'Comprobando disponibilidad...';
+  hint.style.color  = 'var(--text-muted)';
 
   usernameTimeout = setTimeout(async () => {
     try {
-      const snap = await db.collection('usuarios').where('username', '==', raw).get();
+      // Buscar en Firestore si existe un doc con username == raw
+      const snap = await db.collection('usuarios')
+        .where('username', '==', raw)
+        .limit(1)
+        .get();
+
       if (snap.empty) {
-        status.textContent = '✅';
-        hint.textContent = '@' + raw + ' está disponible';
-        hint.style.color = 'var(--accent)';
-        usernameValido = true;
+        status.innerHTML  = SVG_OK;
+        hint.textContent  = '@' + raw + ' está disponible';
+        hint.style.color  = 'var(--accent)';
+        usernameValido    = true;
       } else {
-        status.textContent = '❌';
-        hint.textContent = '@' + raw + ' ya está en uso';
-        hint.style.color = '#ff5e5e';
-        usernameValido = false;
+        status.innerHTML  = SVG_ERR;
+        hint.textContent  = '@' + raw + ' ya está en uso';
+        hint.style.color  = '#ff5e5e';
+        usernameValido    = false;
       }
-    } catch(e) { status.textContent = ''; hint.textContent = ''; }
-  }, 500);
+    } catch(e) {
+      console.error('Error verificando username:', e);
+      status.innerHTML  = '';
+      hint.textContent  = 'Error al comprobar. Inténtalo de nuevo.';
+      hint.style.color  = '#ff5e5e';
+    }
+  }, 600);
 }
 
 async function doRegistro() {
-  const username  = document.getElementById('reg-username').value.trim().toLowerCase();
-  const email     = document.getElementById('reg-email').value.trim();
-  const dia       = document.getElementById('reg-dia').value.trim();
-  const mes       = document.getElementById('reg-mes').value.trim();
-  const anio      = document.getElementById('reg-anio').value.trim();
-  const telefono  = document.getElementById('reg-telefono').value.trim();
-  const pass      = document.getElementById('reg-pass').value;
-  const pass2     = document.getElementById('reg-pass2').value;
-  const errEl     = document.getElementById('reg-error');
-  const okEl      = document.getElementById('reg-ok');
+  const username = document.getElementById('reg-username').value.trim().toLowerCase();
+  const email    = document.getElementById('reg-email').value.trim();
+  const diaStr   = document.getElementById('reg-dia').value.trim();
+  const mesStr   = document.getElementById('reg-mes').value.trim();
+  const anioStr  = document.getElementById('reg-anio').value.trim();
+  const prefijo  = document.getElementById('reg-prefijo').value;
+  const telNum   = document.getElementById('reg-telefono').value.trim();
+  const pass     = document.getElementById('reg-pass').value;
+  const pass2    = document.getElementById('reg-pass2').value;
+  const errEl    = document.getElementById('reg-error');
+  const okEl     = document.getElementById('reg-ok');
   errEl.classList.add('hidden'); okEl.classList.add('hidden');
 
-  // Validaciones
-  if (!username || username.length < 3) { errEl.textContent = 'El nombre de usuario debe tener al menos 3 caracteres.'; errEl.classList.remove('hidden'); return; }
-  if (!usernameValido)                   { errEl.textContent = 'El nombre de usuario no está disponible o no lo has comprobado.'; errEl.classList.remove('hidden'); return; }
-  if (!email)                            { errEl.textContent = 'Introduce tu correo electrónico.'; errEl.classList.remove('hidden'); return; }
-  if (!dia || !mes || !anio || anio.length < 4) { errEl.textContent = 'Introduce una fecha de nacimiento válida (DD / MM / AAAA).'; errEl.classList.remove('hidden'); return; }
-  if (!telefono)                         { errEl.textContent = 'Introduce tu número de teléfono.'; errEl.classList.remove('hidden'); return; }
-  if (!selectedSexo)                     { errEl.textContent = 'Selecciona tu sexo.'; errEl.classList.remove('hidden'); return; }
-  if (pass.length < 6)                   { errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.'; errEl.classList.remove('hidden'); return; }
-  if (pass !== pass2)                    { errEl.textContent = 'Las contraseñas no coinciden.'; errEl.classList.remove('hidden'); return; }
+  // Validar username
+  if (!username || username.length < 3) {
+    errEl.textContent = 'El nombre de usuario debe tener al menos 3 caracteres.'; errEl.classList.remove('hidden'); return;
+  }
+  if (!usernameValido) {
+    errEl.textContent = 'El nombre de usuario no está disponible o aún no se ha comprobado.'; errEl.classList.remove('hidden'); return;
+  }
+
+  // Validar email
+  if (!email) { errEl.textContent = 'Introduce tu correo electrónico.'; errEl.classList.remove('hidden'); return; }
+
+  // Validar fecha de nacimiento
+  const dia  = parseInt(diaStr,  10);
+  const mes  = parseInt(mesStr,  10);
+  const anio = parseInt(anioStr, 10);
+  if (!diaStr || !mesStr || !anioStr || anioStr.length < 4) {
+    errEl.textContent = 'Introduce una fecha de nacimiento completa.'; errEl.classList.remove('hidden'); return;
+  }
+  if (isNaN(dia) || dia < 1 || dia > 31)   { errEl.textContent = 'El día debe ser entre 1 y 31.'; errEl.classList.remove('hidden'); return; }
+  if (isNaN(mes) || mes < 1 || mes > 12)   { errEl.textContent = 'El mes debe ser entre 1 y 12.'; errEl.classList.remove('hidden'); return; }
+  if (isNaN(anio) || anio < 1920 || anio > new Date().getFullYear()) {
+    errEl.textContent = 'Introduce un año válido.'; errEl.classList.remove('hidden'); return;
+  }
+  // Comprobar que la fecha existe realmente (ej: 31 de febrero no existe)
+  const fechaObj = new Date(anio, mes - 1, dia);
+  if (fechaObj.getDate() !== dia || fechaObj.getMonth() !== mes - 1) {
+    errEl.textContent = `El día ${dia}/${mes}/${anio} no es una fecha válida.`; errEl.classList.remove('hidden'); return;
+  }
+
+  // Validar teléfono
+  if (!telNum || telNum.length < 6) {
+    errEl.textContent = 'Introduce un número de teléfono válido (sin prefijo).'; errEl.classList.remove('hidden'); return;
+  }
+
+  // Validar sexo
+  if (!selectedSexo) { errEl.textContent = 'Selecciona tu sexo.'; errEl.classList.remove('hidden'); return; }
+
+  // Validar contraseñas
+  if (pass.length < 6)  { errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.'; errEl.classList.remove('hidden'); return; }
+  if (pass !== pass2)   { errEl.textContent = 'Las contraseñas no coinciden.'; errEl.classList.remove('hidden'); return; }
+
+  const telefonoCompleto = prefijo + ' ' + telNum;
+  const fechaFormateada  = `${String(dia).padStart(2,'0')}/${String(mes).padStart(2,'0')}/${anio}`;
 
   try {
-    // Crear usuario en Auth
     const cred = await auth.createUserWithEmailAndPassword(email, pass);
     const user = cred.user;
-
-    // Nombre para mostrar = username
     await user.updateProfile({ displayName: username });
-
-    // Guardar en Firestore
     await db.collection('usuarios').doc(user.uid).set({
-      uid: user.uid,
-      username,
-      nombre: username,
-      email,
-      fechaNacimiento: `${dia.padStart(2,'0')}/${mes.padStart(2,'0')}/${anio}`,
-      telefono,
+      uid: user.uid, username, nombre: username, email,
+      fechaNacimiento: fechaFormateada,
+      telefono: telefonoCompleto,
       sexo: selectedSexo,
       creadoEn: firebase.firestore.FieldValue.serverTimestamp()
     });
-
     okEl.classList.remove('hidden');
-    // El onAuthStateChanged lo lleva a inicio automáticamente
+    // onAuthStateChanged lo llevará al inicio automáticamente
   } catch(e) {
     let msg = 'Error al crear cuenta.';
     if (e.code === 'auth/email-already-in-use') msg = 'Ese correo ya está registrado.';
@@ -186,10 +230,15 @@ function showScreen(id) {
 }
 
 function togglePass(inputId, btn) {
-  const input = document.getElementById(inputId);
+  const input   = document.getElementById(inputId);
   const visible = input.type === 'text';
   input.type = visible ? 'password' : 'text';
-  btn.textContent = visible ? '👁️' : '🚫';
+  const showSvg = btn.querySelector('.eye-show');
+  const hideSvg = btn.querySelector('.eye-hide');
+  if (showSvg && hideSvg) {
+    showSvg.style.display = visible ? 'block' : 'none';
+    hideSvg.style.display = visible ? 'none'  : 'block';
+  }
 }
 
 // ═══════════════════════════════════════════

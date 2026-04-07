@@ -28,7 +28,10 @@
         <label>Contraseña</label>
         <div class="pass-field">
           <input type="password" id="login-pass" placeholder="••••••••" />
-          <button class="btn-eye" type="button" onclick="togglePass('login-pass', this)">👁️</button>
+          <button class="btn-eye" type="button" onclick="togglePass('login-pass', this)" aria-label="Mostrar contraseña">
+            <svg class="eye-icon eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-icon eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
         </div>
       </div>
       <div id="login-error" class="error-msg hidden"></div>
@@ -50,57 +53,112 @@
       </div>
       <p class="login-sub">Crea tu cuenta</p>
 
+      <!-- USERNAME -->
       <div class="field">
-        <label>Nombre de usuario <span class="label-hint">(tu @, debe ser único)</span></label>
+        <label>Nombre de usuario <span class="label-hint">(tu @, único)</span></label>
         <div class="username-field">
           <span class="at-prefix">@</span>
-          <input type="text" id="reg-username" placeholder="tunombre" oninput="verificarUsername()" autocomplete="off" />
-          <span class="username-status" id="username-status"></span>
+          <input type="text" id="reg-username" placeholder="tunombre" oninput="verificarUsername()" autocomplete="off" spellcheck="false" />
+          <span class="username-status" id="username-status">
+            <!-- SVG inyectado por JS -->
+          </span>
         </div>
         <p class="field-hint" id="username-hint"></p>
       </div>
 
+      <!-- EMAIL -->
       <div class="field">
         <label>Correo electrónico</label>
         <input type="email" id="reg-email" placeholder="correo@email.com" />
       </div>
 
+      <!-- FECHA NACIMIENTO -->
       <div class="field">
         <label>Fecha de nacimiento</label>
         <div class="fecha-nacimiento-row">
-          <input type="number" id="reg-dia" placeholder="DD" min="1" max="31" />
-          <input type="number" id="reg-mes" placeholder="MM" min="1" max="12" />
-          <input type="number" id="reg-anio" placeholder="AAAA" min="1900" max="2099" />
+          <div class="fecha-col">
+            <input type="number" id="reg-dia" placeholder="Día" min="1" max="31"
+              oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,2)" />
+            <span class="fecha-label">1 – 31</span>
+          </div>
+          <div class="fecha-col">
+            <input type="number" id="reg-mes" placeholder="Mes" min="1" max="12"
+              oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,2)" />
+            <span class="fecha-label">1 – 12</span>
+          </div>
+          <div class="fecha-col">
+            <input type="number" id="reg-anio" placeholder="Año" min="1920" max="2099"
+              oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" />
+            <span class="fecha-label">4 dígitos</span>
+          </div>
         </div>
       </div>
 
+      <!-- TELÉFONO CON PREFIJO -->
       <div class="field">
         <label>Número de teléfono</label>
-        <input type="tel" id="reg-telefono" placeholder="+34 600 000 000" />
+        <div class="telefono-row">
+          <select id="reg-prefijo" class="prefijo-select">
+            <option value="+34" data-flag="🇪🇸">🇪🇸 +34 España</option>
+            <option value="+1"  data-flag="🇺🇸">🇺🇸 +1 EE.UU.</option>
+            <option value="+44" data-flag="🇬🇧">🇬🇧 +44 Reino Unido</option>
+            <option value="+33" data-flag="🇫🇷">🇫🇷 +33 Francia</option>
+            <option value="+49" data-flag="🇩🇪">🇩🇪 +49 Alemania</option>
+            <option value="+39" data-flag="🇮🇹">🇮🇹 +39 Italia</option>
+            <option value="+351" data-flag="🇵🇹">🇵🇹 +351 Portugal</option>
+            <option value="+52" data-flag="🇲🇽">🇲🇽 +52 México</option>
+            <option value="+54" data-flag="🇦🇷">🇦🇷 +54 Argentina</option>
+            <option value="+56" data-flag="🇨🇱">🇨🇱 +56 Chile</option>
+            <option value="+57" data-flag="🇨🇴">🇨🇴 +57 Colombia</option>
+            <option value="+58" data-flag="🇻🇪">🇻🇪 +58 Venezuela</option>
+            <option value="+51" data-flag="🇵🇪">🇵🇪 +51 Perú</option>
+            <option value="+593" data-flag="🇪🇨">🇪🇨 +593 Ecuador</option>
+            <option value="+55" data-flag="🇧🇷">🇧🇷 +55 Brasil</option>
+            <option value="+598" data-flag="🇺🇾">🇺🇾 +598 Uruguay</option>
+            <option value="+595" data-flag="🇵🇾">🇵🇾 +595 Paraguay</option>
+            <option value="+591" data-flag="🇧🇴">🇧🇴 +591 Bolivia</option>
+            <option value="+34" data-flag="🇲🇦">🇲🇦 +212 Marruecos</option>
+            <option value="+81" data-flag="🇯🇵">🇯🇵 +81 Japón</option>
+            <option value="+86" data-flag="🇨🇳">🇨🇳 +86 China</option>
+          </select>
+          <input type="tel" id="reg-telefono" placeholder="600 000 000"
+            oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,9)"
+            maxlength="9" />
+        </div>
+        <p class="field-hint">Solo dígitos, sin el prefijo</p>
       </div>
 
+      <!-- SEXO -->
       <div class="field">
         <label>Sexo</label>
         <div class="sexo-grid">
-          <button class="sexo-btn" data-sexo="hombre" onclick="selectSexo(this)">👨 Hombre</button>
-          <button class="sexo-btn" data-sexo="mujer"  onclick="selectSexo(this)">👩 Mujer</button>
-          <button class="sexo-btn" data-sexo="otro"   onclick="selectSexo(this)">🧑 Otro</button>
+          <button class="sexo-btn" data-sexo="hombre" onclick="selectSexo(this)">Hombre</button>
+          <button class="sexo-btn" data-sexo="mujer"  onclick="selectSexo(this)">Mujer</button>
+          <button class="sexo-btn" data-sexo="otro"   onclick="selectSexo(this)">Otro</button>
         </div>
       </div>
 
+      <!-- CONTRASEÑA -->
       <div class="field">
         <label>Contraseña</label>
         <div class="pass-field">
           <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" />
-          <button class="btn-eye" type="button" onclick="togglePass('reg-pass', this)">👁️</button>
+          <button class="btn-eye" type="button" onclick="togglePass('reg-pass', this)" aria-label="Mostrar contraseña">
+            <svg class="eye-icon eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-icon eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
         </div>
       </div>
 
+      <!-- REPETIR CONTRASEÑA -->
       <div class="field">
         <label>Repetir contraseña</label>
         <div class="pass-field">
           <input type="password" id="reg-pass2" placeholder="Repite la contraseña" />
-          <button class="btn-eye" type="button" onclick="togglePass('reg-pass2', this)">👁️</button>
+          <button class="btn-eye" type="button" onclick="togglePass('reg-pass2', this)" aria-label="Mostrar contraseña">
+            <svg class="eye-icon eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-icon eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
         </div>
       </div>
 
@@ -354,21 +412,30 @@
           <label>Contraseña actual</label>
           <div class="pass-field">
             <input type="password" id="aj-pass-actual" placeholder="Tu contraseña actual" />
-            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-actual', this)">👁️</button>
+            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-actual', this)" aria-label="Mostrar contraseña">
+            <svg class="eye-icon eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-icon eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
           </div>
         </div>
         <div class="field">
           <label>Nueva contraseña</label>
           <div class="pass-field">
             <input type="password" id="aj-pass-nueva" placeholder="Mínimo 6 caracteres" />
-            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-nueva', this)">👁️</button>
+            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-nueva', this)" aria-label="Mostrar contraseña">
+            <svg class="eye-icon eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-icon eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
           </div>
         </div>
         <div class="field">
           <label>Repetir nueva contraseña</label>
           <div class="pass-field">
             <input type="password" id="aj-pass-repite" placeholder="Repite la nueva contraseña" />
-            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-repite', this)">👁️</button>
+            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-repite', this)" aria-label="Mostrar contraseña">
+            <svg class="eye-icon eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-icon eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
           </div>
         </div>
         <div id="aj-pass-ok"  class="ok-msg hidden">¡Contraseña actualizada! ✓</div>
