@@ -178,6 +178,9 @@
       <button class="action-card seguidores" onclick="showScreen('screen-seguidores');loadSeguidores()">
         <span class="action-icon">👥</span><span class="action-label">SEGUIDORES</span><span class="action-arrow">→</span>
       </button>
+      <button class="action-card tarjetas" onclick="showScreen('screen-tarjetas');loadTarjetas()">
+        <span class="action-icon">🃏</span><span class="action-label">TARJETAS</span><span class="action-arrow">→</span>
+      </button>
       <button class="action-card ajustes" onclick="showScreen('screen-ajustes');loadAjustes()">
         <span class="action-icon">⚙️</span><span class="action-label">AJUSTES</span><span class="action-arrow">→</span>
       </button>
@@ -312,6 +315,20 @@
   </main>
 </div>
 
+
+<!-- ════════════════ TARJETAS USUARIOS ════════════════ -->
+<div id="screen-tarjetas" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <span class="logo-title small">TARJETAS</span>
+    <div></div>
+  </header>
+  <main class="tarjetas-main">
+    <div id="tarjetas-grid"></div>
+    <div id="tarjetas-empty" class="empty-msg hidden">Completa tu perfil para ver tarjetas 🛼</div>
+  </main>
+</div>
+
 <!-- ════════════════ CONVERSACIÓN ════════════════ -->
 <div id="screen-conversacion" class="screen">
   <header class="top-bar">
@@ -349,7 +366,6 @@
         </div>
       </div>
       <div class="field"><label>Nombre para mostrar</label><input type="text" id="aj-nombre" placeholder="Tu nombre visible"/></div>
-      <div class="field"><label>Bio (opcional)</label><textarea id="aj-bio" rows="2" placeholder="Cuéntanos algo sobre ti..."></textarea></div>
       <div class="field">
         <label>Nivel de patinaje</label>
         <div class="nivel-grid">
@@ -361,6 +377,56 @@
       </div>
       <div id="aj-ok" class="ok-msg hidden">¡Perfil guardado! ✓</div>
       <button class="btn-primary" onclick="guardarPerfil()">GUARDAR PERFIL</button>
+    </section>
+
+
+    <section class="ajustes-section">
+      <h3 class="ajustes-section-title">Datos personales</h3>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:4px">Estos datos te ayudan a encontrar personas afines. Solo los que completen este apartado aparecen en Tarjetas.</p>
+
+      <div class="field"><label>Descripción / Bio</label>
+        <textarea id="aj-bio" rows="2" placeholder="Cuéntanos algo sobre ti..."></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Hobby favorito</label><input type="text" id="aj-hobby" placeholder="Ej: escalada"/></div>
+        <div class="field"><label>Tipo de música</label><input type="text" id="aj-musica" placeholder="Ej: indie"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Animal favorito</label><input type="text" id="aj-animal" placeholder="Ej: perro"/></div>
+        <div class="field"><label>Color favorito</label><input type="text" id="aj-color" placeholder="Ej: azul"/></div>
+      </div>
+      <div class="field"><label>Estudios</label><input type="text" id="aj-estudios" placeholder="Ej: Diseño gráfico"/></div>
+
+      <div class="field"><label>Estado civil / familiar</label>
+        <select id="aj-relacion-estado">
+          <option value="">— Selecciona —</option>
+          <option value="soltero/a">Soltero/a</option>
+          <option value="con pareja">Con pareja</option>
+          <option value="casado/a">Casado/a</option>
+          <option value="divorciado/a">Divorciado/a</option>
+          <option value="con hijos">Con hijos</option>
+          <option value="sin hijos">Sin hijos</option>
+        </select>
+      </div>
+      <div class="field"><label>Me gustan</label>
+        <select id="aj-gustan-me">
+          <option value="">— Selecciona —</option>
+          <option value="hombres">Hombres</option>
+          <option value="mujeres">Mujeres</option>
+          <option value="ambos">Ambos</option>
+          <option value="otros">Otros</option>
+        </select>
+      </div>
+      <div class="field"><label>Busco</label>
+        <select id="aj-relacion-busco">
+          <option value="">— Selecciona —</option>
+          <option value="amistad">Amistad</option>
+          <option value="amor">Amor</option>
+          <option value="rollo puntual">Rollo puntual</option>
+          <option value="lo que surja">Lo que surja</option>
+          <option value="conocer gente">Conocer gente</option>
+        </select>
+      </div>
     </section>
 
     <section class="ajustes-section">
