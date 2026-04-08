@@ -91,7 +91,13 @@ function selectSexo(btn){document.querySelectorAll('.sexo-btn').forEach(b=>b.cla
 async function verificarUsername(){
   clearTimeout(usernameTimeout);
   const input=document.getElementById('reg-username');
-  const raw=input.value.toLowerCase().replace(/[^a-z0-9._]/g,''); input.value=raw;
+  // Solo letras sin tilde, números y guión bajo. Sin espacios, tildes ni símbolos.
+  let raw=input.value.toLowerCase();
+  // Quitar tildes/acentos
+  raw=raw.normalize('NFD').replace(/[̀-ͯ]/g,'');
+  // Solo a-z, 0-9 y _
+  raw=raw.replace(/[^a-z0-9_]/g,'');
+  input.value=raw;
   const status=document.getElementById('username-status'); const hint=document.getElementById('username-hint');
   usernameValido=false; status.innerHTML='';
   if(!raw){hint.textContent='';return;}
@@ -110,7 +116,8 @@ async function verificarUsername(){
 }
 
 async function doRegistro(){
-  const username=document.getElementById('reg-username').value.trim().toLowerCase();
+  let username=document.getElementById('reg-username').value.toLowerCase();
+  username=username.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9_]/g,'').trim();
   const email=document.getElementById('reg-email').value.trim();
   const diaStr=document.getElementById('reg-dia').value.trim();
   const mesStr=document.getElementById('reg-mes').value.trim();
@@ -427,38 +434,102 @@ function formatFechaEvento(iso){
   return `${parseInt(d)} ${meses[parseInt(m)-1]} ${y}`;
 }
 
+// Colores para las cards de eventos (ciclicos)
+const EVENTO_COLORES=[
+  {bg:'#1a1a2e',accent:'#c8ff00',border:'rgba(200,255,0,0.25)'},  // verde neon
+  {bg:'#1a1026',accent:'#b06aff',border:'rgba(176,106,255,0.25)'}, // morado
+  {bg:'#1a1c0e',accent:'#7ed321',border:'rgba(126,211,33,0.25)'},  // verde lima
+  {bg:'#1a0e1a',accent:'#ff5eb3',border:'rgba(255,94,179,0.25)'},  // rosa
+  {bg:'#0e1a1a',accent:'#00d4ff',border:'rgba(0,212,255,0.25)'},   // azul cyan
+  {bg:'#1a110e',accent:'#ff8c00',border:'rgba(255,140,0,0.25)'},   // naranja
+];
+
+function formatFechaEventoCorta(iso){
+  if(!iso)return'';
+  const[y,m,d]=iso.split('-');
+  const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return `${parseInt(d)} ${meses[parseInt(m)-1]}`;
+}
+
 async function loadEventos(){
   const listEl=document.getElementById('eventos-list'); const emptyEl=document.getElementById('eventos-empty');
   listEl.innerHTML='<p style="color:var(--text-muted);padding:20px">Cargando eventos...</p>'; emptyEl.classList.add('hidden');
   const btnCrear=document.getElementById('btn-crear-evento');
   if(btnCrear)btnCrear.style.display=esAdmin()?'inline-flex':'none';
   try{
-    const snap=await db.collection('eventos').orderBy('fechaInicio','asc').get();
+    // Sin orderBy para evitar necesitar índice
+    const snap=await db.collection('eventos').get();
     if(snap.empty){listEl.innerHTML='';emptyEl.classList.remove('hidden');return;}
+    // Ordenar en cliente por fechaInicio
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(a.fechaInicio||'').localeCompare(b.fechaInicio||''));
     listEl.innerHTML='';
-    snap.docs.forEach((doc,i)=>{
-      const ev={id:doc.id,...doc.data()};
-      const card=document.createElement('div'); card.className='evento-card'; card.style.animationDelay=`${i*0.07}s`;
-      const fechaStr=ev.fechaFin&&ev.fechaFin!==ev.fechaInicio
-        ?`${formatFechaEvento(ev.fechaInicio)} – ${formatFechaEvento(ev.fechaFin)}`
-        :formatFechaEvento(ev.fechaInicio);
-      const itHTML=(ev.itinerario&&ev.itinerario.length)?`
-        <div class="itinerario-block">
-          <p class="itinerario-titulo">📍 Itinerario</p>
-          ${ev.itinerario.map(it=>`<div class="itinerario-item-display"><span class="it-hora">${it.hora||''}</span><span class="it-lugar">${it.lugar}</span></div>`).join('')}
-        </div>`:'';
-      const btnEditar=esAdmin()?`<button class="btn-editar-evento" onclick="editarEvento('${ev.id}')">✏️ Editar evento</button>`:'';
+    docs.forEach((ev,i)=>{
+      const col=EVENTO_COLORES[i%EVENTO_COLORES.length];
+      // Fecha legible
+      let fechaStr='';
+      if(ev.fechaInicio&&ev.fechaFin&&ev.fechaFin!==ev.fechaInicio){
+        const[yi,mi,di]=ev.fechaInicio.split('-'); const[yf,mf,df]=ev.fechaFin.split('-');
+        const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        fechaStr=`${parseInt(di)}, ${parseInt(df>di?di:di)} y ${parseInt(df)} de ${meses[parseInt(mf)-1]}`;
+        // Simplificar: si mismo mes, "X, Y y Z de Mes"
+        const diasInicio=parseInt(di),diasFin=parseInt(df);
+        const dias=[];for(let x=diasInicio;x<=diasFin;x++)dias.push(x);
+        if(dias.length<=3)fechaStr=dias.join(', ')+' de '+meses[parseInt(mf)-1];
+        else fechaStr=`${formatFechaEventoCorta(ev.fechaInicio)} – ${formatFechaEventoCorta(ev.fechaFin)}`;
+      } else if(ev.fechaInicio){
+        fechaStr=formatFechaEvento(ev.fechaInicio);
+      }
+
+      const card=document.createElement('div');
+      card.className='evento-card-new';
+      card.style.cssText=`background:${col.bg};border-color:${col.border};`;
+      card.style.animationDelay=`${i*0.07}s`;
+
+      // Itinerario HTML
+      let itHTML='';
+      if(ev.itinerario&&ev.itinerario.length){
+        itHTML=`<div class="itinerario-block" style="border-color:${col.border}">
+          <p class="itinerario-titulo" style="color:${col.accent}">📍 Itinerario</p>
+          ${ev.itinerario.map(it=>`
+            <div class="itinerario-item-display">
+              <span class="it-hora" style="color:${col.accent}">${it.hora||''}</span>
+              <span class="it-lugar">${escapeHtml(it.lugar)}</span>
+            </div>`).join('')}
+        </div>`;
+      }
+
+      const btnEditar=esAdmin()?`<button class="btn-editar-evento" onclick="editarEvento('${ev.id}')" style="border-color:${col.border};color:${col.accent}">✏️ Editar</button>`:'';
+
+      const detalleId='ev-detalle-'+ev.id;
       card.innerHTML=`
-        <h3 class="evento-nombre">${ev.nombre}</h3>
-        <div class="evento-meta">
-          <span class="evento-tag ciudad">📍 ${ev.ciudad}</span>
-          <span class="evento-tag">📅 ${fechaStr}</span>
+        <div class="evento-header" onclick="toggleEventoDetalle('${detalleId}',this)">
+          <div class="evento-header-info">
+            <h3 class="evento-nombre" style="color:${col.accent}">${ev.nombre}</h3>
+            <div class="evento-subtitulo">
+              <span class="evento-tag-mini" style="color:${col.accent};border-color:${col.border}">📍 ${ev.ciudad}</span>
+              <span class="evento-tag-mini" style="opacity:0.8">📅 ${fechaStr}</span>
+            </div>
+          </div>
+          <span class="evento-chevron" style="color:${col.accent}">▼</span>
         </div>
-        ${ev.descripcion?`<p class="evento-desc">${ev.descripcion}</p>`:''}
-        ${itHTML}${btnEditar}`;
+        <div class="evento-detalle" id="${detalleId}" style="display:none">
+          ${ev.descripcion?`<p class="evento-desc">${escapeHtml(ev.descripcion)}</p>`:''}
+          ${itHTML}
+          ${btnEditar}
+        </div>`;
       listEl.appendChild(card);
     });
   }catch(e){listEl.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;}
+}
+
+function toggleEventoDetalle(id,headerEl){
+  const detalle=document.getElementById(id);
+  const chevron=headerEl.querySelector('.evento-chevron');
+  if(!detalle)return;
+  const abierto=detalle.style.display!=='none';
+  detalle.style.display=abierto?'none':'block';
+  if(chevron)chevron.textContent=abierto?'▼':'▲';
 }
 
 async function editarEvento(id){
@@ -829,6 +900,11 @@ async function loadAjustes(){
       setSelectVal('aj-relacion-estado',d.relacionEstado);
       setSelectVal('aj-gustan-me',d.gustanMe);
       setSelectVal('aj-relacion-busco',d.relacionBusco);
+      // Nuevos campos datos personales
+      setVal('aj-descripcion',d.descripcion||d.bio||'');
+      setVal('aj-edad',d.edad||'');
+      setSelectVal('aj-sexo',d.sexo||'');
+      setVal('aj-telefono-display',d.telefono||'');
     }else{
       const n=getNombre(currentUser);
       document.getElementById('aj-nombre').value=n;
@@ -864,13 +940,17 @@ async function guardarPerfil(){
 
 async function guardarDatosPersonales(){
   const okEl=document.getElementById('aj-datos-ok');okEl.classList.add('hidden');
+  const edadVal=parseInt(getVal('aj-edad'),10)||0;
   const datos={
+    descripcion:getVal('aj-descripcion'),
+    bio:getVal('aj-descripcion'), // sincronizar bio con descripcion
+    ...(edadVal>=18&&edadVal<=120?{edad:edadVal}:{}),
+    ...(getVal('aj-sexo')?{sexo:getVal('aj-sexo')}:{}),
     hobby:getVal('aj-hobby'),musica:getVal('aj-musica'),animal:getVal('aj-animal'),
     color:getVal('aj-color'),estudios:getVal('aj-estudios'),
     relacionEstado:getVal('aj-relacion-estado'),
     gustanMe:getVal('aj-gustan-me'),
     relacionBusco:getVal('aj-relacion-busco'),
-    descripcion:getVal('aj-bio')||''  // sincronizar bio con descripcion
   };
   try{
     await db.collection('usuarios').doc(currentUser.uid).set(datos,{merge:true});
