@@ -105,10 +105,7 @@
 <div id="screen-inicio" class="screen">
   <header class="top-bar">
     <span class="logo-title small">RUTASKATE</span>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <button class="theme-toggle" id="theme-toggle-inicio" onclick="toggleTheme()" title="Cambiar tema">☀️</button>
-      <div class="user-pill"><span id="user-display">—</span><button class="btn-logout" onclick="doLogout()">✕</button></div>
-    </div>
+    <div class="user-pill"><span id="user-display">—</span><button class="btn-logout" onclick="doLogout()">✕</button></div>
   </header>
   <main class="home-main">
     <div class="hero-text"><p class="hero-label">¿Qué hacemos hoy?</p><h2 class="hero-heading">ELIGE TU<br>MOVIMIENTO</h2></div>
@@ -122,7 +119,6 @@
       <button class="action-card seguidores" onclick="showScreen('screen-seguidores');loadSeguidores()"><span class="action-icon">👥</span><span class="action-label">SEGUIDORES</span><span class="action-arrow">→</span></button>
       <button class="action-card solicitudes" onclick="showScreen('screen-solicitudes');loadSolicitudes()"><span class="action-icon">🔔</span><span class="action-label">SOLICITUDES</span><span class="chat-badge hidden" id="home-sol-badge">0</span><span class="action-arrow">→</span></button>
       <button class="action-card ajustes" onclick="showScreen('screen-ajustes');loadAjustes()"><span class="action-icon">⚙️</span><span class="action-label">AJUSTES</span><span class="action-arrow">→</span></button>
-      <button class="action-card admin" id="btn-admin-panel" onclick="showScreen('screen-admin');loadAdminPanel()"><span class="action-icon">🛠️</span><span class="action-label">PANEL<br>ADMIN</span><span class="action-arrow">→</span></button>
     </div>
   </main>
 </div>
@@ -503,92 +499,11 @@
       </div>
     </div>
 
-    <!-- Tema y colores (desplegable) -->
-    <div class="aj-accordion">
-      <button class="aj-accordion-header" onclick="toggleAccordion('acc-tema',this)">
-        <span>🎨 Tema y colores</span><span class="aj-chevron">▼</span>
-      </button>
-      <div class="aj-accordion-body hidden" id="acc-tema">
-        <div class="field">
-          <label>Modo de visualización</label>
-          <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">
-            <button class="btn-secondary" id="aj-theme-btn" onclick="toggleTheme()" style="width:auto;padding:10px 20px;display:flex;align-items:center;gap:8px;">
-              <span id="aj-theme-icon">🌙</span>
-              <span id="aj-theme-label">Cambiar a modo claro</span>
-            </button>
-          </div>
-        </div>
-        <div class="field" style="margin-top:16px;">
-          <label>Color de acento</label>
-          <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px;">El color se aplica en toda la app y se guarda en tu cuenta.</p>
-          <div class="color-picker-grid" id="color-picker-grid">
-            <button class="color-swatch active" data-color="morado"   onclick="seleccionarColor('morado',this)"   style="background:#7b5fff;" title="Morado"><span class="swatch-check">✓</span></button>
-            <button class="color-swatch"        data-color="azul"     onclick="seleccionarColor('azul',this)"     style="background:#2563eb;" title="Azul"><span class="swatch-check">✓</span></button>
-            <button class="color-swatch"        data-color="verde"    onclick="seleccionarColor('verde',this)"    style="background:#16a34a;" title="Verde"><span class="swatch-check">✓</span></button>
-            <button class="color-swatch"        data-color="rosa"     onclick="seleccionarColor('rosa',this)"     style="background:#db2777;" title="Rosa"><span class="swatch-check">✓</span></button>
-            <button class="color-swatch"        data-color="rojo"     onclick="seleccionarColor('rojo',this)"     style="background:#dc2626;" title="Rojo"><span class="swatch-check">✓</span></button>
-            <button class="color-swatch"        data-color="amarillo" onclick="seleccionarColor('amarillo',this)" style="background:#ca8a04;" title="Amarillo"><span class="swatch-check">✓</span></button>
-            <button class="color-swatch"        data-color="naranja"  onclick="seleccionarColor('naranja',this)"  style="background:#ea580c;" title="Naranja"><span class="swatch-check">✓</span></button>
-            <button class="color-swatch"        data-color="cian"     onclick="seleccionarColor('cian',this)"     style="background:#06b6d4;" title="Cian"><span class="swatch-check">✓</span></button>
-          </div>
-          <div id="aj-color-ok" class="ok-msg hidden" style="margin-top:10px;">¡Color guardado! ✓</div>
-        </div>
-      </div>
-    </div>
-
     <!-- Cerrar sesión -->
     <div style="padding:8px 0">
       <button class="btn-danger" style="width:100%" onclick="doLogout()">🚪 CERRAR SESIÓN</button>
     </div>
 
-  </main>
-</div>
-
-<!-- ════ PANEL ADMIN ════ -->
-<div id="screen-admin" class="screen">
-  <header class="top-bar">
-    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
-    <span class="logo-title small">PANEL ADMIN</span>
-    <div></div>
-  </header>
-  <main class="ajustes-main">
-    <div style="padding:12px 0 8px;color:var(--text-muted);font-size:0.82rem;">Panel de administración — solo visible para admins.</div>
-
-    <div class="aj-accordion">
-      <button class="aj-accordion-header" onclick="toggleAccordion('acc-admin-users',this);adminLoadUsers()">
-        <span>👥 Usuarios registrados</span><span class="aj-chevron">▼</span>
-      </button>
-      <div class="aj-accordion-body hidden" id="acc-admin-users">
-        <div id="admin-users-list"><p style="color:var(--text-muted);font-size:0.85rem;">Haz clic para cargar...</p></div>
-      </div>
-    </div>
-
-    <div class="aj-accordion">
-      <button class="aj-accordion-header" onclick="toggleAccordion('acc-admin-rutas',this);adminLoadRutas()">
-        <span>🗺️ Todas las rutas</span><span class="aj-chevron">▼</span>
-      </button>
-      <div class="aj-accordion-body hidden" id="acc-admin-rutas">
-        <div id="admin-rutas-list"><p style="color:var(--text-muted);font-size:0.85rem;">Haz clic para cargar...</p></div>
-      </div>
-    </div>
-
-    <div class="aj-accordion">
-      <button class="aj-accordion-header" onclick="toggleAccordion('acc-admin-eventos',this);adminLoadEventos()">
-        <span>🎪 Todos los eventos</span><span class="aj-chevron">▼</span>
-      </button>
-      <div class="aj-accordion-body hidden" id="acc-admin-eventos">
-        <div id="admin-eventos-list"><p style="color:var(--text-muted);font-size:0.85rem;">Haz clic para cargar...</p></div>
-      </div>
-    </div>
-
-    <div class="aj-accordion">
-      <button class="aj-accordion-header" onclick="toggleAccordion('acc-admin-stats',this);adminLoadStats()">
-        <span>📊 Estadísticas</span><span class="aj-chevron">▼</span>
-      </button>
-      <div class="aj-accordion-body hidden" id="acc-admin-stats">
-        <div id="admin-stats-content"><p style="color:var(--text-muted);font-size:0.85rem;">Haz clic para cargar...</p></div>
-      </div>
-    </div>
   </main>
 </div>
 
