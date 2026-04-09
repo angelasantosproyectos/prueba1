@@ -14,6 +14,35 @@
   --font-body: 'DM Sans', sans-serif;
 }
 
+/* TEMA CLARO */
+body.tema-claro {
+  --bg: #f2f2f7;
+  --bg2: #ffffff;
+  --surface: #ffffff;
+  --surface2: #e8e8f0;
+  --accent: #5a8a00;
+  --accent2: #d44000;
+  --purple: #5a3fcf;
+  --text: #1a1a2e;
+  --text-muted: #666677;
+  --border: rgba(0,0,0,0.1);
+}
+body.tema-claro .login-bg {
+  background:
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(90,138,0,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(212,64,0,0.06) 0%, transparent 60%),
+    var(--bg);
+}
+body.tema-claro .msg-bubble.out { background:var(--purple); color:#fff; }
+body.tema-claro .tarjeta-avatar,
+body.tema-claro .chat-avatar,
+body.tema-claro .perfil-u-avatar { background:linear-gradient(135deg,var(--purple),#1e78ff); }
+body.tema-claro .btn-send { background:var(--purple); }
+body.tema-claro .chat-unread { background:var(--purple); }
+body.tema-claro .btn-primary { background:var(--accent); color:#fff; }
+body.tema-claro .logo-title { color:var(--accent); }
+body.tema-claro .nivel-badge { filter:brightness(0.9); }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -908,3 +937,83 @@ input[readonly] { opacity:0.55; cursor:not-allowed; }
 .action-card.solicitudes:hover { border-color:#ff8c00; box-shadow:0 8px 30px rgba(255,140,0,0.1); }
 .action-card.solicitudes:hover::after { opacity:1; }
 .action-card.solicitudes .action-arrow { color:#ff8c00; }
+
+/* ── CANCELADA: sello estilo "CANCELLED" ─── */
+.ruta-card.cancelada {
+  border-color: rgba(220,0,0,0.5) !important;
+  box-shadow: 0 0 0 2px rgba(220,0,0,0.25);
+}
+.ruta-card.cancelada * { color:var(--text-muted) !important; }
+.ruta-card.cancelada a { pointer-events:none; }
+.cancelada-overlay {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; pointer-events:none;
+  z-index:5;
+}
+.cancelada-stamp {
+  transform:rotate(-12deg);
+  border:5px solid rgba(220,0,0,0.85);
+  border-radius:6px;
+  padding:6px 18px;
+  color:rgba(220,0,0,0.88);
+  font-family:var(--font-display);
+  font-size:2rem; letter-spacing:4px;
+  text-shadow:0 0 8px rgba(220,0,0,0.3);
+  background:rgba(220,0,0,0.08);
+  white-space:nowrap;
+}
+.cancelada-motivo-text {
+  transform:rotate(-12deg);
+  font-size:0.72rem; color:rgba(220,0,0,0.7);
+  margin-top:4px; font-style:italic; text-align:center; max-width:180px;
+}
+.btn-deshacer-cancelar {
+  background:none; border:1px solid rgba(255,94,0,0.4);
+  border-radius:8px; color:#ff8c00; font-size:0.78rem;
+  padding:5px 12px; cursor:pointer; margin-left:8px; transition:all 0.15s;
+}
+.btn-deshacer-cancelar:hover { background:rgba(255,140,0,0.1); }
+
+/* ── ITINERARIO DE EVENTOS (con día) ─────── */
+.itinerario-row-new {
+  display:grid; grid-template-columns:auto 80px 1fr;
+  gap:8px; margin-bottom:8px; align-items:center;
+}
+.it-dia-select { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); color:var(--text); font-family:var(--font-body); font-size:0.85rem; padding:10px 8px; }
+.it-desc-input { grid-column:2/-1; margin-top:4px; font-size:0.85rem; }
+.itinerario-bloque {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:var(--radius); padding:12px; margin-bottom:8px;
+  display:flex; flex-direction:column; gap:6px;
+}
+
+/* ── SWIPE TABS ──────────────────────────── */
+.swipe-container { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+.swipe-track { display:flex; flex:1; transition:transform 0.3s ease; }
+.swipe-panel { flex:0 0 100%; overflow-y:auto; }
+
+/* ── APARIENCIA en Ajustes ───────────────── */
+.tema-toggle-wrap { display:flex; align-items:center; justify-content:space-between; padding:4px 0; }
+.tema-toggle-label { font-size:0.95rem; color:var(--text); }
+.tema-switch {
+  position:relative; display:inline-block; width:52px; height:28px;
+}
+.tema-switch input { opacity:0; width:0; height:0; }
+.tema-slider {
+  position:absolute; cursor:pointer; inset:0;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:28px; transition:background 0.3s;
+}
+.tema-slider:before {
+  content:''; position:absolute; height:20px; width:20px;
+  left:4px; bottom:3px; border-radius:50%;
+  background:var(--text-muted); transition:transform 0.3s, background 0.3s;
+}
+.tema-switch input:checked + .tema-slider { background:rgba(200,255,0,0.15); border-color:var(--accent); }
+.tema-switch input:checked + .tema-slider:before { transform:translateX(24px); background:var(--accent); }
+
+/* ── SEGUIDORES: click en perfil ─────────── */
+.seg-user-item { cursor:default; }
+.seg-user-nombre-link { cursor:pointer; text-decoration:underline dotted; text-underline-offset:3px; }
+.seg-user-nombre-link:hover { color:var(--accent); }
+

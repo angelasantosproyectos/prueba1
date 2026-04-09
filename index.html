@@ -213,8 +213,8 @@
     <div class="field"><label>Nombre del evento</label><input type="text" id="ev-nombre" placeholder="Ej: ZARAGOZA MEGATRIP"/></div>
     <div class="field"><label>Ciudad</label><input type="text" id="ev-ciudad" placeholder="Ej: Zaragoza"/></div>
     <div class="field-row">
-      <div class="field"><label>Fecha inicio</label><input type="date" id="ev-fecha-inicio"/></div>
-      <div class="field"><label>Fecha fin</label><input type="date" id="ev-fecha-fin"/></div>
+      <div class="field"><label>Fecha inicio</label><input type="date" id="ev-fecha-inicio" onchange="onFechaEventoChange()"/></div>
+      <div class="field"><label>Fecha fin</label><input type="date" id="ev-fecha-fin" onchange="onFechaEventoChange()"/></div>
     </div>
     <div class="field"><label>Descripción</label><textarea id="ev-desc" placeholder="Descripción del evento..." rows="3"></textarea></div>
     <div class="field">
@@ -236,13 +236,23 @@
     <span class="logo-title small">SEGUIDORES</span>
     <div></div>
   </header>
-  <main class="seguidores-main">
-    <div class="seg-tabs">
-      <button class="seg-tab active" onclick="switchSegTab('siguiendo',this)">Siguiendo</button>
-      <button class="seg-tab" onclick="switchSegTab('seguidores',this)">Seguidores</button>
+  <main class="seguidores-main" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+    <div class="seg-tabs" id="seg-tabs-bar">
+      <button class="seg-tab active" onclick="swipeSegTo(0)">Siguiendo</button>
+      <button class="seg-tab" onclick="swipeSegTo(1)">Seguidores</button>
     </div>
-    <div id="seg-list"></div>
-    <div id="seg-empty" class="empty-msg hidden">Nada aquí aún 🛼</div>
+    <div class="swipe-container" id="seg-swipe-container" style="touch-action:pan-y">
+      <div class="swipe-track" id="seg-swipe-track">
+        <div class="swipe-panel" id="seg-panel-0">
+          <div id="seg-list-0"></div>
+          <div id="seg-empty-0" class="empty-msg hidden">Aún no sigues a nadie 🛼</div>
+        </div>
+        <div class="swipe-panel" id="seg-panel-1">
+          <div id="seg-list-1"></div>
+          <div id="seg-empty-1" class="empty-msg hidden">Aún no tienes seguidores 🛼</div>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -253,14 +263,28 @@
     <span class="logo-title small">SOLICITUDES</span>
     <div></div>
   </header>
-  <main class="seguidores-main">
-    <div class="seg-tabs">
-      <button class="seg-tab active" onclick="switchSolTab('seguidores',this)">Nuevos seguidores</button>
-      <button class="seg-tab" onclick="switchSolTab('rutas',this)">Participar en rutas</button>
-      <button class="seg-tab" onclick="switchSolTab('colabs',this)">Colaboraciones</button>
+  <main class="seguidores-main" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+    <div class="seg-tabs" id="sol-tabs-bar">
+      <button class="seg-tab active" onclick="swipeSolTo(0)">Nuevos seguidores</button>
+      <button class="seg-tab" onclick="swipeSolTo(1)">Participar en rutas</button>
+      <button class="seg-tab" onclick="swipeSolTo(2)">Colaboraciones</button>
     </div>
-    <div id="sol-list"></div>
-    <div id="sol-empty" class="empty-msg hidden">Sin solicitudes pendientes ✓</div>
+    <div class="swipe-container" id="sol-swipe-container" style="touch-action:pan-y">
+      <div class="swipe-track" id="sol-swipe-track">
+        <div class="swipe-panel" id="sol-panel-0">
+          <div id="sol-list-0"></div>
+          <div id="sol-empty-0" class="empty-msg hidden">Sin solicitudes pendientes ✓</div>
+        </div>
+        <div class="swipe-panel" id="sol-panel-1">
+          <div id="sol-list-1"></div>
+          <div id="sol-empty-1" class="empty-msg hidden">Sin solicitudes pendientes ✓</div>
+        </div>
+        <div class="swipe-panel" id="sol-panel-2">
+          <div id="sol-list-2"></div>
+          <div id="sol-empty-2" class="empty-msg hidden">Sin solicitudes pendientes ✓</div>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -496,6 +520,23 @@
         <div id="aj-pass-ok" class="ok-msg hidden">¡Contraseña actualizada! ✓</div>
         <div id="aj-pass-err" class="error-msg hidden"></div>
         <button class="btn-secondary" onclick="cambiarPassword()">CAMBIAR CONTRASEÑA</button>
+      </div>
+    </div>
+
+    <!-- Apariencia (desplegable) -->
+    <div class="aj-accordion">
+      <button class="aj-accordion-header" onclick="toggleAccordion('acc-apariencia',this)">
+        <span>🎨 Apariencia</span><span class="aj-chevron">▼</span>
+      </button>
+      <div class="aj-accordion-body hidden" id="acc-apariencia">
+        <div class="tema-toggle-wrap">
+          <span class="tema-toggle-label">☀️ Tema claro</span>
+          <label class="tema-switch">
+            <input type="checkbox" id="toggle-tema" onchange="cambiarTema(this.checked)"/>
+            <span class="tema-slider"></span>
+          </label>
+        </div>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">Por defecto: oscuro. El ajuste se guarda en tu dispositivo.</p>
       </div>
     </div>
 

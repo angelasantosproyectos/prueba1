@@ -193,10 +193,15 @@ function volverDesdeConvocar(){editandoRutaId=null;resetForm();showScreen('scree
 // Acordeón de ajustes
 function toggleAccordion(id,btn){
   const body=document.getElementById(id);
+  const estaAbierto=!body.classList.contains('hidden');
+  // Cerrar todos los acordeones
+  document.querySelectorAll('.aj-accordion-body').forEach(b=>{b.classList.add('hidden');});
+  document.querySelectorAll('.aj-chevron').forEach(c=>{c.textContent='▼';});
+  // Si estaba cerrado, abrir este
+  if(estaAbierto){return;} // ya estaba abierto → queda todo cerrado
+  body.classList.remove('hidden');
   const chevron=btn.querySelector('.aj-chevron');
-  const abierto=!body.classList.contains('hidden');
-  body.classList.toggle('hidden',abierto);
-  if(chevron)chevron.textContent=abierto?'▼':'▲';
+  if(chevron)chevron.textContent='▲';
 }
 
 // ═══════════════════════════════════════════
@@ -397,10 +402,17 @@ async function editarRuta(id){
 
 async function cancelarRuta(id){
   const motivo=prompt('Motivo de cancelación (ej: por lluvia):');
-  if(motivo===null)return; // pulsó Cancelar
+  if(motivo===null)return;
   if(!motivo.trim()){alert('Debes indicar un motivo.');return;}
   try{
     await db.collection('rutas').doc(id).update({cancelada:true,motivoCancelacion:motivo.trim()});
+    loadRutas();
+  }catch(e){alert('Error: '+e.message);}
+}
+async function deshacerCancelacion(id){
+  if(!confirm('¿Deshacer la cancelación y reactivar la ruta?'))return;
+  try{
+    await db.collection('rutas').doc(id).update({cancelada:false,motivoCancelacion:''});
     loadRutas();
   }catch(e){alert('Error: '+e.message);}
 }
@@ -459,7 +471,12 @@ async function loadRutas(){
         const btnApuntar=(!pasada&&!cancelada)?`<button class="btn-apuntarse ${yaApuntado?'apuntado':'no-apuntado'}" onclick="toggleAsistencia('${r.id}',${yaApuntado})">${yaApuntado?'✓ Apuntado':'+ Apuntarme'}</button>`:'';
         const btnEditar=puedoEditar?`<button class="btn-editar-ruta" onclick="editarRuta('${r.id}')">✏️ Editar</button>`:'';
         const btnCancelar=puedoCancelar?`<button class="btn-editar-ruta" style="border-color:rgba(255,60,60,0.4);color:#ff5e5e" onclick="cancelarRuta('${r.id}')">✕ Cancelar</button>`:'';
-        const canceladaBadge=cancelada?`<div class="cancelada-badge">CANCELADA<span class="cancelada-motivo">${r.motivoCancelacion||''}</span></div>`:'';
+        const btnDeshacer=(cancelada&&(esConvocador||esAdmin()))?`<button class="btn-deshacer-cancelar" onclick="deshacerCancelacion('${r.id}')">↩ Reactivar</button>`:'';
+        const canceladaBadge=cancelada?`
+          <div class="cancelada-overlay">
+            <div class="cancelada-stamp">CANCELADA</div>
+            ${r.motivoCancelacion?`<div class="cancelada-motivo-text">${r.motivoCancelacion}</div>`:''}
+          </div>`:'';
         card.innerHTML=`
           ${canceladaBadge}
           <p class="ruta-convocado">Convocado por <span>@${r.convocadoPor||''}</span></p>
@@ -469,7 +486,7 @@ async function loadRutas(){
           <span class="nivel-badge">${nivelLabel(r.nivel)}</span>
           <div class="ruta-footer">
             <div class="ruta-counter">🛼 <strong>${num}</strong> persona${num!==1?'s':''} acude${num!==1?'n':''}</div>
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${btnApuntar}${btnEditar}${btnCancelar}</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${btnApuntar}${btnEditar}${btnCancelar}${btnDeshacer}</div>
           </div>`;
         grid.appendChild(card);
       });
@@ -497,16 +514,28 @@ function escucharSolicitudes(){
     });
 }
 
-async function loadSolicitudes(){solTabActual='seguidores';document.querySelectorAll('#screen-solicitudes .seg-tab').forEach((t,i)=>t.classList.toggle('active',i===0));renderSolTab();}
-function switchSolTab(tab,btn){solTabActual=tab;document.querySelectorAll('#screen-solicitudes .seg-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');renderSolTab();}
+let solTabIndex=0;
+async function loadSolicitudes(){solTabIndex=0;swipeSolTo(0);}
 
-async function renderSolTab(){
-  const listEl=document.getElementById('sol-list');const emptyEl=document.getElementById('sol-empty');
-  listEl.innerHTML='<p style="color:var(--text-muted);padding:20px">Cargando...</p>';emptyEl.classList.add('hidden');
+function swipeSolTo(idx){
+  solTabIndex=idx;
+  const track=document.getElementById('sol-swipe-track');
+  if(track)track.style.transform=`translateX(-${idx*100}%)`;
+  document.querySelectorAll('#sol-tabs-bar .seg-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  renderSolPanel(idx);
+}
+
+const SOL_TIPOS=['solicitud_seguir','participar_ruta','colaboracion_ruta'];
+
+async function renderSolPanel(idx){
+  const listId=`sol-list-${idx}`;const emptyId=`sol-empty-${idx}`;
+  const listEl=document.getElementById(listId);const emptyEl=document.getElementById(emptyId);
+  if(!listEl)return;
+  listEl.innerHTML='<p style="color:var(--text-muted);padding:20px">Cargando...</p>';emptyEl?.classList.add('hidden');
   try{
-    const tipo={seguidores:'solicitud_seguir',rutas:'participar_ruta',colabs:'colaboracion_ruta'}[solTabActual];
+    const tipo=SOL_TIPOS[idx];
     const snap=await db.collection('solicitudes').where('paraUid','==',currentUser.uid).where('tipo','==',tipo).where('estado','==','pendiente').get();
-    if(snap.empty){listEl.innerHTML='';emptyEl.classList.remove('hidden');return;}
+    if(snap.empty){listEl.innerHTML='';emptyEl?.classList.remove('hidden');return;}
     listEl.innerHTML='';
     snap.docs.forEach((doc,i)=>{
       const s=doc.data();const sid=doc.id;
@@ -519,15 +548,34 @@ async function renderSolTab(){
         <div class="chat-avatar">${getInicial(s.deUsername||'?')}</div>
         <div style="flex:1"><p style="font-size:0.9rem">${texto}</p></div>
         <div style="display:flex;gap:8px">
-          <button class="btn-sol-aceptar" onclick="responderSolicitud('${sid}','aceptar')">✓</button>
-          <button class="btn-sol-rechazar" onclick="responderSolicitud('${sid}','rechazar')">✕</button>
+          <button class="btn-sol-aceptar" onclick="responderSolicitud('${sid}','aceptar',${idx})">✓</button>
+          <button class="btn-sol-rechazar" onclick="responderSolicitud('${sid}','rechazar',${idx})">✕</button>
         </div>`;
       listEl.appendChild(item);
     });
   }catch(e){listEl.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;}
 }
 
-async function responderSolicitud(sid,accion){
+// Swipe táctil para solicitudes
+(function initSwipeSol(){
+  let sx=0,sy=0;
+  document.addEventListener('DOMContentLoaded',()=>{
+    const cont=document.getElementById('sol-swipe-container');
+    if(!cont)return;
+    cont.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
+    cont.addEventListener('touchend',e=>{
+      const dx=e.changedTouches[0].clientX-sx;const dy=e.changedTouches[0].clientY-sy;
+      if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>40){
+        if(dx<0&&solTabIndex<2)swipeSolTo(solTabIndex+1);
+        else if(dx>0&&solTabIndex>0)swipeSolTo(solTabIndex-1);
+      }
+    },{passive:true});
+  });
+})();
+
+function switchSolTab(tab,btn){}
+
+async function responderSolicitud(sid,accion,panelIdx=0){
   const snap=await db.collection('solicitudes').doc(sid).get();if(!snap.exists)return;
   const s=snap.data();
   await db.collection('solicitudes').doc(sid).update({estado:accion==='aceptar'?'aceptado':'rechazado'});
@@ -547,7 +595,7 @@ async function responderSolicitud(sid,accion){
       }
     }
   }
-  renderSolTab();
+  renderSolPanel(panelIdx);
 }
 
 // ═══════════════════════════════════════════
@@ -585,18 +633,56 @@ function abrirCrearEvento(){
   document.getElementById('itinerario-list').innerHTML='';
   showScreen('screen-crear-evento');
 }
-function addItinerarioItem(hora='',lugar=''){
-  const idx=itinerarioItems.length;itinerarioItems.push({hora,lugar});
-  const row=document.createElement('div');row.className='itinerario-input-row';
-  row.innerHTML=`<input type="time" class="it-hora-input" value="${hora}" placeholder="HH:MM" oninput="itinerarioItems[${idx}].hora=this.value"/>
-    <input type="text" value="${lugar}" placeholder="Punto de encuentro / actividad" oninput="itinerarioItems[${idx}].lugar=this.value"/>
-    <button class="btn-remove-it" onclick="removeItinerarioItem(${idx})">✕</button>`;
-  document.getElementById('itinerario-list').appendChild(row);
+function getDiasEvento(){
+  const inicio=document.getElementById('ev-fecha-inicio')?.value;
+  const fin=document.getElementById('ev-fecha-fin')?.value;
+  if(!inicio)return[];
+  const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const dias=[];
+  const d0=new Date(inicio);
+  const d1=fin?new Date(fin):d0;
+  const diasMax=14; let count=0;
+  const cur=new Date(d0);
+  while(cur<=d1&&count<diasMax){
+    const label=`${cur.getDate()} ${meses[cur.getMonth()]}`;
+    dias.push({iso:cur.toISOString().split('T')[0],label});
+    cur.setDate(cur.getDate()+1);count++;
+  }
+  return dias;
+}
+function buildDiaOptions(valorActual){
+  const dias=getDiasEvento();
+  if(!dias.length)return`<option value="">—</option>`;
+  return dias.map(d=>`<option value="${d.iso}" ${d.iso===valorActual?'selected':''}>${d.label}</option>`).join('');
+}
+function addItinerarioItem(dia='',hora='',lugar='',desc=''){
+  const idx=itinerarioItems.length;itinerarioItems.push({dia,hora,lugar,desc});
+  const bloque=document.createElement('div');bloque.className='itinerario-bloque';
+  bloque.innerHTML=`
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select class="it-dia-select" style="flex:1;min-width:100px" onchange="itinerarioItems[${idx}].dia=this.value">
+        ${buildDiaOptions(dia)}
+      </select>
+      <input type="time" class="it-hora-input" value="${hora}" placeholder="HH:MM" style="width:100px" oninput="itinerarioItems[${idx}].hora=this.value"/>
+      <button class="btn-remove-it" onclick="removeItinerarioItem(${idx})">✕</button>
+    </div>
+    <input type="text" value="${lugar}" placeholder="Punto de encuentro" style="margin-top:6px" oninput="itinerarioItems[${idx}].lugar=this.value"/>
+    <input type="text" value="${desc}" placeholder="Descripción de la actividad" style="margin-top:6px;font-size:0.85rem" oninput="itinerarioItems[${idx}].desc=this.value"/>`;
+  document.getElementById('itinerario-list').appendChild(bloque);
 }
 function removeItinerarioItem(idx){
   itinerarioItems.splice(idx,1);
   const cont=document.getElementById('itinerario-list');cont.innerHTML='';
-  const copy=[...itinerarioItems];itinerarioItems=[];copy.forEach(it=>addItinerarioItem(it.hora,it.lugar));
+  const copy=[...itinerarioItems];itinerarioItems=[];
+  copy.forEach(it=>addItinerarioItem(it.dia,it.hora,it.lugar,it.desc));
+}
+// Actualizar días al cambiar fechas
+function onFechaEventoChange(){
+  const cont=document.getElementById('itinerario-list');
+  if(!cont)return;
+  cont.innerHTML='';
+  const copy=[...itinerarioItems];itinerarioItems=[];
+  copy.forEach(it=>addItinerarioItem(it.dia,it.hora,it.lugar,it.desc));
 }
 async function guardarEvento(){
   const nombre=document.getElementById('ev-nombre').value.trim();
@@ -609,7 +695,7 @@ async function guardarEvento(){
   if(!nombre){showError(errEl,'Introduce el nombre del evento.');return;}
   if(!ciudad){showError(errEl,'Introduce la ciudad.');return;}
   if(!fechaInicio){showError(errEl,'Introduce la fecha de inicio.');return;}
-  const itLimpio=itinerarioItems.filter(it=>it.lugar.trim());
+  const itLimpio=itinerarioItems.filter(it=>it.lugar.trim()).map(it=>({dia:it.dia||'',hora:it.hora||'',lugar:it.lugar.trim(),desc:it.desc?.trim()||''}));
   const datos={nombre,ciudad,fechaInicio,fechaFin:fechaFin||fechaInicio,descripcion:desc,itinerario:itLimpio,
     creadoPor:getNombre(currentUser),creadoPorEmail:currentUser.email,creadoPorUid:currentUser.uid};
   try{
@@ -693,24 +779,35 @@ async function editarEvento(id){
   document.getElementById('ev-error').classList.add('hidden');
   document.getElementById('ev-ok').classList.add('hidden');
   document.getElementById('itinerario-list').innerHTML='';
-  (ev.itinerario||[]).forEach(it=>addItinerarioItem(it.hora,it.lugar));
+  (ev.itinerario||[]).forEach(it=>addItinerarioItem(it.dia||'',it.hora||'',it.lugar||'',it.desc||''));
   showScreen('screen-crear-evento');
 }
 
 // ═══════════════════════════════════════════
 // SEGUIDORES
 // ═══════════════════════════════════════════
-async function loadSeguidores(){segTabActual='siguiendo';document.querySelectorAll('#screen-seguidores .seg-tab').forEach((t,i)=>t.classList.toggle('active',i===0));renderSegTab();}
-function switchSegTab(tab,btn){segTabActual=tab;document.querySelectorAll('#screen-seguidores .seg-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');renderSegTab();}
-async function renderSegTab(){
-  const listEl=document.getElementById('seg-list');const emptyEl=document.getElementById('seg-empty');
-  listEl.innerHTML='<p style="color:var(--text-muted);padding:20px">Cargando...</p>';emptyEl.classList.add('hidden');
+let segTabIndex=0;
+async function loadSeguidores(){segTabIndex=0;swipeSegTo(0);}
+
+function swipeSegTo(idx){
+  segTabIndex=idx;
+  const track=document.getElementById('seg-swipe-track');
+  if(track)track.style.transform=`translateX(-${idx*100}%)`;
+  document.querySelectorAll('#seg-tabs-bar .seg-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  renderSegPanel(idx);
+}
+
+async function renderSegPanel(idx){
+  const panelId=`seg-panel-${idx}`;const listId=`seg-list-${idx}`;const emptyId=`seg-empty-${idx}`;
+  const listEl=document.getElementById(listId);const emptyEl=document.getElementById(emptyId);
+  if(!listEl)return;
+  listEl.innerHTML='<p style="color:var(--text-muted);padding:20px">Cargando...</p>';emptyEl?.classList.add('hidden');
   try{
     const miSnap=await db.collection('usuarios').doc(currentUser.uid).get();
     const miData=miSnap.exists?miSnap.data():{seguidores:[],siguiendo:[]};
     const miSiguiendo=miData.siguiendo||[];
-    const lista=segTabActual==='siguiendo'?miSiguiendo:(miData.seguidores||[]);
-    if(!lista.length){listEl.innerHTML='';emptyEl.classList.remove('hidden');return;}
+    const lista=idx===0?miSiguiendo:(miData.seguidores||[]);
+    if(!lista.length){listEl.innerHTML='';emptyEl?.classList.remove('hidden');return;}
     listEl.innerHTML='';
     for(let i=0;i<lista.length;i++){
       const uid=lista[i];const uSnap=await db.collection('usuarios').doc(uid).get();
@@ -719,12 +816,42 @@ async function renderSegTab(){
       const item=document.createElement('div');item.className='seg-user-item';item.style.animationDelay=`${i*0.04}s`;
       item.innerHTML=`
         <div class="chat-avatar">${getInicial(u.username||u.nombre||'?')}</div>
-        <div class="seg-user-info"><p class="seg-username">@${u.username||u.nombre}</p><p class="seg-realname">${(u.nombre&&u.nombre!==u.username)?u.nombre:''}</p></div>
+        <div class="seg-user-info">
+          <p class="seg-username seg-user-nombre-link" onclick="verPerfilDesdeSeguidores('${uid}')" title="Ver perfil">@${u.username||u.nombre}</p>
+          <p class="seg-realname">${(u.nombre&&u.nombre!==u.username)?u.nombre:''}</p>
+        </div>
         <button class="btn-seguir ${yaSigo?'siguiendo':'no-siguiendo'}" onclick="toggleSeguir('${uid}',${yaSigo},this)">${yaSigo?'Siguiendo':'Seguir'}</button>`;
       listEl.appendChild(item);
     }
   }catch(e){listEl.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;}
 }
+
+// Swipe táctil para seguidores
+(function initSwipeSeg(){
+  let sx=0,sy=0;
+  document.addEventListener('DOMContentLoaded',()=>{
+    const cont=document.getElementById('seg-swipe-container');
+    if(!cont)return;
+    cont.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
+    cont.addEventListener('touchend',e=>{
+      const dx=e.changedTouches[0].clientX-sx;const dy=e.changedTouches[0].clientY-sy;
+      if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>40){
+        if(dx<0&&segTabIndex<1)swipeSegTo(segTabIndex+1);
+        else if(dx>0&&segTabIndex>0)swipeSegTo(segTabIndex-1);
+      }
+    },{passive:true});
+  });
+})();
+
+async function verPerfilDesdeSeguidores(uid){
+  perfilVistoPrevScreen='screen-seguidores';
+  const snap=await db.collection('usuarios').doc(uid).get();
+  const u=snap.exists?snap.data():{uid,nombre:uid};
+  await verPerfilUsuario({uid,...u});
+}
+
+// Alias para compatibilidad
+function switchSegTab(tab,btn){}
 async function toggleSeguir(targetUid,yaSigo,btn){
   const miRef=db.collection('usuarios').doc(currentUser.uid);
   const elRef=db.collection('usuarios').doc(targetUid);
@@ -1027,6 +1154,10 @@ async function loadAjustes(){
   if(!currentUser)return;
   document.getElementById('perfil-email-display').textContent=currentUser.email;
   ['aj-pass-actual','aj-pass-nueva','aj-pass-repite'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  // Sincronizar toggle de tema
+  const temaSaved=localStorage.getItem('rutaskate_tema');
+  const toggleTema=document.getElementById('toggle-tema');
+  if(toggleTema)toggleTema.checked=(temaSaved==='claro');
   try{
     const snap=await db.collection('usuarios').doc(currentUser.uid).get();
     if(snap.exists){
@@ -1134,6 +1265,32 @@ function formatHora(date){
   return date.toLocaleDateString('es-ES',{day:'numeric',month:'short'});
 }
 function escapeHtml(str){return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
+// ─── APARIENCIA / TEMA ───
+function aplicarTema(claro){
+  if(claro){
+    document.body.classList.add('tema-claro');
+  } else {
+    document.body.classList.remove('tema-claro');
+  }
+  localStorage.setItem('rutaskate_tema', claro?'claro':'oscuro');
+  const toggle=document.getElementById('toggle-tema');
+  if(toggle)toggle.checked=claro;
+}
+function cambiarTema(claro){
+  aplicarTema(claro);
+}
+// Aplicar tema guardado al cargar
+(function(){
+  const tema=localStorage.getItem('rutaskate_tema');
+  if(tema==='claro')aplicarTema(true);
+})();
+
+// ─── EXPLICACIÓN ESTRELLAS (FAQ inline) ───
+// Las estrellas de compatibilidad (★☆) en Tarjetas comparan tu perfil con el de otra persona.
+// Cada campo que coincide suma 1 estrella: hobby, música, animal favorito, color favorito,
+// estudios, sexo y qué buscas. Máximo 5 estrellas mostradas.
+// Ejemplo: si los dos buscáis "amistad" y tenéis el mismo hobby → 2 estrellas.
+
 document.addEventListener('keydown',e=>{
   if(e.key!=='Enter')return;
   if(document.getElementById('screen-login').classList.contains('active'))doLogin();
