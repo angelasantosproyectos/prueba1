@@ -62,6 +62,15 @@ auth.onAuthStateChanged(async user => {
     loadRutaNames();
     escucharNoLeidos();
     escucharSolicitudes();
+    setTimeout(()=>{
+      actualizarMenuAdmin();
+      // Mostrar/ocultar tarjetas y matches según citas
+      const citas=currentUserData?.citasActivo;
+      const btnT=document.getElementById('btn-tarjetas-grid');
+      const btnM=document.getElementById('btn-matches-grid');
+      if(btnT)btnT.style.display=citas?'':'none';
+      if(btnM)btnM.style.display=citas?'':'none';
+    },300);
   } else {
     currentUser = null; currentUserData = null;
     showScreen('screen-login');
@@ -149,6 +158,7 @@ async function doRegistro(){
   try{
     const snap=await db.collection('usuarios').get();
     if(snap.docs.some(d=>(d.data().username||'').toLowerCase()===username)){errEl.textContent='Ese @usuario ya está en uso.';errEl.classList.remove('hidden');usernameValido=false;document.getElementById('username-status').innerHTML=SVG_ERR;return;}
+    if(snap.docs.some(d=>(d.data().email||'').toLowerCase()===email.toLowerCase())){errEl.textContent='Ese correo ya está registrado en otra cuenta.';errEl.classList.remove('hidden');return;}
   }catch(e){}
   try{
     const cred=await auth.createUserWithEmailAndPassword(email,pass);
@@ -1174,6 +1184,9 @@ async function loadAjustes(){
       setSelectVal('aj-sexo',d.sexo||'');
       setVal('aj-telefono-display',d.telefono||'');
       setVal('aj-hobby',d.hobby);setVal('aj-musica',d.musica);setVal('aj-animal',d.animal);
+      // Citas switch
+      const citasEl=document.getElementById('toggle-citas');
+      if(citasEl){citasEl.checked=!!(d.citasActivo);toggleCitasMode(!!(d.citasActivo),false);}
       setVal('aj-color',d.color);setVal('aj-estudios',d.estudios);
       // Checkboxes múltiple
       setChecked(['ec-soltero','ec-pareja','ec-casado','ec-divorciado','ec-hijos','ec-sinhijos'],d.relacionEstado||[]);
@@ -1215,14 +1228,12 @@ async function guardarPerfil(){
 
 async function guardarDatosPersonales(){
   const okEl=document.getElementById('aj-datos-ok');okEl.classList.add('hidden');
-  const edadVal=parseInt(getVal('aj-edad'),10)||0;
   const estadoCivil=getChecked(['ec-soltero','ec-pareja','ec-casado','ec-divorciado','ec-hijos','ec-sinhijos']);
   const meGustan=getChecked(['mg-hombres','mg-mujeres','mg-ambos','mg-otros']);
   const busco=getChecked(['bq-amistad','bq-amor','bq-rollo','bq-surja','bq-gente']);
+  const citasActivo=document.getElementById('toggle-citas')?.checked||false;
   const datos={
-    descripcion:getVal('aj-descripcion'),bio:getVal('aj-descripcion'),
-    ...(edadVal>=18&&edadVal<=120?{edad:edadVal}:{}),
-    ...(getVal('aj-sexo')?{sexo:getVal('aj-sexo')}:{}),
+    citasActivo,
     hobby:getVal('aj-hobby'),musica:getVal('aj-musica'),animal:getVal('aj-animal'),
     color:getVal('aj-color'),estudios:getVal('aj-estudios'),
     relacionEstado:estadoCivil,gustanMe:meGustan,relacionBusco:busco,
@@ -1296,3 +1307,363 @@ document.addEventListener('keydown',e=>{
   if(document.getElementById('screen-login').classList.contains('active'))doLogin();
   if(document.getElementById('screen-registro').classList.contains('active'))doRegistro();
 });
+
+// ═══════════════════════════════════════════
+// CITAS: toggle modo
+// ═══════════════════════════════════════════
+function toggleCitasMode(activo, guardar=true){
+  const fields=document.getElementById('citas-fields');
+  if(fields)fields.style.display=activo?'block':'none';
+  // Mostrar/ocultar botones Tarjetas y Matches en el grid
+  const btnT=document.getElementById('btn-tarjetas-grid');
+  const btnM=document.getElementById('btn-matches-grid');
+  if(btnT)btnT.style.display=activo?'':' none';
+  if(btnM)btnM.style.display=activo?'':' none';
+}
+
+// ═══════════════════════════════════════════
+// MENÚ USUARIO
+// ═══════════════════════════════════════════
+function toggleUserMenu(){
+  const dd=document.getElementById('user-dropdown');
+  const btn=document.getElementById('user-menu-btn');
+  if(!dd)return;
+  dd.classList.toggle('hidden');
+  btn?.classList.toggle('open',!dd.classList.contains('hidden'));
+}
+// Cerrar menú al clicar fuera
+document.addEventListener('click',e=>{
+  const dd=document.getElementById('user-dropdown');
+  const btn=document.getElementById('user-menu-btn');
+  if(dd&&!dd.contains(e.target)&&!btn?.contains(e.target)){
+    dd.classList.add('hidden');btn?.classList.remove('open');
+  }
+});
+
+// ═══════════════════════════════════════════
+// TEMA: botón luna/sol en top bar
+// ═══════════════════════════════════════════
+function toggleTemaBtn(){
+  const claro=document.body.classList.contains('tema-claro');
+  aplicarTema(!claro);
+  const btn=document.getElementById('btn-tema-topbar');
+  if(btn)btn.textContent=!claro?'☀️':'🌙';
+}
+// Actualizar icono al aplicar tema
+const _aplicarTema=aplicarTema;
+function aplicarTema(claro){
+  _aplicarTema(claro);
+  const btn=document.getElementById('btn-tema-topbar');
+  if(btn)btn.textContent=claro?'☀️':'🌙';
+}
+
+// ═══════════════════════════════════════════
+// EVENTOS: separar itinerario por días
+// ═══════════════════════════════════════════
+function renderItinerarioEvento(itinerario, accentColor){
+  if(!itinerario||!itinerario.length)return'';
+  const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  // Agrupar por día
+  const grupos={};
+  itinerario.forEach(it=>{
+    const key=it.dia||'';
+    if(!grupos[key])grupos[key]=[];
+    grupos[key].push(it);
+  });
+  let html='<div class="itinerario-block">';
+  html+=`<p class="itinerario-titulo" style="color:${accentColor}">📍 Itinerario</p>`;
+  Object.keys(grupos).sort().forEach(dia=>{
+    let diaLabel='';
+    if(dia){
+      const[y,m,d]=dia.split('-');
+      const dow=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][new Date(dia).getDay()];
+      diaLabel=`${dow} ${parseInt(d)} ${meses[parseInt(m)-1]}`;
+    }
+    if(diaLabel){
+      html+=`<div class="itinerario-dia-header" style="color:${accentColor}">${diaLabel}</div>`;
+    }
+    grupos[dia].forEach(it=>{
+      html+=`<div class="itinerario-item-display">
+        <span class="it-hora" style="color:${accentColor}">${it.hora||''}</span>
+        <div><span class="it-lugar" style="font-weight:600">${escapeHtml(it.lugar)}</span>${it.desc?`<br><span style="font-size:0.8rem;opacity:0.7">${escapeHtml(it.desc)}</span>`:''}</div>
+      </div>`;
+    });
+    html+=`<div style="height:8px"></div>`;
+  });
+  html+='</div>';
+  return html;
+}
+
+// ═══════════════════════════════════════════
+// TARJETAS SWIPER (estilo Tinder)
+// ═══════════════════════════════════════════
+let swiperCards=[];
+let swiperIndex=0;
+
+async function loadTarjetas(){
+  const stack=document.getElementById('tarjetas-card-stack');
+  const emptyEl=document.getElementById('tarjetas-empty');
+  if(!stack)return;
+  stack.innerHTML='<p style="color:var(--text-muted);padding:20px;text-align:center">Cargando...</p>';
+  emptyEl?.classList.add('hidden');
+  try{
+    const[miSnap,allSnap]=await Promise.all([
+      db.collection('usuarios').doc(currentUser.uid).get(),
+      db.collection('usuarios').get()
+    ]);
+    const yo=miSnap.exists?miSnap.data():null;
+    if(!yo?.citasActivo){
+      stack.innerHTML='';emptyEl?.classList.remove('hidden');
+      emptyEl.innerHTML='Activa "¿Te gustaría tener citas?" en Ajustes → Datos personales para ver tarjetas.';
+      return;
+    }
+    // Obtener IDs ya valorados
+    const yaValorados=new Set((yo.swipes||[]).map(s=>s.uid));
+    const miSiguiendo=yo.siguiendo||[];
+    let usuarios=allSnap.docs.map(d=>({uid:d.id,...d.data()}))
+      .filter(u=>u.uid!==currentUser.uid&&u.citasActivo&&perfilCompleto(u)&&!yaValorados.has(u.uid));
+    usuarios=usuarios.map(u=>({...u,_score:calcularScore(yo,u)})).sort((a,b)=>b._score-a._score);
+    swiperCards=usuarios;swiperIndex=0;
+    if(!usuarios.length){stack.innerHTML='';emptyEl?.classList.remove('hidden');emptyEl.innerHTML='¡Has visto todas las tarjetas! Vuelve más tarde. 🛼';return;}
+    renderSwiperStack(stack);
+    initSwipeGestures(stack);
+  }catch(e){stack.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;}
+}
+
+function renderSwiperStack(stack){
+  stack.innerHTML='';
+  const visible=swiperCards.slice(swiperIndex,swiperIndex+3);
+  visible.reverse().forEach((u,vi)=>{
+    const cls=vi===2?'is-top':vi===1?'below':'below2';
+    const card=document.createElement('div');card.className=`swiper-card ${cls}`;
+    const estado=Array.isArray(u.relacionEstado)?u.relacionEstado.join(', '):(u.relacionEstado||'');
+    const busco=Array.isArray(u.relacionBusco)?u.relacionBusco.join(', '):(u.relacionBusco||'');
+    const gustan=Array.isArray(u.gustanMe)?u.gustanMe.join(', '):(u.gustanMe||'');
+    const stars='★'.repeat(Math.min(u._score,5))+'☆'.repeat(Math.max(0,5-u._score));
+    card.innerHTML=`
+      <div class="swipe-label-like">LIKE</div>
+      <div class="swipe-label-nope">NOPE</div>
+      <div class="swipe-label-super">💘 MATCH</div>
+      <div class="tarjeta-avatar">${getInicial(u.username||u.nombre||'?')}</div>
+      <div class="tarjeta-username">@${u.username||u.nombre||''}</div>
+      <div class="tarjeta-edad">${u.edad||'?'} años · ${u.sexo||''}</div>
+      ${u._score>0?`<div class="tarjeta-score">${stars}</div>`:''}
+      <hr class="tarjeta-sep"/>
+      <p class="tarjeta-desc">${u.descripcion||''}</p>
+      <div class="tarjeta-tags">
+        ${busco?`<span class="tarjeta-tag">${busco}</span>`:''}
+        ${estado?`<span class="tarjeta-tag">${estado}</span>`:''}
+        ${gustan?`<span class="tarjeta-tag">Le gustan: ${gustan}</span>`:''}
+      </div>`;
+    if(vi===2){
+      card.dataset.uid=u.uid;
+      card.style.cursor='grab';
+    }
+    stack.appendChild(card);
+  });
+}
+
+function initSwipeGestures(stack){
+  const getTopCard=()=>stack.querySelector('.swiper-card.is-top');
+  let startX=0,startY=0,isDragging=false;
+  const onStart=e=>{
+    const card=getTopCard();if(!card)return;
+    isDragging=true;
+    const pt=e.touches?e.touches[0]:e;
+    startX=pt.clientX;startY=pt.clientY;
+    card.style.transition='none';
+  };
+  const onMove=e=>{
+    if(!isDragging)return;
+    const card=getTopCard();if(!card)return;
+    const pt=e.touches?e.touches[0]:e;
+    const dx=pt.clientX-startX;const dy=pt.clientY-startY;
+    const rot=dx*0.1;
+    card.style.transform=`translateX(${dx}px) translateY(${dy}px) rotate(${rot}deg)`;
+    card.classList.remove('swiping-right','swiping-left','swiping-down');
+    if(Math.abs(dx)>Math.abs(dy)*1.5){
+      if(dx>40)card.classList.add('swiping-right');
+      else if(dx<-40)card.classList.add('swiping-left');
+    } else if(dy>40){card.classList.add('swiping-down');}
+  };
+  const onEnd=e=>{
+    if(!isDragging)return;isDragging=false;
+    const card=getTopCard();if(!card)return;
+    const pt=e.changedTouches?e.changedTouches[0]:e;
+    const dx=pt.clientX-startX;const dy=pt.clientY-startY;
+    card.style.transition='transform 0.3s ease';
+    if(Math.abs(dx)>Math.abs(dy)*1.5){
+      if(dx>80){animateSwipe(card,'like');}
+      else if(dx<-80){animateSwipe(card,'nope');}
+      else resetCard(card);
+    } else if(dy>80){animateSwipe(card,'super');}
+    else resetCard(card);
+  };
+  stack.addEventListener('mousedown',onStart);
+  stack.addEventListener('mousemove',onMove);
+  stack.addEventListener('mouseup',onEnd);
+  stack.addEventListener('touchstart',onStart,{passive:true});
+  stack.addEventListener('touchmove',onMove,{passive:false});
+  stack.addEventListener('touchend',onEnd);
+}
+function resetCard(card){card.style.transform='';card.classList.remove('swiping-right','swiping-left','swiping-down');}
+function animateSwipe(card,tipo){
+  const uid=card.dataset.uid;
+  if(tipo==='like'){card.style.transform='translateX(150%) rotate(20deg)';}
+  else if(tipo==='nope'){card.style.transform='translateX(-150%) rotate(-20deg)';}
+  else{card.style.transform='translateY(150%)';}
+  setTimeout(()=>{registrarSwipe(uid,tipo);},300);
+}
+function swipeCard(tipo){
+  const stack=document.getElementById('tarjetas-card-stack');
+  const card=stack?.querySelector('.swiper-card.is-top');
+  if(!card)return;
+  const uid=card.dataset.uid;
+  card.style.transition='transform 0.4s ease';
+  if(tipo==='like')card.style.transform='translateX(150%) rotate(20deg)';
+  else if(tipo==='nope')card.style.transform='translateX(-150%) rotate(-20deg)';
+  else card.style.transform='translateY(150%)';
+  setTimeout(()=>registrarSwipe(uid,tipo),400);
+}
+async function registrarSwipe(uid,tipo){
+  swiperIndex++;
+  // Guardar swipe en Firestore
+  try{
+    await db.collection('usuarios').doc(currentUser.uid).update({
+      swipes:firebase.firestore.FieldValue.arrayUnion({uid,tipo,fecha:new Date().toISOString()})
+    });
+  }catch(e){console.error(e);}
+  const stack=document.getElementById('tarjetas-card-stack');
+  if(swiperIndex>=swiperCards.length){
+    stack.innerHTML='';
+    const em=document.getElementById('tarjetas-empty');
+    em?.classList.remove('hidden');em&&(em.innerHTML='¡Has visto todas las tarjetas! Vuelve más tarde. 🛼');
+    return;
+  }
+  renderSwiperStack(stack);
+  initSwipeGestures(stack);
+}
+
+// ═══════════════════════════════════════════
+// MATCHES
+// ═══════════════════════════════════════════
+let matchesTabIndex=0;
+async function loadMatches(){matchesTabIndex=0;swipeMatchesTo(0);}
+function swipeMatchesTo(idx){
+  matchesTabIndex=idx;
+  const track=document.getElementById('matches-swipe-track');
+  if(track)track.style.transform=`translateX(-${idx*100}%)`;
+  document.querySelectorAll('#matches-tabs-bar .seg-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  renderMatchesPanel(idx);
+}
+async function renderMatchesPanel(idx){
+  const listId=`matches-list-${idx}`;const emptyId=`matches-empty-${idx}`;
+  const listEl=document.getElementById(listId);const emptyEl=document.getElementById(emptyId);
+  if(!listEl)return;
+  listEl.innerHTML='<p style="color:var(--text-muted);padding:20px">Cargando...</p>';emptyEl?.classList.add('hidden');
+  try{
+    const snap=await db.collection('usuarios').doc(currentUser.uid).get();
+    const yo=snap.exists?snap.data():{};
+    const tipos=['like','super','nope'];const tipo=tipos[idx];
+    const swipes=(yo.swipes||[]).filter(s=>s.tipo===tipo);
+    if(!swipes.length){listEl.innerHTML='';emptyEl?.classList.remove('hidden');return;}
+    listEl.innerHTML='';
+    for(const s of swipes){
+      const uSnap=await db.collection('usuarios').doc(s.uid).get();
+      const u=uSnap.exists?uSnap.data():{username:s.uid};
+      const item=document.createElement('div');item.className='seg-user-item';
+      item.innerHTML=`
+        <div class="chat-avatar">${getInicial(u.username||u.nombre||'?')}</div>
+        <div class="seg-user-info"><p class="seg-username">@${u.username||u.nombre||s.uid}</p>
+          <p class="seg-realname">${u.descripcion?u.descripcion.slice(0,40)+'…':''}</p>
+        </div>
+        <button class="btn-chat-mini" onclick="abrirChatConUid('${s.uid}')">💬</button>`;
+      listEl.appendChild(item);
+    }
+  }catch(e){listEl.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;}
+}
+
+// ═══════════════════════════════════════════
+// BUSCADOR EN SEGUIDORES
+// ═══════════════════════════════════════════
+let segSearchTimeout=null;
+async function buscarEnSeguidores(){
+  clearTimeout(segSearchTimeout);
+  const q=document.getElementById('seg-search-input')?.value.trim().toLowerCase().replace(/^@/,'');
+  if(!q){renderSegPanel(segTabIndex);return;}
+  segSearchTimeout=setTimeout(async()=>{
+    const panelIdx=segTabIndex;
+    const listId=`seg-list-${panelIdx}`;const emptyId=`seg-empty-${panelIdx}`;
+    const listEl=document.getElementById(listId);const emptyEl=document.getElementById(emptyId);
+    if(!listEl)return;
+    listEl.innerHTML='';emptyEl?.classList.add('hidden');
+    // Buscar en toda la colección
+    const snap=await db.collection('usuarios').get();
+    const miSnap=await db.collection('usuarios').doc(currentUser.uid).get();
+    const miData=miSnap.exists?miSnap.data():{};
+    const miSiguiendo=miData.siguiendo||[];
+    const todos=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(u=>u.uid!==currentUser.uid&&(u.username||'').toLowerCase().includes(q));
+    if(!todos.length){emptyEl?.classList.remove('hidden');return;}
+    todos.forEach((u,i)=>{
+      const yaSigo=miSiguiendo.includes(u.uid);
+      const item=document.createElement('div');item.className='seg-user-item';item.style.animationDelay=`${i*0.04}s`;
+      item.innerHTML=`
+        <div class="chat-avatar">${getInicial(u.username||u.nombre||'?')}</div>
+        <div class="seg-user-info"><p class="seg-username seg-user-nombre-link" onclick="verPerfilDesdeSeguidores('${u.uid}')">@${u.username||u.nombre}</p></div>
+        <button class="btn-seguir ${yaSigo?'siguiendo':'no-siguiendo'}" onclick="toggleSeguir('${u.uid}',${yaSigo},this)">${yaSigo?'Siguiendo':'Seguir'}</button>`;
+      listEl.appendChild(item);
+    });
+  },250);
+}
+
+// ═══════════════════════════════════════════
+// PANEL ADMIN
+// ═══════════════════════════════════════════
+async function loadPanelAdmin(){
+  if(!esAdmin()){showScreen('screen-inicio');return;}
+  showScreen('screen-panel-admin');
+  try{
+    const[usersSnap,rutasSnap,evSnap]=await Promise.all([
+      db.collection('usuarios').get(),
+      db.collection('rutas').get(),
+      db.collection('eventos').get()
+    ]);
+    const ul=document.getElementById('admin-users-list');
+    ul.innerHTML='';
+    usersSnap.docs.forEach(d=>{
+      const u=d.data();
+      const div=document.createElement('div');div.className='admin-stat';
+      div.innerHTML=`<strong>@${u.username||u.nombre||'—'}</strong> — ${u.email} <span style="opacity:0.5;font-size:0.78rem">${u.rol||'usuario'}</span>`;
+      ul.appendChild(div);
+    });
+    const rl=document.getElementById('admin-rutas-list');
+    rl.innerHTML='';
+    rutasSnap.docs.forEach(d=>{
+      const r=d.data();
+      const div=document.createElement('div');div.className='admin-stat';
+      div.innerHTML=`<strong>${r.nombre}</strong> — ${r.fecha||''} — por @${r.convocadoPor||''}${r.cancelada?` <span style="color:#ef4444">[CANCELADA]</span>`:''}`;
+      rl.appendChild(div);
+    });
+    const el=document.getElementById('admin-eventos-list');
+    el.innerHTML='';
+    evSnap.docs.forEach(d=>{
+      const ev=d.data();
+      const div=document.createElement('div');div.className='admin-stat';
+      div.innerHTML=`<strong>${ev.nombre}</strong> — ${ev.ciudad} — ${ev.fechaInicio||''}`;
+      el.appendChild(div);
+    });
+  }catch(e){console.error('Panel admin error:',e);}
+}
+
+// Mostrar botón Panel Admin en el menú si es admin
+function actualizarMenuAdmin(){
+  const adminWrap=document.getElementById('user-dropdown-admin');
+  if(adminWrap)adminWrap.style.display=esAdmin()?'block':'none';
+  // También mostrar/ocultar tarjetas y matches según citas
+}
+
+// ═══════════════════════════════════════════
+// ONAUTH: actualizar menú admin + citas
+// ═══════════════════════════════════════════
+// Parchear onAuthStateChanged para llamar a actualizarMenuAdmin
+const _origAuthChanged = auth.onAuthStateChanged.bind(auth);
