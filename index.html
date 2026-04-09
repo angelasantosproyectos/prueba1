@@ -17,8 +17,7 @@
     <p class="login-sub">Accede con tu cuenta</p>
     <div class="field"><label>Correo</label><input type="email" id="login-email" placeholder="correo@email.com"/></div>
     <div class="field"><label>Contraseña</label>
-      <div class="pass-field">
-        <input type="password" id="login-pass" placeholder="••••••••"/>
+      <div class="pass-field"><input type="password" id="login-pass" placeholder="••••••••"/>
         <button class="btn-eye" type="button" onclick="togglePass('login-pass',this)">
           <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -40,8 +39,7 @@
     <p class="login-sub">Crea tu cuenta</p>
     <div class="field">
       <label>Nombre de usuario <span class="label-hint">(tu @, único)</span></label>
-      <div class="username-field">
-        <span class="at-prefix">@</span>
+      <div class="username-field"><span class="at-prefix">@</span>
         <input type="text" id="reg-username" placeholder="tunombre" oninput="verificarUsername()" autocomplete="off" spellcheck="false"/>
         <span class="username-status" id="username-status"></span>
       </div>
@@ -66,8 +64,7 @@
           <option value="+351">🇵🇹 +351 Portugal</option><option value="+52">🇲🇽 +52 México</option>
           <option value="+54">🇦🇷 +54 Argentina</option><option value="+56">🇨🇱 +56 Chile</option>
           <option value="+57">🇨🇴 +57 Colombia</option><option value="+55">🇧🇷 +55 Brasil</option>
-          <option value="+51">🇵🇪 +51 Perú</option><option value="+212">🇲🇦 +212 Marruecos</option>
-          <option value="+81">🇯🇵 +81 Japón</option><option value="+86">🇨🇳 +86 China</option>
+          <option value="+212">🇲🇦 +212 Marruecos</option><option value="+81">🇯🇵 +81 Japón</option>
         </select>
         <input type="tel" id="reg-telefono" placeholder="600 000 000" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,9)" maxlength="9"/>
       </div>
@@ -81,8 +78,7 @@
       </div>
     </div>
     <div class="field"><label>Contraseña</label>
-      <div class="pass-field">
-        <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres"/>
+      <div class="pass-field"><input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres"/>
         <button class="btn-eye" type="button" onclick="togglePass('reg-pass',this)">
           <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -90,8 +86,7 @@
       </div>
     </div>
     <div class="field"><label>Repetir contraseña</label>
-      <div class="pass-field">
-        <input type="password" id="reg-pass2" placeholder="Repite la contraseña"/>
+      <div class="pass-field"><input type="password" id="reg-pass2" placeholder="Repite la contraseña"/>
         <button class="btn-eye" type="button" onclick="togglePass('reg-pass2',this)">
           <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -115,13 +110,14 @@
   <main class="home-main">
     <div class="hero-text"><p class="hero-label">¿Qué hacemos hoy?</p><h2 class="hero-heading">ELIGE TU<br>MOVIMIENTO</h2></div>
     <div class="action-grid">
-      <button class="action-card convocar" onclick="showScreen('screen-convocar')"><span class="action-icon">📣</span><span class="action-label">CONVOCAR<br>RUTA</span><span class="action-arrow">→</span></button>
+      <button class="action-card convocar" onclick="editandoRutaId=null;resetForm();loadRutaNames();showScreen('screen-convocar')"><span class="action-icon">📣</span><span class="action-label">CONVOCAR<br>RUTA</span><span class="action-arrow">→</span></button>
       <button class="action-card ver" onclick="showScreen('screen-ver');loadRutas()"><span class="action-icon">🗺️</span><span class="action-label">VER<br>RUTAS</span><span class="action-arrow">→</span></button>
       <button class="action-card chats" onclick="showScreen('screen-chats');loadChats()"><span class="action-icon">💬</span><span class="action-label">CHATS</span><span class="chat-badge hidden" id="home-chat-badge">0</span><span class="action-arrow">→</span></button>
       <button class="action-card eventos" onclick="showScreen('screen-eventos');loadEventos()"><span class="action-icon">🎪</span><span class="action-label">EVENTOS</span><span class="action-arrow">→</span></button>
       <button class="action-card buscar" onclick="showScreen('screen-buscar');initBuscar()"><span class="action-icon">🔍</span><span class="action-label">BUSCAR</span><span class="action-arrow">→</span></button>
       <button class="action-card tarjetas" onclick="showScreen('screen-tarjetas');loadTarjetas()"><span class="action-icon">🃏</span><span class="action-label">TARJETAS</span><span class="action-arrow">→</span></button>
       <button class="action-card seguidores" onclick="showScreen('screen-seguidores');loadSeguidores()"><span class="action-icon">👥</span><span class="action-label">SEGUIDORES</span><span class="action-arrow">→</span></button>
+      <button class="action-card solicitudes" onclick="showScreen('screen-solicitudes');loadSolicitudes()"><span class="action-icon">🔔</span><span class="action-label">SOLICITUDES</span><span class="chat-badge hidden" id="home-sol-badge">0</span><span class="action-arrow">→</span></button>
       <button class="action-card ajustes" onclick="showScreen('screen-ajustes');loadAjustes()"><span class="action-icon">⚙️</span><span class="action-label">AJUSTES</span><span class="action-arrow">→</span></button>
     </div>
   </main>
@@ -138,7 +134,7 @@
     <div class="field">
       <label>Nombre de la ruta</label>
       <div class="select-row">
-        <select id="select-ruta"><option value="">— Selecciona ruta existente —</option></select>
+        <select id="select-ruta" onchange="autocompletarRuta(this.value)"><option value="">— Selecciona ruta existente —</option></select>
         <button class="btn-add-ruta" onclick="toggleNuevaRuta()">+ Nueva</button>
       </div>
       <div id="nueva-ruta-block" class="hidden" style="margin-top:8px">
@@ -165,6 +161,15 @@
         <button class="nivel-btn" data-nivel="cañero" onclick="selectNivel(this)">🔥 Cañero</button>
       </div>
     </div>
+    <!-- Colaboradores -->
+    <div class="field">
+      <label>Añadir colaboradores <span class="label-hint">(opcional)</span></label>
+      <div class="colaboradores-search-wrap">
+        <input type="text" id="colab-search" placeholder="Busca por @usuario..." oninput="buscarColaboradores()" autocomplete="off"/>
+      </div>
+      <div id="colab-results" class="colab-results hidden"></div>
+      <div id="colab-seleccionados" class="colab-seleccionados"></div>
+    </div>
     <div id="conv-error" class="error-msg hidden"></div>
     <div id="conv-ok" class="ok-msg hidden">¡Ruta guardada! 🛼</div>
     <button class="btn-primary" id="btn-convocar-submit" onclick="convocarRuta()">CONVOCAR RUTA</button>
@@ -176,7 +181,7 @@
   <header class="top-bar">
     <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
     <span class="logo-title small">RUTAS</span>
-    <button class="btn-convocar-fab" onclick="editandoRutaId=null;resetForm();loadRutaNames();showScreen('screen-convocar')" title="Convocar ruta">＋ Convocar</button>
+    <button class="btn-convocar-fab" onclick="editandoRutaId=null;resetForm();loadRutaNames();showScreen('screen-convocar')">＋ Convocar</button>
   </header>
   <main class="ver-main">
     <div id="rutas-list"></div>
@@ -213,8 +218,8 @@
     </div>
     <div class="field"><label>Descripción</label><textarea id="ev-desc" placeholder="Descripción del evento..." rows="3"></textarea></div>
     <div class="field">
-      <label>Puntos de encuentro e itinerario</label>
-      <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:6px">Añade los puntos de encuentro con horario</p>
+      <label>Itinerario</label>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:6px">Puntos de encuentro con horario</p>
       <div id="itinerario-list"></div>
       <button class="btn-mini" style="margin-top:8px" onclick="addItinerarioItem()">+ Añadir punto</button>
     </div>
@@ -241,6 +246,24 @@
   </main>
 </div>
 
+<!-- ════ SOLICITUDES ════ -->
+<div id="screen-solicitudes" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <span class="logo-title small">SOLICITUDES</span>
+    <div></div>
+  </header>
+  <main class="seguidores-main">
+    <div class="seg-tabs">
+      <button class="seg-tab active" onclick="switchSolTab('seguidores',this)">Nuevos seguidores</button>
+      <button class="seg-tab" onclick="switchSolTab('rutas',this)">Participar en rutas</button>
+      <button class="seg-tab" onclick="switchSolTab('colabs',this)">Colaboraciones</button>
+    </div>
+    <div id="sol-list"></div>
+    <div id="sol-empty" class="empty-msg hidden">Sin solicitudes pendientes ✓</div>
+  </main>
+</div>
+
 <!-- ════ TARJETAS ════ -->
 <div id="screen-tarjetas" class="screen">
   <header class="top-bar">
@@ -259,7 +282,7 @@
   <header class="top-bar">
     <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
     <span class="logo-title small">CHATS</span>
-    <button class="btn-icon" onclick="showScreen('screen-nuevo-chat');loadUsuarios()" title="Nuevo chat">✏️</button>
+    <button class="btn-icon" onclick="showScreen('screen-nuevo-chat');loadUsuarios()">✏️</button>
   </header>
   <main class="chats-main">
     <div id="chats-list"></div>
@@ -317,7 +340,7 @@
   </footer>
 </div>
 
-<!-- ════ PERFIL USUARIO (modal sobre el chat) ════ -->
+<!-- ════ PERFIL USUARIO ════ -->
 <div id="screen-perfil-usuario" class="screen">
   <header class="top-bar">
     <button class="btn-back" onclick="cerrarPerfilUsuario()">← Volver</button>
@@ -345,131 +368,142 @@
   </header>
   <main class="ajustes-main">
 
-    <!-- Mi perfil -->
-    <section class="ajustes-section">
-      <h3 class="ajustes-section-title">Mi perfil</h3>
-      <div class="perfil-avatar-block">
-        <div class="perfil-avatar" id="perfil-avatar-display">?</div>
-        <div><p class="perfil-nombre" id="perfil-nombre-display">—</p><p class="perfil-email" id="perfil-email-display">—</p></div>
-      </div>
-      <div class="field"><label>Nombre para mostrar</label><input type="text" id="aj-nombre" placeholder="Tu nombre visible"/></div>
-      <div class="field"><label>Bio (opcional)</label><textarea id="aj-bio" rows="2" placeholder="Cuéntanos algo sobre ti..."></textarea></div>
-      <div class="field">
-        <label>Nivel de patinaje</label>
-        <div class="nivel-grid">
-          <button class="nivel-btn" data-nivel="aprendiendo" onclick="selectNivelAj(this)">🐣 Aprendiendo</button>
-          <button class="nivel-btn" data-nivel="principiante" onclick="selectNivelAj(this)">🟢 Principiante</button>
-          <button class="nivel-btn" data-nivel="medio" onclick="selectNivelAj(this)">🟡 Medio</button>
-          <button class="nivel-btn" data-nivel="cañero" onclick="selectNivelAj(this)">🔥 Cañero</button>
+    <!-- Mi perfil (desplegable) -->
+    <div class="aj-accordion">
+      <button class="aj-accordion-header" onclick="toggleAccordion('acc-perfil',this)">
+        <span>👤 Mi perfil</span><span class="aj-chevron">▼</span>
+      </button>
+      <div class="aj-accordion-body hidden" id="acc-perfil">
+        <div class="perfil-avatar-block">
+          <div class="perfil-avatar" id="perfil-avatar-display">?</div>
+          <div><p class="perfil-nombre" id="perfil-nombre-display">—</p><p class="perfil-email" id="perfil-email-display">—</p></div>
         </div>
-      </div>
-      <div id="aj-ok" class="ok-msg hidden">¡Perfil guardado! ✓</div>
-      <button class="btn-primary" onclick="guardarPerfil()">GUARDAR PERFIL</button>
-    </section>
-
-    <!-- Datos personales -->
-    <section class="ajustes-section">
-      <h3 class="ajustes-section-title">Datos personales</h3>
-      <p style="font-size:0.8rem;color:var(--text-muted)">Necesarios para aparecer en Tarjetas y encontrar personas afines.</p>
-
-      <div class="field"><label>Descripción / Bio</label>
-        <textarea id="aj-descripcion" rows="3" placeholder="Cuéntanos algo sobre ti..."></textarea>
-      </div>
-
-      <div class="field-row">
-        <div class="field"><label>Edad</label>
-          <input type="number" id="aj-edad" placeholder="Ej: 25" min="18" max="120"/>
+        <div class="field"><label>Nombre para mostrar</label><input type="text" id="aj-nombre" placeholder="Tu nombre visible"/></div>
+        <div class="field"><label>Bio (opcional)</label><textarea id="aj-bio" rows="2" placeholder="Cuéntanos algo sobre ti..."></textarea></div>
+        <div class="field">
+          <label>Nivel de patinaje</label>
+          <div class="nivel-grid">
+            <button class="nivel-btn" data-nivel="aprendiendo" onclick="selectNivelAj(this)">🐣 Aprendiendo</button>
+            <button class="nivel-btn" data-nivel="principiante" onclick="selectNivelAj(this)">🟢 Principiante</button>
+            <button class="nivel-btn" data-nivel="medio" onclick="selectNivelAj(this)">🟡 Medio</button>
+            <button class="nivel-btn" data-nivel="cañero" onclick="selectNivelAj(this)">🔥 Cañero</button>
+          </div>
         </div>
-        <div class="field"><label>Sexo</label>
-          <select id="aj-sexo">
-            <option value="">— Selecciona —</option>
-            <option value="hombre">Hombre</option>
-            <option value="mujer">Mujer</option>
-            <option value="otro">Otro</option>
-          </select>
-        </div>
+        <div id="aj-ok" class="ok-msg hidden">¡Perfil guardado! ✓</div>
+        <button class="btn-primary" onclick="guardarPerfil()">GUARDAR PERFIL</button>
       </div>
+    </div>
 
-      <div class="field"><label>Teléfono</label>
-        <input type="text" id="aj-telefono-display" placeholder="+34 600 000 000" readonly style="opacity:0.6;cursor:not-allowed"/>
-        <p style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">Para cambiar el teléfono contacta con soporte.</p>
-      </div>
-
-      <div class="field-row">
-        <div class="field"><label>Hobby</label><input type="text" id="aj-hobby" placeholder="Ej: escalada"/></div>
-        <div class="field"><label>Música</label><input type="text" id="aj-musica" placeholder="Ej: indie"/></div>
-      </div>
-      <div class="field-row">
-        <div class="field"><label>Animal favorito</label><input type="text" id="aj-animal" placeholder="Ej: perro"/></div>
-        <div class="field"><label>Color favorito</label><input type="text" id="aj-color" placeholder="Ej: azul"/></div>
-      </div>
-      <div class="field"><label>Estudios</label><input type="text" id="aj-estudios" placeholder="Ej: Diseño gráfico"/></div>
-      <div class="field"><label>Estado civil / familiar</label>
-        <select id="aj-relacion-estado">
-          <option value="">— Selecciona —</option>
-          <option value="soltero/a">Soltero/a</option><option value="con pareja">Con pareja</option>
-          <option value="casado/a">Casado/a</option><option value="divorciado/a">Divorciado/a</option>
-          <option value="con hijos">Con hijos</option><option value="sin hijos">Sin hijos</option>
-        </select>
-      </div>
-      <div class="field"><label>Me gustan</label>
-        <select id="aj-gustan-me">
-          <option value="">— Selecciona —</option>
-          <option value="hombres">Hombres</option><option value="mujeres">Mujeres</option>
-          <option value="ambos">Ambos</option><option value="otros">Otros</option>
-        </select>
-      </div>
-      <div class="field"><label>Busco</label>
-        <select id="aj-relacion-busco">
-          <option value="">— Selecciona —</option>
-          <option value="amistad">Amistad</option><option value="amor">Amor</option>
-          <option value="rollo puntual">Rollo puntual</option><option value="lo que surja">Lo que surja</option>
-          <option value="conocer gente">Conocer gente</option>
-        </select>
-      </div>
-      <div id="aj-datos-ok" class="ok-msg hidden">¡Datos personales guardados! ✓</div>
-      <button class="btn-primary" onclick="guardarDatosPersonales()">GUARDAR DATOS PERSONALES</button>
-    </section>
-
-    <!-- Cuenta -->
-    <section class="ajustes-section">
-      <h3 class="ajustes-section-title">Cuenta</h3>
-      <div class="field"><label>Contraseña actual</label>
-        <div class="pass-field">
-          <input type="password" id="aj-pass-actual" placeholder="Escribe tu contraseña actual" autocomplete="new-password"/>
-          <button class="btn-eye" type="button" onclick="togglePass('aj-pass-actual',this)">
-            <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-          </button>
+    <!-- Datos personales (desplegable) -->
+    <div class="aj-accordion">
+      <button class="aj-accordion-header" onclick="toggleAccordion('acc-datos',this)">
+        <span>📋 Datos personales</span><span class="aj-chevron">▼</span>
+      </button>
+      <div class="aj-accordion-body hidden" id="acc-datos">
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px">Necesarios para aparecer en Tarjetas.</p>
+        <div class="field"><label>Descripción / Bio</label>
+          <textarea id="aj-descripcion" rows="3" placeholder="Cuéntanos algo sobre ti..."></textarea>
         </div>
-      </div>
-      <div class="field"><label>Nueva contraseña</label>
-        <div class="pass-field">
-          <input type="password" id="aj-pass-nueva" placeholder="Mínimo 6 caracteres" autocomplete="new-password"/>
-          <button class="btn-eye" type="button" onclick="togglePass('aj-pass-nueva',this)">
-            <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-          </button>
+        <div class="field-row">
+          <div class="field"><label>Edad</label><input type="number" id="aj-edad" placeholder="Ej: 25" min="18" max="120"/></div>
+          <div class="field"><label>Sexo</label>
+            <select id="aj-sexo">
+              <option value="">— Selecciona —</option>
+              <option value="hombre">Hombre</option><option value="mujer">Mujer</option><option value="otro">Otro</option>
+            </select>
+          </div>
         </div>
-      </div>
-      <div class="field"><label>Repetir nueva contraseña</label>
-        <div class="pass-field">
-          <input type="password" id="aj-pass-repite" placeholder="Repite la nueva contraseña" autocomplete="new-password"/>
-          <button class="btn-eye" type="button" onclick="togglePass('aj-pass-repite',this)">
-            <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-          </button>
+        <div class="field"><label>Teléfono</label>
+          <input type="text" id="aj-telefono-display" placeholder="+34 600 000 000" readonly style="opacity:0.6;cursor:not-allowed"/>
         </div>
+        <div class="field-row">
+          <div class="field"><label>Hobby</label><input type="text" id="aj-hobby" placeholder="Ej: escalada"/></div>
+          <div class="field"><label>Música</label><input type="text" id="aj-musica" placeholder="Ej: rock"/></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Animal favorito</label><input type="text" id="aj-animal" placeholder="Ej: perro"/></div>
+          <div class="field"><label>Color favorito</label><input type="text" id="aj-color" placeholder="Ej: azul"/></div>
+        </div>
+        <div class="field"><label>Estudios</label><input type="text" id="aj-estudios" placeholder="Ej: Diseño gráfico"/></div>
+        <!-- Estado civil: checkboxes múltiple -->
+        <div class="field">
+          <label>Estado civil / familiar <span class="label-hint">(puede ser varias)</span></label>
+          <div class="checkbox-grid">
+            <label class="checkbox-item"><input type="checkbox" value="soltero/a" id="ec-soltero"/> Soltero/a</label>
+            <label class="checkbox-item"><input type="checkbox" value="con pareja" id="ec-pareja"/> Con pareja</label>
+            <label class="checkbox-item"><input type="checkbox" value="casado/a" id="ec-casado"/> Casado/a</label>
+            <label class="checkbox-item"><input type="checkbox" value="divorciado/a" id="ec-divorciado"/> Divorciado/a</label>
+            <label class="checkbox-item"><input type="checkbox" value="con hijos" id="ec-hijos"/> Con hijos</label>
+            <label class="checkbox-item"><input type="checkbox" value="sin hijos" id="ec-sinhijos"/> Sin hijos</label>
+          </div>
+        </div>
+        <!-- Me gustan: checkboxes múltiple -->
+        <div class="field">
+          <label>Me gustan <span class="label-hint">(puede ser varias)</span></label>
+          <div class="checkbox-grid">
+            <label class="checkbox-item"><input type="checkbox" value="hombres" id="mg-hombres"/> Hombres</label>
+            <label class="checkbox-item"><input type="checkbox" value="mujeres" id="mg-mujeres"/> Mujeres</label>
+            <label class="checkbox-item"><input type="checkbox" value="ambos" id="mg-ambos"/> Ambos</label>
+            <label class="checkbox-item"><input type="checkbox" value="otros" id="mg-otros"/> Otros</label>
+          </div>
+        </div>
+        <!-- Busco: checkboxes múltiple -->
+        <div class="field">
+          <label>Busco <span class="label-hint">(puede ser varias)</span></label>
+          <div class="checkbox-grid">
+            <label class="checkbox-item"><input type="checkbox" value="amistad" id="bq-amistad"/> Amistad</label>
+            <label class="checkbox-item"><input type="checkbox" value="amor" id="bq-amor"/> Amor</label>
+            <label class="checkbox-item"><input type="checkbox" value="rollo puntual" id="bq-rollo"/> Rollo puntual</label>
+            <label class="checkbox-item"><input type="checkbox" value="lo que surja" id="bq-surja"/> Lo que surja</label>
+            <label class="checkbox-item"><input type="checkbox" value="conocer gente" id="bq-gente"/> Conocer gente</label>
+          </div>
+        </div>
+        <div id="aj-datos-ok" class="ok-msg hidden">¡Datos personales guardados! ✓</div>
+        <button class="btn-primary" onclick="guardarDatosPersonales()">GUARDAR DATOS PERSONALES</button>
       </div>
-      <div id="aj-pass-ok" class="ok-msg hidden">¡Contraseña actualizada! ✓</div>
-      <div id="aj-pass-err" class="error-msg hidden"></div>
-      <button class="btn-secondary" onclick="cambiarPassword()">CAMBIAR CONTRASEÑA</button>
-    </section>
+    </div>
 
-    <section class="ajustes-section">
-      <h3 class="ajustes-section-title">Sesión</h3>
-      <button class="btn-danger" onclick="doLogout()">CERRAR SESIÓN</button>
-    </section>
+    <!-- Cuenta (desplegable) -->
+    <div class="aj-accordion">
+      <button class="aj-accordion-header" onclick="toggleAccordion('acc-cuenta',this)">
+        <span>🔐 Cuenta</span><span class="aj-chevron">▼</span>
+      </button>
+      <div class="aj-accordion-body hidden" id="acc-cuenta">
+        <div class="field"><label>Contraseña actual</label>
+          <div class="pass-field"><input type="password" id="aj-pass-actual" placeholder="Contraseña actual" autocomplete="new-password"/>
+            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-actual',this)">
+              <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="field"><label>Nueva contraseña</label>
+          <div class="pass-field"><input type="password" id="aj-pass-nueva" placeholder="Mínimo 6 caracteres" autocomplete="new-password"/>
+            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-nueva',this)">
+              <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="field"><label>Repetir nueva contraseña</label>
+          <div class="pass-field"><input type="password" id="aj-pass-repite" placeholder="Repite la nueva contraseña" autocomplete="new-password"/>
+            <button class="btn-eye" type="button" onclick="togglePass('aj-pass-repite',this)">
+              <svg class="eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="aj-pass-ok" class="ok-msg hidden">¡Contraseña actualizada! ✓</div>
+        <div id="aj-pass-err" class="error-msg hidden"></div>
+        <button class="btn-secondary" onclick="cambiarPassword()">CAMBIAR CONTRASEÑA</button>
+      </div>
+    </div>
+
+    <!-- Cerrar sesión -->
+    <div style="padding:8px 0">
+      <button class="btn-danger" style="width:100%" onclick="doLogout()">🚪 CERRAR SESIÓN</button>
+    </div>
+
   </main>
 </div>
 

@@ -821,3 +821,90 @@ textarea { resize: vertical; }
 /* ── AJUSTES: campo teléfono readonly ────── */
 input[readonly] { opacity:0.55; cursor:not-allowed; }
 
+
+/* ── ACORDEÓN AJUSTES ────────────────────── */
+.aj-accordion {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:16px; overflow:hidden; margin-bottom:8px;
+}
+.aj-accordion-header {
+  width:100%; display:flex; align-items:center; justify-content:space-between;
+  padding:18px 20px; background:none; border:none; cursor:pointer;
+  color:var(--text); font-family:var(--font-body); font-size:1rem; font-weight:600;
+  transition:background 0.15s;
+}
+.aj-accordion-header:hover { background:rgba(255,255,255,0.03); }
+.aj-chevron { font-size:0.85rem; color:var(--text-muted); transition:transform 0.2s; }
+.aj-accordion-body { padding:0 20px 20px; display:flex; flex-direction:column; gap:12px; }
+.aj-accordion-body.hidden { display:none !important; }
+
+/* ── CHECKBOXES MÚLTIPLE ─────────────────── */
+.checkbox-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.checkbox-item {
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:10px; padding:9px 12px; cursor:pointer;
+  font-size:0.85rem; color:var(--text-muted); transition:all 0.15s;
+}
+.checkbox-item:hover { border-color:var(--accent); color:var(--text); }
+.checkbox-item input[type="checkbox"] { accent-color:var(--accent); width:16px; height:16px; cursor:pointer; }
+.checkbox-item:has(input:checked) { background:rgba(200,255,0,0.08); border-color:var(--accent); color:var(--accent); }
+
+/* ── SOLICITUDES ─────────────────────────── */
+.sol-item {
+  display:flex; align-items:center; gap:12px;
+  padding:14px 20px; border-bottom:1px solid var(--border);
+  animation:fadeUp 0.2s ease forwards; opacity:0;
+}
+.btn-sol-aceptar {
+  background:rgba(200,255,0,0.15); border:1px solid var(--accent);
+  color:var(--accent); border-radius:50%; width:34px; height:34px;
+  font-size:1rem; cursor:pointer; transition:background 0.15s;
+}
+.btn-sol-aceptar:hover { background:rgba(200,255,0,0.3); }
+.btn-sol-rechazar {
+  background:rgba(255,60,60,0.1); border:1px solid rgba(255,60,60,0.3);
+  color:#ff5e5e; border-radius:50%; width:34px; height:34px;
+  font-size:1rem; cursor:pointer; transition:background 0.15s;
+}
+.btn-sol-rechazar:hover { background:rgba(255,60,60,0.2); }
+
+/* ── COLABORADORES ───────────────────────── */
+.colaboradores-search-wrap { position:relative; }
+.colab-results {
+  position:absolute; z-index:100; width:100%;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:var(--radius); margin-top:4px; overflow:hidden;
+}
+.colab-result-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px; cursor:pointer; transition:background 0.15s;
+  font-size:0.9rem;
+}
+.colab-result-item:hover { background:var(--surface); }
+.colab-seleccionados { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.colab-chip {
+  display:flex; align-items:center; gap:6px;
+  background:rgba(123,95,255,0.15); border:1px solid rgba(123,95,255,0.3);
+  color:var(--purple); border-radius:50px; padding:4px 12px;
+  font-size:0.82rem;
+}
+
+/* ── RUTAS CANCELADAS ────────────────────── */
+.ruta-card.cancelada { opacity:0.6; }
+.cancelada-badge {
+  position:absolute; top:12px; right:12px;
+  background:#ff3333; color:#fff;
+  font-family:var(--font-display); font-size:0.7rem; letter-spacing:1px;
+  border-radius:6px; padding:4px 10px;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  max-width:120px; text-align:center;
+  box-shadow:0 2px 8px rgba(255,0,0,0.3);
+}
+.cancelada-motivo { font-family:var(--font-body); font-size:0.65rem; opacity:0.85; text-transform:none; font-weight:400; letter-spacing:0; }
+
+/* ── SOLICITUDES badge en grid inicio ────── */
+.action-card.solicitudes::after { background:#ff8c00; }
+.action-card.solicitudes:hover { border-color:#ff8c00; box-shadow:0 8px 30px rgba(255,140,0,0.1); }
+.action-card.solicitudes:hover::after { opacity:1; }
+.action-card.solicitudes .action-arrow { color:#ff8c00; }
