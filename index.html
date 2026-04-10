@@ -26,10 +26,15 @@
     </div>
     <div id="login-error" class="error-msg hidden"></div>
     <button class="btn-primary" onclick="doLogin()">ENTRAR</button>
+    <div class="login-divider"><span>— o continúa con —</span></div>
+    <button class="btn-google" onclick="loginConGoogle()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.93 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Continuar con Google
+    </button>
     <div class="login-divider"><span>¿No tienes cuenta?</span></div>
     <button class="btn-secondary" onclick="showScreen('screen-registro')">CREAR CUENTA</button>
     <div class="soporte-link">
-      <a href="mailto:patinajeloeches@outlook.com?subject=Soporte RutaSkate" title="Soporte">
+      <a href="/cdn-cgi/l/email-protection#7808190c111619121d14171d1b101d0b38170d0c14171713561b1715470b0d1a121d1b0c452b1708170a0c1d582a0d0c192b13190c1d" title="Soporte">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         ¿Necesitas ayuda? Contacta con soporte
       </a>
@@ -102,10 +107,15 @@
     <div id="reg-error" class="error-msg hidden"></div>
     <div id="reg-ok" class="ok-msg hidden">¡Cuenta creada! Entrando... 🛼</div>
     <button class="btn-primary" onclick="doRegistro()">CREAR CUENTA</button>
+    <div class="login-divider"><span>— o regístrate con —</span></div>
+    <button class="btn-google" onclick="loginConGoogle()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.93 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Continuar con Google
+    </button>
     <div class="login-divider"><span>¿Ya tienes cuenta?</span></div>
     <button class="btn-secondary" onclick="showScreen('screen-login')">INICIAR SESIÓN</button>
     <div class="soporte-link">
-      <a href="mailto:patinajeloeches@outlook.com?subject=Soporte RutaSkate" title="Soporte">
+      <a href="/cdn-cgi/l/email-protection#e1918095888f808b848d8e8482898492a18e94958d8e8e8acf828e8cde9294838b848295dcb28e918e939584c1b3949580b28a809584" title="Soporte">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         ¿Necesitas ayuda? Contacta con soporte
       </a>
@@ -127,12 +137,10 @@
         <svg class="chevron-menu" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       <div class="user-dropdown hidden" id="user-dropdown">
-        <button onclick="toggleUserMenu();showScreen('screen-ajustes');loadAjustes();document.getElementById('acc-perfil').classList.remove('hidden')">👤 Mi perfil</button>
-        <button onclick="toggleUserMenu();showScreen('screen-ajustes');loadAjustes()">⚙️ Ajustes</button>
-        <button onclick="toggleUserMenu();showScreen('screen-ajustes');loadAjustes()">🎨 Apariencia</button>
+        <button onclick="toggleUserMenu();navTo('ajustes')">⚙️ Ajustes</button>
         <div id="user-dropdown-admin" style="display:none">
           <div class="dropdown-sep"></div>
-          <button onclick="toggleUserMenu();showScreen('screen-panel-admin')">🛡️ Panel Admin</button>
+          <button onclick="toggleUserMenu();loadPanelAdmin()">🛡️ Panel Admin</button>
         </div>
         <div class="dropdown-sep"></div>
         <button class="danger" onclick="toggleUserMenu();doLogout()">🚪 Cerrar sesión</button>
@@ -281,6 +289,10 @@
       <h3 class="ajustes-section-title">Eventos publicados</h3>
       <div id="admin-eventos-list"></div>
     </section>
+    <section class="ajustes-section">
+      <h3 class="ajustes-section-title">Bloqueos de usuarios</h3>
+      <div id="admin-bloqueos-list"></div>
+    </section>
   </main>
 </div>
 
@@ -357,13 +369,13 @@
   <main class="tarjetas-swiper-main">
     <div id="tarjetas-swiper-wrap">
       <div id="tarjetas-card-stack"></div>
-      <div id="tarjetas-hint" class="tarjetas-hint">
-        <span>← No me interesa</span>
-        <span class="hint-match">↓ Supermatch 💘</span>
-        <span>Me gusta →</span>
-      </div>
     </div>
     <div id="tarjetas-empty" class="empty-msg hidden"></div>
+    <div class="tarjetas-hint-bar">
+      <span class="hint-nope">← Nope</span>
+      <span class="hint-match">💘 Match</span>
+      <span class="hint-like">Like →</span>
+    </div>
     <div class="tarjetas-actions">
       <button class="btn-swipe-action nope" onclick="swipeCard('nope')" title="No me interesa">✕</button>
       <button class="btn-swipe-action super" onclick="swipeCard('super')" title="Supermatch">💘</button>
@@ -497,6 +509,7 @@
           <div><p class="perfil-nombre" id="perfil-nombre-display">—</p><p class="perfil-email" id="perfil-email-display">—</p></div>
         </div>
         <div class="field"><label>Nombre para mostrar</label><input type="text" id="aj-nombre" placeholder="Tu nombre visible"/></div>
+        <div class="field"><label>Correo electrónico</label><input type="email" id="aj-email" placeholder="tucorreo@email.com"/></div>
         <div class="field"><label>Descripción / Bio</label>
           <textarea id="aj-descripcion" rows="3" placeholder="Cuéntanos algo sobre ti..."></textarea>
         </div>
@@ -655,9 +668,4 @@
   </main>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="app.js"></script>
-</body>
-</html>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/fireba

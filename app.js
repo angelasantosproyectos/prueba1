@@ -95,6 +95,28 @@ async function doLogin(){
   try{await auth.signInWithEmailAndPassword(email,pass);}
   catch(e){errEl.textContent='Credenciales incorrectas.';errEl.classList.remove('hidden');}
 }
+
+async function loginConGoogle(){
+  const errEl=document.getElementById('login-error');errEl.classList.add('hidden');
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    const result=await auth.signInWithPopup(provider);
+    const user=result.user;
+    // Si es nuevo usuario, crear doc en Firestore
+    const snap=await db.collection('usuarios').doc(user.uid).get();
+    if(!snap.exists){
+      const username=(user.displayName||user.email.split('@')[0]).toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9_]/g,'');
+      const rol=user.email===ADMIN_EMAIL?'admin':'usuario';
+      await db.collection('usuarios').doc(user.uid).set({
+        uid:user.uid,username,nombre:user.displayName||username,
+        email:user.email,foto:user.photoURL||'',
+        seguidores:[],siguiendo:[],rol,
+        creadoEn:firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  }catch(e){errEl.textContent='Error al iniciar con Google.';errEl.classList.remove('hidden');}
+}
 function doLogout(){if(mensajesListener)mensajesListener();auth.signOut();}
 
 // ═══════════════════════════════════════════
@@ -142,16 +164,16 @@ async function doRegistro(){
   if(!email){errEl.textContent='Introduce tu correo electrónico.';errEl.classList.remove('hidden');return;}
   const dia=parseInt(diaStr,10),mes=parseInt(mesStr,10),anio=parseInt(anioStr,10);
   if(!diaStr||!mesStr||!anioStr||anioStr.length<4){errEl.textContent='Introduce la fecha de nacimiento completa.';errEl.classList.remove('hidden');return;}
-  if(isNaN(dia)||dia<1||dia>31){errEl.textContent='Día inválido (1-31).';errEl.classList.remove('hidden');return;}
-  if(isNaN(mes)||mes<1||mes>12){errEl.textContent='Mes inválido (1-12).';errEl.classList.remove('hidden');return;}
+  if(isNaN(dia)||dia<1||dia>31){errEl.textContent='Día incorrecto (1-31).';errEl.classList.remove('hidden');return;}
+  if(isNaN(mes)||mes<1||mes>12){errEl.textContent='Mes incorrecto (1-12).';errEl.classList.remove('hidden');return;}
   const anioActual=new Date().getFullYear();
-  if(isNaN(anio)||anio<1920||anio>anioActual){errEl.textContent='Año inválido.';errEl.classList.remove('hidden');return;}
+  if(isNaN(anio)||anio<1920||anio>anioActual){errEl.textContent='Año incorrecto.';errEl.classList.remove('hidden');return;}
   const fobj=new Date(anio,mes-1,dia);
   if(fobj.getDate()!==dia||fobj.getMonth()!==mes-1){errEl.textContent=`La fecha ${dia}/${mes}/${anio} no existe.`;errEl.classList.remove('hidden');return;}
   const hoy=new Date();let edad=hoy.getFullYear()-anio;
   if(hoy.getMonth()+1<mes||(hoy.getMonth()+1===mes&&hoy.getDate()<dia))edad--;
   if(edad<18){errEl.textContent='Debes tener al menos 18 años.';errEl.classList.remove('hidden');return;}
-  if(!telNum||telNum.length<6){errEl.textContent='Teléfono inválido.';errEl.classList.remove('hidden');return;}
+  if(!telNum||telNum.length<6){errEl.textContent='Teléfono incorrecto.';errEl.classList.remove('hidden');return;}
   if(!selectedSexo){errEl.textContent='Selecciona tu sexo.';errEl.classList.remove('hidden');return;}
   if(pass.length<6){errEl.textContent='La contraseña debe tener al menos 6 caracteres.';errEl.classList.remove('hidden');return;}
   if(pass!==pass2){errEl.textContent='Las contraseñas no coinciden.';errEl.classList.remove('hidden');return;}
@@ -176,7 +198,7 @@ async function doRegistro(){
   }catch(e){
     let msg='Error al crear cuenta.';
     if(e.code==='auth/email-already-in-use')msg='Ese correo ya está registrado.';
-    if(e.code==='auth/invalid-email')msg='El correo no tiene formato válido.';
+    if(e.code==='auth/invalid-email')msg='El formato del correo es incorrecto.';
     if(e.code==='auth/weak-password')msg='Contraseña demasiado débil.';
     errEl.textContent=msg;errEl.classList.remove('hidden');
   }
@@ -862,6 +884,33 @@ async function verPerfilDesdeSeguidores(uid){
 
 // Alias para compatibilidad
 function switchSegTab(tab,btn){}
+
+// ── BLOQUEAR USUARIO ────────────────────
+async function bloquearUsuario(targetUid,targetUsername){
+  if(!confirm(`¿Bloquear a @${targetUsername}? No podrá ver tu perfil ni enviarte mensajes.`))return;
+  try{
+    await db.collection('usuarios').doc(currentUser.uid).update({
+      bloqueados:firebase.firestore.FieldValue.arrayUnion(targetUid)
+    });
+    await db.collection('bloqueos').add({
+      deUid:currentUser.uid,paraUid:targetUid,
+      deEmail:currentUser.email,paraUsername:targetUsername,
+      fecha:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert(`@${targetUsername} ha sido bloqueado.`);
+    // Si estaba en una conversación, cerrar
+    if(chatActualUser&&chatActualUser.uid===targetUid)cerrarConversacion();
+  }catch(e){alert('Error al bloquear: '+e.message);}
+}
+async function desbloquearUsuario(targetUid,targetUsername){
+  if(!confirm(`¿Desbloquear a @${targetUsername}?`))return;
+  try{
+    await db.collection('usuarios').doc(currentUser.uid).update({
+      bloqueados:firebase.firestore.FieldValue.arrayRemove(targetUid)
+    });
+    alert(`@${targetUsername} ha sido desbloqueado.`);
+  }catch(e){alert('Error: '+e.message);}
+}
 async function toggleSeguir(targetUid,yaSigo,btn){
   const miRef=db.collection('usuarios').doc(currentUser.uid);
   const elRef=db.collection('usuarios').doc(targetUid);
@@ -1194,9 +1243,9 @@ async function loadAjustes(){
       setChecked(['bq-amistad','bq-amor','bq-rollo','bq-surja','bq-gente'],d.relacionBusco||[]);
     }else{
       const n=getNombre(currentUser);
-      document.getElementById('aj-nombre').value=n;
-      document.getElementById('perfil-nombre-display').textContent=n;
-      document.getElementById('perfil-avatar-display').textContent=getInicial(n);
+      setVal('aj-nombre',n);setVal('aj-email',currentUser.email||'');
+      const pn=document.getElementById('perfil-nombre-display');if(pn)pn.textContent=n;
+      const pa=document.getElementById('perfil-avatar-display');if(pa)pa.textContent=getInicial(n);
     }
   }catch(e){console.error(e);}
 }
@@ -1206,13 +1255,22 @@ function selectNivelAj(btn){document.querySelectorAll('#screen-ajustes .nivel-bt
 function getVal(id){const el=document.getElementById(id);return el?el.value.trim():'';}
 
 async function guardarPerfil(){
-  const nombre=document.getElementById('aj-nombre').value.trim();
-  const bio=document.getElementById('aj-bio').value.trim();
+  const nombre=document.getElementById('aj-nombre')?.value.trim()||'';
+  const bio=document.getElementById('aj-descripcion')?.value.trim()||'';
+  const edad=parseInt(document.getElementById('aj-edad')?.value||'0',10)||0;
+  const sexo=document.getElementById('aj-sexo')?.value||'';
+  const emailNuevo=document.getElementById('aj-email')?.value.trim()||currentUser.email;
   const okEl=document.getElementById('aj-ok');okEl.classList.add('hidden');
   if(!nombre){alert('El nombre no puede estar vacío.');return;}
   const nombreAnterior=getNombre(currentUser);
   try{
-    await db.collection('usuarios').doc(currentUser.uid).set({nombre,bio,email:currentUser.email,uid:currentUser.uid,...(selectedNivelAjustes?{nivel:selectedNivelAjustes}:{})},{merge:true});
+    const datos={
+      nombre,bio,descripcion:bio,email:emailNuevo,uid:currentUser.uid,
+      ...(selectedNivelAjustes?{nivel:selectedNivelAjustes}:{}),
+      ...(edad>=18?{edad}:{}),
+      ...(sexo?{sexo}:{})
+    };
+    await db.collection('usuarios').doc(currentUser.uid).set(datos,{merge:true});
     await currentUser.updateProfile({displayName:nombre});
     if(nombre!==nombreAnterior){
       const rutasSnap=await db.collection('rutas').where('convocadoPorEmail','==',currentUser.email).get();
@@ -1220,10 +1278,10 @@ async function guardarPerfil(){
       if(!rutasSnap.empty)await batch.commit();
     }
     document.getElementById('user-display').textContent=nombre;
-    document.getElementById('perfil-nombre-display').textContent=nombre;
-    document.getElementById('perfil-avatar-display').textContent=getInicial(nombre);
+    const dispN=document.getElementById('perfil-nombre-display');if(dispN)dispN.textContent=nombre;
+    const dispA=document.getElementById('perfil-avatar-display');if(dispA)dispA.textContent=getInicial(nombre);
     okEl.classList.remove('hidden');setTimeout(()=>okEl.classList.add('hidden'),2500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){alert('Error al guardar perfil: '+e.message);}
 }
 
 async function guardarDatosPersonales(){
@@ -1278,14 +1336,11 @@ function formatHora(date){
 function escapeHtml(str){return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
 // ─── APARIENCIA / TEMA ───
 function aplicarTema(claro){
-  if(claro){
-    document.body.classList.add('tema-claro');
-  } else {
-    document.body.classList.remove('tema-claro');
-  }
-  localStorage.setItem('rutaskate_tema', claro?'claro':'oscuro');
-  const toggle=document.getElementById('toggle-tema');
-  if(toggle)toggle.checked=claro;
+  if(claro){document.body.classList.add('tema-claro');}
+  else{document.body.classList.remove('tema-claro');}
+  localStorage.setItem('rutaskate_tema',claro?'claro':'oscuro');
+  const toggle=document.getElementById('toggle-tema');if(toggle)toggle.checked=claro;
+  const btn=document.getElementById('btn-tema-topbar');if(btn)btn.textContent=claro?'☀️':'🌙';
 }
 function cambiarTema(claro){
   aplicarTema(claro);
@@ -1346,16 +1401,9 @@ document.addEventListener('click',e=>{
 function toggleTemaBtn(){
   const claro=document.body.classList.contains('tema-claro');
   aplicarTema(!claro);
-  const btn=document.getElementById('btn-tema-topbar');
-  if(btn)btn.textContent=!claro?'☀️':'🌙';
 }
 // Actualizar icono al aplicar tema
-const _aplicarTema=aplicarTema;
-function aplicarTema(claro){
-  _aplicarTema(claro);
-  const btn=document.getElementById('btn-tema-topbar');
-  if(btn)btn.textContent=claro?'☀️':'🌙';
-}
+// aplicarTema ya definida más arriba, solo actualizar icono al llamarla
 
 // ═══════════════════════════════════════════
 // EVENTOS: separar itinerario por días
@@ -1623,36 +1671,94 @@ async function loadPanelAdmin(){
   if(!esAdmin()){showScreen('screen-inicio');return;}
   showScreen('screen-panel-admin');
   try{
-    const[usersSnap,rutasSnap,evSnap]=await Promise.all([
+    const[usersSnap,rutasSnap,evSnap,bloqueosSnap]=await Promise.all([
       db.collection('usuarios').get(),
       db.collection('rutas').get(),
-      db.collection('eventos').get()
+      db.collection('eventos').get(),
+      db.collection('bloqueos').get()
     ]);
-    const ul=document.getElementById('admin-users-list');
-    ul.innerHTML='';
+
+    // Calcular actividad: registros por día
+    const registrosPorDia={};
     usersSnap.docs.forEach(d=>{
       const u=d.data();
+      if(u.creadoEn&&u.creadoEn.toDate){
+        const dia=u.creadoEn.toDate().toLocaleDateString('es-ES');
+        registrosPorDia[dia]=(registrosPorDia[dia]||0)+1;
+      }
+    });
+
+    const ul=document.getElementById('admin-users-list');ul.innerHTML='';
+    // Stats globales
+    const statsDiv=document.createElement('div');statsDiv.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px';
+    statsDiv.innerHTML=`
+      <div class="admin-kpi"><span>${usersSnap.size}</span><small>Usuarios</small></div>
+      <div class="admin-kpi"><span>${rutasSnap.size}</span><small>Rutas</small></div>
+      <div class="admin-kpi"><span>${evSnap.size}</span><small>Eventos</small></div>`;
+    ul.appendChild(statsDiv);
+
+    // Actividad por día
+    const actDiv=document.createElement('div');actDiv.style.cssText='margin-bottom:12px;padding:10px;background:var(--bg2);border-radius:10px';
+    actDiv.innerHTML='<p style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px">Registros por día</p>'+
+      Object.entries(registrosPorDia).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7).map(([dia,n])=>
+        `<div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:3px 0;border-bottom:1px solid var(--border)"><span>${dia}</span><strong>${n}</strong></div>`
+      ).join('');
+    ul.appendChild(actDiv);
+
+    // Lista de usuarios
+    usersSnap.docs.forEach(d=>{
+      const u=d.data();
+      const reg=u.creadoEn&&u.creadoEn.toDate?u.creadoEn.toDate().toLocaleDateString('es-ES'):'—';
       const div=document.createElement('div');div.className='admin-stat';
-      div.innerHTML=`<strong>@${u.username||u.nombre||'—'}</strong> — ${u.email} <span style="opacity:0.5;font-size:0.78rem">${u.rol||'usuario'}</span>`;
+      div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
+        <div><strong>@${u.username||u.nombre||'—'}</strong> <span style="opacity:0.5;font-size:0.75rem">${u.rol||'usuario'}</span><br>
+        <span style="font-size:0.78rem;color:var(--text-muted)">${u.email} — Registro: ${reg}</span></div>
+        <button style="background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.3);color:#ff5e5e;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:0.75rem"
+          onclick="adminBanUser('${d.id}','${u.username||u.nombre}',this)">
+          ${u.baneado?'✓ Baneado':'Ban'}
+        </button>
+      </div>`;
       ul.appendChild(div);
     });
-    const rl=document.getElementById('admin-rutas-list');
-    rl.innerHTML='';
+
+    const rl=document.getElementById('admin-rutas-list');rl.innerHTML='';
     rutasSnap.docs.forEach(d=>{
       const r=d.data();
       const div=document.createElement('div');div.className='admin-stat';
-      div.innerHTML=`<strong>${r.nombre}</strong> — ${r.fecha||''} — por @${r.convocadoPor||''}${r.cancelada?` <span style="color:#ef4444">[CANCELADA]</span>`:''}`;
+      div.innerHTML=`<strong>${r.nombre}</strong> — ${r.fecha||''} — @${r.convocadoPor||''}${r.cancelada?` <span style="color:#ef4444">[CANCELADA${r.motivoCancelacion?': '+r.motivoCancelacion:''}]</span>`:''}`;
       rl.appendChild(div);
     });
-    const el=document.getElementById('admin-eventos-list');
-    el.innerHTML='';
+
+    const el=document.getElementById('admin-eventos-list');el.innerHTML='';
     evSnap.docs.forEach(d=>{
       const ev=d.data();
       const div=document.createElement('div');div.className='admin-stat';
-      div.innerHTML=`<strong>${ev.nombre}</strong> — ${ev.ciudad} — ${ev.fechaInicio||''}`;
+      div.innerHTML=`<strong>${ev.nombre}</strong> — 📍 ${ev.ciudad} — 📅 ${ev.fechaInicio||''}${ev.fechaFin&&ev.fechaFin!==ev.fechaInicio?' → '+ev.fechaFin:''} — por @${ev.creadoPor||''}`;
       el.appendChild(div);
     });
+
+    // Bloqueos
+    const bl=document.getElementById('admin-bloqueos-list');
+    if(bl){bl.innerHTML='';
+      if(bloqueosSnap.empty){bl.innerHTML='<p style="color:var(--text-muted);font-size:0.85rem">Sin bloqueos registrados</p>';}
+      bloqueosSnap.docs.forEach(d=>{
+        const b=d.data();
+        const fecha=b.fecha&&b.fecha.toDate?b.fecha.toDate().toLocaleDateString('es-ES'):'—';
+        const div=document.createElement('div');div.className='admin-stat';
+        div.innerHTML=`<span style="color:#ff5e5e">@${b.deEmail}</span> bloqueó a <strong>@${b.paraUsername}</strong> — ${fecha}`;
+        bl.appendChild(div);
+      });
+    }
   }catch(e){console.error('Panel admin error:',e);}
+}
+
+async function adminBanUser(uid,username,btn){
+  const esBaneado=btn.textContent.trim().includes('Baneado');
+  if(!confirm(esBaneado?`Desbanear a @${username}?`:`Banear a @${username}? No podrá acceder.`))return;
+  try{
+    await db.collection('usuarios').doc(uid).update({baneado:!esBaneado});
+    btn.textContent=esBaneado?'Ban':'✓ Baneado';
+  }catch(e){alert('Error: '+e.message);}
 }
 
 // Mostrar botón Panel Admin en el menú si es admin
@@ -1667,3 +1773,75 @@ function actualizarMenuAdmin(){
 // ═══════════════════════════════════════════
 // Parchear onAuthStateChanged para llamar a actualizarMenuAdmin
 const _origAuthChanged = auth.onAuthStateChanged.bind(auth);
+
+// ═══════════════════════════════════════════
+// NAVEGACIÓN INFERIOR (Bottom Nav)
+// ═══════════════════════════════════════════
+const SCREENS_CON_NAV=['screen-inicio','screen-buscar','screen-chats','screen-ajustes',
+  'screen-ver','screen-convocar','screen-eventos','screen-seguidores','screen-solicitudes',
+  'screen-tarjetas','screen-matches','screen-panel-admin'];
+
+function navTo(dest){
+  // Actualizar botón activo
+  document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
+  const activeBtn=document.getElementById('bnav-'+dest);
+  if(activeBtn)activeBtn.classList.add('active');
+
+  switch(dest){
+    case 'inicio':
+      showScreen('screen-inicio');break;
+    case 'buscar':
+      showScreen('screen-buscar');initBuscar();break;
+    case 'chats':
+      showScreen('screen-chats');loadChats();break;
+    case 'ajustes':
+      showScreen('screen-ajustes');loadAjustes();break;
+  }
+}
+
+// Sobrescribir showScreen para gestionar el menú inferior
+const _showScreenOrig = showScreen;
+function showScreen(id){
+  _showScreenOrig(id);
+  const nav=document.getElementById('bottom-nav');
+  const enNavScreen=SCREENS_CON_NAV.includes(id);
+  const esAuth=id==='screen-login'||id==='screen-registro';
+  if(nav){
+    nav.style.display=(!esAuth&&currentUser)?'flex':'none';
+  }
+  document.body.classList.toggle('has-bottom-nav',!esAuth&&!!currentUser);
+
+  // Actualizar badge de chats en nav inferior
+  const bnavBadge=document.getElementById('bnav-chat-badge');
+  const homeBadge=document.getElementById('home-chat-badge');
+  if(bnavBadge&&homeBadge){
+    const n=homeBadge.textContent;
+    bnavBadge.textContent=n;
+    bnavBadge.classList.toggle('hidden',homeBadge.classList.contains('hidden'));
+  }
+}
+
+// Botón bloquear en perfil usuario
+function mostrarBotonesPerfilUsuario(uid, username){
+  const statsEl=document.getElementById('pu-stats');
+  if(!statsEl)return;
+  // Verificar si está bloqueado
+  const bloqueados=currentUserData?.bloqueados||[];
+  const estaBloqueado=bloqueados.includes(uid);
+  const bloquearBtn=document.createElement('button');
+  bloquearBtn.style.cssText='margin-top:16px;background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.3);color:#ff5e5e;border-radius:8px;padding:7px 16px;cursor:pointer;font-size:0.82rem';
+  bloquearBtn.textContent=estaBloqueado?'🔓 Desbloquear':'🚫 Bloquear';
+  bloquearBtn.onclick=()=>estaBloqueado?desbloquearUsuario(uid,username):bloquearUsuario(uid,username);
+  statsEl.appendChild(bloquearBtn);
+}
+
+// Parchear verPerfilUsuario para añadir botón bloquear
+const _verPerfilOrig=verPerfilUsuario;
+async function verPerfilUsuario(userData){
+  await _verPerfilOrig(userData);
+  if(userData?.uid&&userData?.uid!==currentUser?.uid){
+    const u=userData;
+    mostrarBotonesPerfilUsuario(u.uid,u.username||u.nombre||u.uid);
+  }
+}
+
