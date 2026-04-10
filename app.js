@@ -96,7 +96,7 @@ async function doLogin(){
   catch(e){errEl.textContent='Credenciales incorrectas.';errEl.classList.remove('hidden');}
 }
 
-async function loginConGoogle(){
+/*async function loginConGoogle(){
   const errEl=document.getElementById('login-error');errEl.classList.add('hidden');
   try{
     const provider=new firebase.auth.GoogleAuthProvider();
@@ -116,7 +116,7 @@ async function loginConGoogle(){
       });
     }
   }catch(e){errEl.textContent='Error al iniciar con Google.';errEl.classList.remove('hidden');}
-}
+}*/
 function doLogout(){if(mensajesListener)mensajesListener();auth.signOut();}
 
 // ═══════════════════════════════════════════
