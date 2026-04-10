@@ -58,6 +58,7 @@ auth.onAuthStateChanged(async user => {
     currentUserData = snap && snap.exists ? snap.data() : null;
     const dn = currentUserData?.username ? '@'+currentUserData.username : (user.displayName||user.email.split('@')[0]);
     document.getElementById('user-display').textContent = dn;
+    const avTop=document.getElementById('user-avatar-top');if(avTop)avTop.textContent=getInicial(dn.replace('@',''));
     showScreen('screen-inicio');
     loadRutaNames();
     escucharNoLeidos();
@@ -96,7 +97,7 @@ async function doLogin(){
   catch(e){errEl.textContent='Credenciales incorrectas.';errEl.classList.remove('hidden');}
 }
 
-/*async function loginConGoogle(){
+async function loginConGoogle(){
   const errEl=document.getElementById('login-error');errEl.classList.add('hidden');
   try{
     const provider=new firebase.auth.GoogleAuthProvider();
@@ -116,7 +117,7 @@ async function doLogin(){
       });
     }
   }catch(e){errEl.textContent='Error al iniciar con Google.';errEl.classList.remove('hidden');}
-}*/
+}
 function doLogout(){if(mensajesListener)mensajesListener();auth.signOut();}
 
 // ═══════════════════════════════════════════
@@ -207,12 +208,7 @@ async function doRegistro(){
 // ═══════════════════════════════════════════
 // NAVEGACIÓN / UI
 // ═══════════════════════════════════════════
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});
-  const t=document.getElementById(id);t.style.display='flex';t.classList.add('active');
-  if(id==='screen-convocar'&&!editandoRutaId){resetForm();loadRutaNames();}
-  if(id==='screen-eventos'){const b=document.getElementById('btn-crear-evento');if(b)b.style.display=esAdmin()?'inline-flex':'none';}
-}
+// showScreen definida más abajo (versión con bottom-nav)
 function togglePass(inputId,btn){
   const input=document.getElementById(inputId);const visible=input.type==='text';
   input.type=visible?'password':'text';
@@ -1216,7 +1212,7 @@ async function loadAjustes(){
   // Sincronizar toggle de tema
   const temaSaved=localStorage.getItem('rutaskate_tema');
   const toggleTema=document.getElementById('toggle-tema');
-  if(toggleTema)toggleTema.checked=(temaSaved==='claro');
+  if(toggleTema)toggleTema.checked=(document.body.classList.contains('light'));
   try{
     const snap=await db.collection('usuarios').doc(currentUser.uid).get();
     if(snap.exists){
@@ -1336,11 +1332,14 @@ function formatHora(date){
 function escapeHtml(str){return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
 // ─── APARIENCIA / TEMA ───
 function aplicarTema(claro){
-  if(claro){document.body.classList.add('tema-claro');}
-  else{document.body.classList.remove('tema-claro');}
+  document.body.classList.toggle('light',claro);
   localStorage.setItem('rutaskate_tema',claro?'claro':'oscuro');
+  // Pill
+  const pd=document.getElementById('pill-dark');const pl=document.getElementById('pill-light');
+  if(pd){pd.classList.toggle('active',!claro);}
+  if(pl){pl.classList.toggle('active',claro);}
+  // Toggle en ajustes si existe
   const toggle=document.getElementById('toggle-tema');if(toggle)toggle.checked=claro;
-  const btn=document.getElementById('btn-tema-topbar');if(btn)btn.textContent=claro?'☀️':'🌙';
 }
 function cambiarTema(claro){
   aplicarTema(claro);
@@ -1348,7 +1347,7 @@ function cambiarTema(claro){
 // Aplicar tema guardado al cargar
 (function(){
   const tema=localStorage.getItem('rutaskate_tema');
-  if(tema==='claro')aplicarTema(true);
+  aplicarTema(tema==='claro');
 })();
 
 // ─── EXPLICACIÓN ESTRELLAS (FAQ inline) ───
@@ -1399,7 +1398,7 @@ document.addEventListener('click',e=>{
 // TEMA: botón luna/sol en top bar
 // ═══════════════════════════════════════════
 function toggleTemaBtn(){
-  const claro=document.body.classList.contains('tema-claro');
+  const claro=document.body.classList.contains('light');
   aplicarTema(!claro);
 }
 // Actualizar icono al aplicar tema
@@ -1799,26 +1798,23 @@ function navTo(dest){
   }
 }
 
-// Sobrescribir showScreen para gestionar el menú inferior
-const _showScreenOrig = showScreen;
+// ── showScreen UNIFICADO (navegación + bottom nav) ──
 function showScreen(id){
-  _showScreenOrig(id);
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});
+  const t=document.getElementById(id);
+  if(!t){console.warn('Screen no encontrada:',id);return;}
+  t.style.display='flex';t.classList.add('active');
+  if(id==='screen-convocar'&&!editandoRutaId){resetForm();loadRutaNames();}
+  if(id==='screen-eventos'){const b=document.getElementById('btn-crear-evento');if(b)b.style.display=esAdmin()?'inline-flex':'none';}
+  // Bottom nav
   const nav=document.getElementById('bottom-nav');
-  const enNavScreen=SCREENS_CON_NAV.includes(id);
   const esAuth=id==='screen-login'||id==='screen-registro';
-  if(nav){
-    nav.style.display=(!esAuth&&currentUser)?'flex':'none';
-  }
+  if(nav) nav.style.display=(!esAuth&&currentUser)?'flex':'none';
   document.body.classList.toggle('has-bottom-nav',!esAuth&&!!currentUser);
-
-  // Actualizar badge de chats en nav inferior
-  const bnavBadge=document.getElementById('bnav-chat-badge');
-  const homeBadge=document.getElementById('home-chat-badge');
-  if(bnavBadge&&homeBadge){
-    const n=homeBadge.textContent;
-    bnavBadge.textContent=n;
-    bnavBadge.classList.toggle('hidden',homeBadge.classList.contains('hidden'));
-  }
+  // Actualizar tab activo en bottom nav
+  const tabMap={'screen-inicio':'inicio','screen-buscar':'buscar','screen-chats':'chats','screen-ajustes':'ajustes'};
+  document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
+  if(tabMap[id]){const ab=document.getElementById('bnav-'+tabMap[id]);if(ab)ab.classList.add('active');}
 }
 
 // Botón bloquear en perfil usuario

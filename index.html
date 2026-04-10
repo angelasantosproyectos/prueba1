@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RutaSkate</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -26,19 +25,19 @@
     </div>
     <div id="login-error" class="error-msg hidden"></div>
     <button class="btn-primary" onclick="doLogin()">ENTRAR</button>
-    <!--<div class="login-divider"><span>— o continúa con —</span></div>
+    <div class="login-divider"><span>— o continúa con —</span></div>
     <button class="btn-google" onclick="loginConGoogle()">
       <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.93 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Continuar con Google
-    </button>-->
+    </button>
     <div class="login-divider"><span>¿No tienes cuenta?</span></div>
     <button class="btn-secondary" onclick="showScreen('screen-registro')">CREAR CUENTA</button>
-    <!--<div class="soporte-link">
+    <div class="soporte-link">
       <a href="/cdn-cgi/l/email-protection#7808190c111619121d14171d1b101d0b38170d0c14171713561b1715470b0d1a121d1b0c452b1708170a0c1d582a0d0c192b13190c1d" title="Soporte">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         ¿Necesitas ayuda? Contacta con soporte
       </a>
-    </div>-->
+    </div>
   </div>
 </div>
 
@@ -75,8 +74,7 @@
           <option value="+351">🇵🇹 +351 Portugal</option><option value="+52">🇲🇽 +52 México</option>
           <option value="+54">🇦🇷 +54 Argentina</option><option value="+56">🇨🇱 +56 Chile</option>
           <option value="+57">🇨🇴 +57 Colombia</option><option value="+55">🇧🇷 +55 Brasil</option>
-          <!--<option value="+212">🇲🇦 +212 Marruecos</option>-->
-          <option value="+81">🇯🇵 +81 Japón</option>
+          <option value="+212">🇲🇦 +212 Marruecos</option><option value="+81">🇯🇵 +81 Japón</option>
         </select>
         <input type="tel" id="reg-telefono" placeholder="600 000 000" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,9)" maxlength="9"/>
       </div>
@@ -109,10 +107,10 @@
     <div id="reg-ok" class="ok-msg hidden">¡Cuenta creada! Entrando... 🛼</div>
     <button class="btn-primary" onclick="doRegistro()">CREAR CUENTA</button>
     <div class="login-divider"><span>— o regístrate con —</span></div>
-    <!--<button class="btn-google" onclick="loginConGoogle()">
+    <button class="btn-google" onclick="loginConGoogle()">
       <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.93 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Continuar con Google
-    </button>-->
+    </button>
     <div class="login-divider"><span>¿Ya tienes cuenta?</span></div>
     <button class="btn-secondary" onclick="showScreen('screen-login')">INICIAR SESIÓN</button>
     <div class="soporte-link">
@@ -128,28 +126,37 @@
 <div id="screen-inicio" class="screen">
   <header class="top-bar">
     <div class="logo-area">
-      <span class="logo-title small">RUTASKATE</span>
-      <button class="btn-tema-toggle" onclick="toggleTemaBtn()" id="btn-tema-topbar" title="Cambiar tema">🌙</button>
+      <span class="logo-title small">RUTASKATE ⚡</span>
     </div>
-    <div class="user-menu-wrap">
-      <button class="user-menu-btn" onclick="toggleUserMenu()" id="user-menu-btn">
-        <span id="user-display">—</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        <svg class="chevron-menu" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <div class="user-dropdown hidden" id="user-dropdown">
-        <button onclick="toggleUserMenu();navTo('ajustes')">⚙️ Ajustes</button>
-        <div id="user-dropdown-admin" style="display:none">
+    <div style="display:flex;align-items:center;gap:10px">
+      <!-- Pill tema: luna / sol -->
+      <div class="theme-pill" onclick="toggleTemaBtn()" title="Cambiar tema" id="theme-pill">
+        <div class="theme-pill-opt active" id="pill-dark">🌙</div>
+        <div class="theme-pill-opt" id="pill-light">☀️</div>
+      </div>
+      <div class="user-menu-wrap">
+        <button class="user-menu-btn" onclick="toggleUserMenu()" id="user-menu-btn">
+          <div class="user-avatar-sm" id="user-avatar-top">?</div>
+          <span id="user-display">—</span>
+          <svg class="chevron-menu" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="user-dropdown hidden" id="user-dropdown">
+          <button onclick="toggleUserMenu();navTo('ajustes')">⚙️ Ajustes</button>
+          <div id="user-dropdown-admin" style="display:none">
+            <div class="dropdown-sep"></div>
+            <button onclick="toggleUserMenu();loadPanelAdmin()">🛡️ Panel Admin</button>
+          </div>
           <div class="dropdown-sep"></div>
-          <button onclick="toggleUserMenu();loadPanelAdmin()">🛡️ Panel Admin</button>
+          <button class="danger" onclick="toggleUserMenu();doLogout()">🚪 Cerrar sesión</button>
         </div>
-        <div class="dropdown-sep"></div>
-        <button class="danger" onclick="toggleUserMenu();doLogout()">🚪 Cerrar sesión</button>
       </div>
     </div>
   </header>
   <main class="home-main">
-    <div class="hero-text"><h2 class="hero-label">¿Hoy dónde se patina?</h2><p class="hero-heading">ESCOGE TU RUTA<br>O LO QUE TE APETEZCA</p></div>
+    <div class="hero-text">
+      <h2 class="hero-heading">¿Hoy dónde<br>se patina?</h2>
+      <p class="hero-sub">Escoge tu ruta o lo que te apetezca</p>
+    </div>
     <div class="action-grid" id="action-grid-main">
       <button class="action-card convocar" onclick="editandoRutaId=null;resetForm();loadRutaNames();showScreen('screen-convocar')"><span class="action-icon">📣</span><span class="action-label">CONVOCAR<br>RUTA</span><span class="action-arrow">→</span></button>
       <button class="action-card ver" onclick="showScreen('screen-ver');loadRutas()"><span class="action-icon">🗺️</span><span class="action-label">VER<br>RUTAS</span><span class="action-arrow">→</span></button>
