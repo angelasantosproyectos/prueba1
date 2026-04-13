@@ -59,7 +59,9 @@ input,textarea,select { font-family:var(--font-b); }
 .screen { display:none; min-height:100dvh; flex-direction:column; }
 .screen.active { display:flex; }
 #screen-conversacion { height:100dvh; max-height:100dvh; overflow:hidden; }
-#screen-conversacion .conv-main { flex:1; overflow-y:auto; }
+#screen-conversacion .conv-main { flex:1; overflow-y:auto; min-height:0; }
+/* Todos los títulos .logo-title.small usan Syne */
+.logo-title.small { font-family:var(--font-d); font-size:1rem; font-weight:800; letter-spacing:0.5px; white-space:nowrap; }
 
 /* ── LOGIN / REGISTRO ────────────────────────── */
 .login-bg {
@@ -515,8 +517,9 @@ input[readonly] { opacity:0.5; cursor:not-allowed; }
 .conv-footer {
   display:flex; gap:8px; padding:10px 14px;
   border-top:1px solid var(--border); background:var(--bg2);
-  flex-shrink:0; position:sticky; bottom:0; z-index:10;
+  flex-shrink:0; z-index:50;
 }
+#screen-conversacion { display:flex; flex-direction:column; }
 .conv-footer input { flex:1; margin:0; }
 .btn-send { background:var(--purple); border:none; border-radius:10px; color:#fff; font-size:1rem; padding:0 18px; cursor:pointer; transition:background 0.15s; }
 .btn-send:hover { background:#6a5ce0; }
@@ -694,3 +697,37 @@ body.has-bottom-nav .tarjetas-main { padding-bottom:calc(68px + env(safe-area-in
 @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 @keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
 
+
+/* ── STATS en ajustes Mi Perfil ────────────── */
+.aj-stats-row { display:flex; gap:16px; margin-top:6px; }
+.aj-stat-item { text-align:center; }
+.aj-stat-item strong { display:block; font-family:var(--font-d); font-size:1.1rem; color:var(--accent); }
+.aj-stat-item span { font-size:0.68rem; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px; }
+
+/* ── SWIPE buscar track (horizontal) ───────── */
+#buscar-swipe-track { will-change:transform; }
+#chats-swipe-track  { will-change:transform; }
+
+/* ── BUSCAR tab-panel tarjetas ─────────────── */
+#buscar-panel-1 { min-height:0; }
+#buscar-tarjetas-wrap { min-height:0; flex:1; }
+
+/* ── Logo pequeño ───────────────────────────── */
+.logo-title {
+  font-family:var(--font-d);
+  font-size:clamp(1.1rem,5vw,1.55rem);
+  font-weight:800; letter-spacing:0.5px;
+  color:var(--accent);
+  overflow:hidden; white-space:nowrap;
+}
+
+/* ── HERO heading más expresivo ─────────────── */
+.hero-heading { font-size:clamp(1.9rem,8vw,3.8rem); line-height:1.0; }
+.hero-sub { font-size:clamp(0.8rem,2.5vw,1rem); color:var(--text2); margin-top:8px; font-weight:500; letter-spacing:0.2px; }
+
+/* ── Conv barra siempre visible ─────────────── */
+.conv-footer input { flex:1; margin:0; min-width:0; }
+.btn-send { flex-shrink:0; background:var(--purple); border:none; border-radius:10px; color:#fff; font-size:1rem; padding:0 18px; cursor:pointer; height:44px; }
+
+/* ── Buscador usuario en chats ──────────────── */
+#buscar-usuario-chat-results .seg-user-item { animation:none; opacity:1; }
