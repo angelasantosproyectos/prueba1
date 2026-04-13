@@ -48,6 +48,25 @@ const SVG_OK   = `<svg viewBox="0 0 24 24" fill="none" stroke="#c8ff00" stroke-w
 const SVG_ERR  = `<svg viewBox="0 0 24 24" fill="none" stroke="#ff5e5e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 const SVG_WAIT = `<svg viewBox="0 0 24 24" fill="none" stroke="#888899" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
 
+// ── showScreen UNIFICADO (navegación + bottom nav) ──
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});
+  const t=document.getElementById(id);
+  if(!t){console.warn('Screen no encontrada:',id);return;}
+  t.style.display='flex';t.classList.add('active');
+  if(id==='screen-convocar'&&!editandoRutaId){resetForm();loadRutaNames();}
+  if(id==='screen-eventos'){const b=document.getElementById('btn-crear-evento');if(b)b.style.display=esAdmin()?'inline-flex':'none';}
+  // Bottom nav
+  const nav=document.getElementById('bottom-nav');
+  const esAuth=id==='screen-login'||id==='screen-registro';
+  if(nav) nav.style.display=(!esAuth&&currentUser)?'flex':'none';
+  document.body.classList.toggle('has-bottom-nav',!esAuth&&!!currentUser);
+  // Actualizar tab activo en bottom nav
+  const tabMap={'screen-inicio':'inicio','screen-buscar':'buscar','screen-chats':'chats','screen-ajustes':'ajustes'};
+  document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
+  if(tabMap[id]){const ab=document.getElementById('bnav-'+tabMap[id]);if(ab)ab.classList.add('active');}
+}
+
 // ═══════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════
@@ -187,7 +206,6 @@ async function doRegistro(){
 // ═══════════════════════════════════════════
 // NAVEGACIÓN / UI
 // ═══════════════════════════════════════════
-// showScreen definida más abajo (versión con bottom-nav)
 function togglePass(inputId,btn){
   const input=document.getElementById(inputId);const visible=input.type==='text';
   input.type=visible?'password':'text';
@@ -1777,24 +1795,7 @@ function navTo(dest){
   }
 }
 
-// ── showScreen UNIFICADO (navegación + bottom nav) ──
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});
-  const t=document.getElementById(id);
-  if(!t){console.warn('Screen no encontrada:',id);return;}
-  t.style.display='flex';t.classList.add('active');
-  if(id==='screen-convocar'&&!editandoRutaId){resetForm();loadRutaNames();}
-  if(id==='screen-eventos'){const b=document.getElementById('btn-crear-evento');if(b)b.style.display=esAdmin()?'inline-flex':'none';}
-  // Bottom nav
-  const nav=document.getElementById('bottom-nav');
-  const esAuth=id==='screen-login'||id==='screen-registro';
-  if(nav) nav.style.display=(!esAuth&&currentUser)?'flex':'none';
-  document.body.classList.toggle('has-bottom-nav',!esAuth&&!!currentUser);
-  // Actualizar tab activo en bottom nav
-  const tabMap={'screen-inicio':'inicio','screen-buscar':'buscar','screen-chats':'chats','screen-ajustes':'ajustes'};
-  document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
-  if(tabMap[id]){const ab=document.getElementById('bnav-'+tabMap[id]);if(ab)ab.classList.add('active');}
-}
+
 
 // Botón bloquear en perfil usuario
 function mostrarBotonesPerfilUsuario(uid, username){
