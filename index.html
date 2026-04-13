@@ -12,7 +12,7 @@
 <div id="screen-login" class="screen active">
   <div class="login-bg"></div>
   <div class="login-card">
-    <div class="logo-block"><span class="logo-icon">⚡</span><h1 class="logo-title">RUTASKATE</h1></div>
+    <div class="logo-block"><span class="logo-icon">⚡</span><h1 class="logo-title" style="font-size:clamp(1.4rem,8vw,2.2rem);white-space:nowrap;overflow:hidden">RUTASKATE</h1></div>
     <p class="login-sub">Accede con tu cuenta</p>
     <div class="field"><label>Correo</label><input type="email" id="login-email" placeholder="correo@email.com"/></div>
     <div class="field"><label>Contraseña</label>
@@ -40,7 +40,7 @@
 <div id="screen-registro" class="screen">
   <div class="login-bg"></div>
   <div class="login-card registro-card">
-    <div class="logo-block"><span class="logo-icon">⚡</span><h1 class="logo-title">RUTASKATE</h1></div>
+    <div class="logo-block"><span class="logo-icon">⚡</span><h1 class="logo-title" style="font-size:clamp(1.4rem,8vw,2.2rem);white-space:nowrap;overflow:hidden">RUTASKATE</h1></div>
     <p class="login-sub">Crea tu cuenta</p>
     <div class="field">
       <label>Nombre de usuario <span class="label-hint">(tu @, único)</span></label>
@@ -119,11 +119,7 @@
       <span class="logo-title small">RUTASKATE ⚡</span>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
-      <!-- Pill tema: luna / sol -->
-      <div class="theme-pill" onclick="toggleTemaBtn()" title="Cambiar tema" id="theme-pill">
-        <div class="theme-pill-opt active" id="pill-dark">🌙</div>
-        <div class="theme-pill-opt" id="pill-light">☀️</div>
-      </div>
+      <button class="btn-tema-single" id="btn-tema-single" onclick="toggleTemaBtn()" title="Cambiar tema">🌙</button>
       <div class="user-menu-wrap">
         <button class="user-menu-btn" onclick="toggleUserMenu()" id="user-menu-btn">
           <div class="user-avatar-sm" id="user-avatar-top">?</div>
@@ -392,14 +388,16 @@
   <main class="seguidores-main" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
     <div class="seg-tabs" id="matches-tabs-bar">
       <button class="seg-tab active" onclick="swipeMatchesTo(0)">💘 Likes</button>
-      <button class="seg-tab" onclick="swipeMatchesTo(1)">🌟 Supermatches</button>
-      <button class="seg-tab" onclick="swipeMatchesTo(2)">✕ Rechazados</button>
+      <button class="seg-tab" onclick="swipeMatchesTo(1)">🌟 Super</button>
+      <button class="seg-tab" onclick="swipeMatchesTo(2)">✕ Nope</button>
+      <button class="seg-tab" onclick="swipeMatchesTo(3)">⏳ Pendientes</button>
     </div>
     <div class="swipe-container" id="matches-swipe-container">
       <div class="swipe-track" id="matches-swipe-track">
         <div class="swipe-panel" id="matches-panel-0"><div id="matches-list-0"></div><div id="matches-empty-0" class="empty-msg hidden">Sin likes aún</div></div>
         <div class="swipe-panel" id="matches-panel-1"><div id="matches-list-1"></div><div id="matches-empty-1" class="empty-msg hidden">Sin supermatches aún</div></div>
         <div class="swipe-panel" id="matches-panel-2"><div id="matches-list-2"></div><div id="matches-empty-2" class="empty-msg hidden">Sin rechazados</div></div>
+        <div class="swipe-panel" id="matches-panel-3"><div id="matches-list-3"></div><div id="matches-empty-3" class="empty-msg hidden">Sin solicitudes pendientes</div></div>
       </div>
     </div>
   </main>
