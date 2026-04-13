@@ -118,6 +118,22 @@
     <div class="logo-area"><span class="logo-title small">RUTAS ⚡</span></div>
     <div style="display:flex;align-items:center;gap:10px">
       <button class="btn-tema-single" id="btn-tema-rutas" onclick="toggleTemaBtn()" title="Cambiar tema">🌙</button>
+      <div class="user-menu-wrap">
+        <button class="user-menu-btn" onclick="toggleUserMenu()" id="user-menu-btn-rutas">
+          <div class="user-avatar-sm" id="user-avatar-rutas">?</div>
+          <span id="user-display-rutas">—</span>
+          <svg class="chevron-menu" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="user-dropdown hidden" id="user-dropdown-rutas">
+          <button onclick="toggleUserMenu();navTo('ajustes')">⚙️ Ajustes</button>
+          <div id="user-dropdown-admin-rutas" style="display:none">
+            <div class="dropdown-sep"></div>
+            <button onclick="toggleUserMenu();loadPanelAdmin()">🛡️ Panel Admin</button>
+          </div>
+          <div class="dropdown-sep"></div>
+          <button class="danger" onclick="toggleUserMenu();doLogout()">🚪 Cerrar sesión</button>
+        </div>
+      </div>
     </div>
   </header>
   <main class="home-main">

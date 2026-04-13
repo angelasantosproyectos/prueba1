@@ -78,6 +78,10 @@ auth.onAuthStateChanged(async user => {
     const dn = currentUserData?.username ? '@'+currentUserData.username : (user.displayName||user.email.split('@')[0]);
     document.getElementById('user-display').textContent = dn;
     const avTop=document.getElementById('user-avatar-top');if(avTop)avTop.textContent=getInicial(dn.replace('@',''));
+    // Sincronizar en screen-rutas
+    const dispRutas=document.getElementById('user-display-rutas');if(dispRutas)dispRutas.textContent=dn;
+    const avRutas=document.getElementById('user-avatar-rutas');if(avRutas)avRutas.textContent=getInicial(dn.replace('@',''));
+    const adminRutas=document.getElementById('user-dropdown-admin-rutas');if(adminRutas)setTimeout(()=>adminRutas.style.display=esAdmin()?'block':'none',350);
     showScreen('screen-inicio');
     loadRutaNames();
     escucharNoLeidos();
@@ -840,9 +844,9 @@ async function renderSegPanel(idx){
       const yaSigo=miSiguiendo.includes(uid);
       const item=document.createElement('div');item.className='seg-user-item';item.style.animationDelay=`${i*0.04}s`;
       item.innerHTML=`
-        <div class="chat-avatar">${getInicial(u.username||u.nombre||'?')}</div>
-        <div class="seg-user-info">
-          <p class="seg-username seg-user-nombre-link" onclick="verPerfilDesdeSeguidores('${uid}')" title="Ver perfil">@${u.username||u.nombre}</p>
+        <div class="chat-avatar" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${uid}')">${getInicial(u.username||u.nombre||'?')}</div>
+        <div class="seg-user-info" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${uid}')">
+          <p class="seg-username seg-user-nombre-link">@${u.username||u.nombre}</p>
           <p class="seg-realname">${(u.nombre&&u.nombre!==u.username)?u.nombre:''}</p>
         </div>
         <button class="btn-seguir ${yaSigo?'siguiendo':'no-siguiendo'}" onclick="toggleSeguir('${uid}',${yaSigo},this)">${yaSigo?'Siguiendo':'Seguir'}</button>`;
@@ -1180,10 +1184,10 @@ async function loadAjustes(){
       setVal('aj-edad',d.edad||'');
       setSelectVal('aj-sexo',d.sexo||'');
       setVal('aj-telefono-display',d.telefono||'');
-      setVal('aj-hobby',d.hobby);setVal('aj-musica',d.musica);setVal('aj-animal',d.animal);
+      setVal('aj-hobby',d.hobby||'');setVal('aj-musica',d.musica||'');setVal('aj-animal',d.animal||'');
       // Citas switch
       const citasEl=document.getElementById('toggle-citas');
-      if(citasEl){citasEl.checked=!!(d.citasActivo);toggleCitasMode(!!(d.citasActivo),false);}
+      if(citasEl){const cA=!!(d.citasActivo);citasEl.checked=cA;toggleCitasMode(cA,false);}
       setVal('aj-color',d.color);setVal('aj-estudios',d.estudios);
       // Checkboxes múltiple
       setChecked(['ec-soltero','ec-pareja','ec-casado','ec-divorciado','ec-hijos','ec-sinhijos'],d.relacionEstado||[]);
@@ -1500,19 +1504,28 @@ function toggleCitasMode(activo, guardar=true){
 // MENÚ USUARIO
 // ═══════════════════════════════════════════
 function toggleUserMenu(){
-  const dd=document.getElementById('user-dropdown');
-  const btn=document.getElementById('user-menu-btn');
+  // Gestionar ambos dropdowns (inicio y rutas)
+  const activeScreen=document.querySelector('.screen.active');
+  const isRutas=activeScreen?.id==='screen-rutas';
+  const ddId=isRutas?'user-dropdown-rutas':'user-dropdown';
+  const btnId=isRutas?'user-menu-btn-rutas':'user-menu-btn';
+  const dd=document.getElementById(ddId);
+  const btn=document.getElementById(btnId);
   if(!dd)return;
+  // Cerrar el otro si está abierto
+  ['user-dropdown','user-dropdown-rutas'].forEach(id=>{if(id!==ddId)document.getElementById(id)?.classList.add('hidden');});
   dd.classList.toggle('hidden');
   btn?.classList.toggle('open',!dd.classList.contains('hidden'));
 }
-// Cerrar menú al clicar fuera
 document.addEventListener('click',e=>{
-  const dd=document.getElementById('user-dropdown');
-  const btn=document.getElementById('user-menu-btn');
-  if(dd&&!dd.contains(e.target)&&!btn?.contains(e.target)){
-    dd.classList.add('hidden');btn?.classList.remove('open');
-  }
+  ['user-dropdown','user-dropdown-rutas'].forEach(ddId=>{
+    const dd=document.getElementById(ddId);
+    const btnId=ddId==='user-dropdown'?'user-menu-btn':'user-menu-btn-rutas';
+    const btn=document.getElementById(btnId);
+    if(dd&&!dd.contains(e.target)&&!btn?.contains(e.target)){
+      dd.classList.add('hidden');btn?.classList.remove('open');
+    }
+  });
 });
 
 // ═══════════════════════════════════════════
@@ -1776,7 +1789,6 @@ async function buscarEnSeguidores(){
     const listEl=document.getElementById(listId);const emptyEl=document.getElementById(emptyId);
     if(!listEl)return;
     listEl.innerHTML='';emptyEl?.classList.add('hidden');
-    // Buscar en toda la colección
     const snap=await db.collection('usuarios').get();
     const miSnap=await db.collection('usuarios').doc(currentUser.uid).get();
     const miData=miSnap.exists?miSnap.data():{};
@@ -1786,9 +1798,12 @@ async function buscarEnSeguidores(){
     todos.forEach((u,i)=>{
       const yaSigo=miSiguiendo.includes(u.uid);
       const item=document.createElement('div');item.className='seg-user-item';item.style.animationDelay=`${i*0.04}s`;
+      // Click en avatar o nombre → ver perfil (nunca al chat)
       item.innerHTML=`
-        <div class="chat-avatar">${getInicial(u.username||u.nombre||'?')}</div>
-        <div class="seg-user-info"><p class="seg-username seg-user-nombre-link" onclick="verPerfilDesdeSeguidores('${u.uid}')">@${u.username||u.nombre}</p></div>
+        <div class="chat-avatar" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${u.uid}')">${getInicial(u.username||u.nombre||'?')}</div>
+        <div class="seg-user-info" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${u.uid}')">
+          <p class="seg-username seg-user-nombre-link">@${u.username||u.nombre}</p>
+        </div>
         <button class="btn-seguir ${yaSigo?'siguiendo':'no-siguiendo'}" onclick="toggleSeguir('${u.uid}',${yaSigo},this)">${yaSigo?'Siguiendo':'Seguir'}</button>`;
       listEl.appendChild(item);
     });
@@ -1896,7 +1911,8 @@ async function adminBanUser(uid,username,btn){
 function actualizarMenuAdmin(){
   const adminWrap=document.getElementById('user-dropdown-admin');
   if(adminWrap)adminWrap.style.display=esAdmin()?'block':'none';
-  // También mostrar/ocultar tarjetas y matches según citas
+  const adminRutas=document.getElementById('user-dropdown-admin-rutas');
+  if(adminRutas)adminRutas.style.display=esAdmin()?'block':'none';
 }
 
 // ═══════════════════════════════════════════
