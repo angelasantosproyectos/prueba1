@@ -62,7 +62,7 @@ function showScreen(id){
   if(nav) nav.style.display=(!esAuth&&currentUser)?'flex':'none';
   document.body.classList.toggle('has-bottom-nav',!esAuth&&!!currentUser);
   // Actualizar tab activo en bottom nav
-  const tabMap={'screen-rutas':'rutas','screen-inicio':'inicio','screen-buscar':'buscar','screen-chats':'chats','screen-ajustes':'ajustes'};
+  const tabMap={'screen-inicio':'inicio','screen-buscar':'buscar','screen-chats':'chats','screen-ajustes':'ajustes'};
   document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
   if(tabMap[id]){const ab=document.getElementById('bnav-'+tabMap[id]);if(ab)ab.classList.add('active');}
 }
@@ -78,10 +78,6 @@ auth.onAuthStateChanged(async user => {
     const dn = currentUserData?.username ? '@'+currentUserData.username : (user.displayName||user.email.split('@')[0]);
     document.getElementById('user-display').textContent = dn;
     const avTop=document.getElementById('user-avatar-top');if(avTop)avTop.textContent=getInicial(dn.replace('@',''));
-    // Sincronizar en screen-rutas
-    const dispRutas=document.getElementById('user-display-rutas');if(dispRutas)dispRutas.textContent=dn;
-    const avRutas=document.getElementById('user-avatar-rutas');if(avRutas)avRutas.textContent=getInicial(dn.replace('@',''));
-    const adminRutas=document.getElementById('user-dropdown-admin-rutas');if(adminRutas)setTimeout(()=>adminRutas.style.display=esAdmin()?'block':'none',350);
     showScreen('screen-inicio');
     loadRutaNames();
     escucharNoLeidos();
@@ -844,9 +840,9 @@ async function renderSegPanel(idx){
       const yaSigo=miSiguiendo.includes(uid);
       const item=document.createElement('div');item.className='seg-user-item';item.style.animationDelay=`${i*0.04}s`;
       item.innerHTML=`
-        <div class="chat-avatar" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${uid}')">${getInicial(u.username||u.nombre||'?')}</div>
-        <div class="seg-user-info" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${uid}')">
-          <p class="seg-username seg-user-nombre-link">@${u.username||u.nombre}</p>
+        <div class="chat-avatar">${getInicial(u.username||u.nombre||'?')}</div>
+        <div class="seg-user-info">
+          <p class="seg-username seg-user-nombre-link" onclick="verPerfilDesdeSeguidores('${uid}')" title="Ver perfil">@${u.username||u.nombre}</p>
           <p class="seg-realname">${(u.nombre&&u.nombre!==u.username)?u.nombre:''}</p>
         </div>
         <button class="btn-seguir ${yaSigo?'siguiendo':'no-siguiendo'}" onclick="toggleSeguir('${uid}',${yaSigo},this)">${yaSigo?'Siguiendo':'Seguir'}</button>`;
@@ -1184,10 +1180,10 @@ async function loadAjustes(){
       setVal('aj-edad',d.edad||'');
       setSelectVal('aj-sexo',d.sexo||'');
       setVal('aj-telefono-display',d.telefono||'');
-      setVal('aj-hobby',d.hobby||'');setVal('aj-musica',d.musica||'');setVal('aj-animal',d.animal||'');
+      setVal('aj-hobby',d.hobby);setVal('aj-musica',d.musica);setVal('aj-animal',d.animal);
       // Citas switch
       const citasEl=document.getElementById('toggle-citas');
-      if(citasEl){const cA=!!(d.citasActivo);citasEl.checked=cA;toggleCitasMode(cA,false);}
+      if(citasEl){citasEl.checked=!!(d.citasActivo);toggleCitasMode(!!(d.citasActivo),false);}
       setVal('aj-color',d.color);setVal('aj-estudios',d.estudios);
       // Checkboxes múltiple
       setChecked(['ec-soltero','ec-pareja','ec-casado','ec-divorciado','ec-hijos','ec-sinhijos'],d.relacionEstado||[]);
@@ -1290,8 +1286,9 @@ function escapeHtml(str){return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt
 function aplicarTema(claro){
   document.body.classList.toggle('light',claro);
   localStorage.setItem('rutaskate_tema',claro?'claro':'oscuro');
-  // Actualizar todos los botones de tema
-  document.querySelectorAll('.btn-tema-single').forEach(b=>b.textContent=claro?'☀️':'🌙');
+  // Botón único luna/sol
+  const btn=document.getElementById('btn-tema-single');
+  if(btn)btn.textContent=claro?'☀️':'🌙';
   // Toggle en ajustes si existe
   const toggle=document.getElementById('toggle-tema');if(toggle)toggle.checked=claro;
 }
@@ -1309,177 +1306,6 @@ function cambiarTema(claro){
 // Cada campo que coincide suma 1 estrella: hobby, música, animal favorito, color favorito,
 // estudios, sexo y qué buscas. Máximo 5 estrellas mostradas.
 // Ejemplo: si los dos buscáis "amistad" y tenéis el mismo hobby → 2 estrellas.
-
-
-// ── Swipe Buscar (3 paneles) ──────────────────
-let buscarTabIndex=0;
-function swipeBuscarTo(idx){
-  buscarTabIndex=idx;
-  const track=document.getElementById('buscar-swipe-track');
-  if(track)track.style.transform=`translateX(-${idx*100}%)`;
-  document.querySelectorAll('#buscar-tabs-bar .seg-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
-  if(idx===1){
-    // Cargar tarjetas en el panel de buscar
-    const stack=document.getElementById('buscar-card-stack');
-    if(stack&&!stack.dataset.loaded){
-      stack.dataset.loaded='1';
-      loadTarjetasEn('buscar-card-stack','buscar-tarjetas-empty');
-    }
-  }
-  if(idx===2) swipeMatchesTo(0);
-}
-
-// ── Swipe Chats (2 paneles) ───────────────────
-let chatsTabIndex=0;
-function swipeChatsTo(idx){
-  chatsTabIndex=idx;
-  const track=document.getElementById('chats-swipe-track');
-  if(track)track.style.transform=`translateX(-${idx*100}%)`;
-  document.querySelectorAll('#chats-tabs-bar .seg-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
-  if(idx===1){swipeSolTo(0);}
-}
-
-// ── Buscador de usuario para chatear ─────────
-let buscarChatTimeout=null;
-async function buscarUsuarioChat(){
-  clearTimeout(buscarChatTimeout);
-  const q=document.getElementById('buscar-usuario-chat')?.value.trim().toLowerCase().replace(/^@/,'');
-  const resEl=document.getElementById('buscar-usuario-chat-results');
-  if(!resEl)return;
-  if(!q){resEl.classList.add('hidden');resEl.innerHTML='';return;}
-  buscarChatTimeout=setTimeout(async()=>{
-    if(!todosUsuarios.length){
-      const snap=await db.collection('usuarios').get();
-      todosUsuarios=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(u=>u.uid!==currentUser.uid);
-    }
-    const filtrados=todosUsuarios.filter(u=>(u.username||'').toLowerCase().includes(q)||(u.nombre||'').toLowerCase().includes(q));
-    resEl.innerHTML='';
-    if(!filtrados.length){resEl.classList.remove('hidden');resEl.innerHTML='<p style="color:var(--text2);font-size:0.85rem;padding:10px">Sin resultados</p>';return;}
-    resEl.classList.remove('hidden');
-    filtrados.slice(0,5).forEach(u=>{
-      const item=document.createElement('div');
-      item.style.cssText='display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer';
-      item.innerHTML=`<div class="chat-avatar" style="width:36px;height:36px;font-size:0.9rem">${getInicial(u.username||u.nombre||'?')}</div><div><p style="font-weight:600;font-size:0.9rem">@${u.username||u.nombre}</p></div>`;
-      item.onclick=()=>{
-        document.getElementById('buscar-usuario-chat').value='';
-        resEl.classList.add('hidden');resEl.innerHTML='';
-        iniciarChatCon(u);
-      };
-      resEl.appendChild(item);
-    });
-  },200);
-}
-
-// ── loadTarjetas genérico (para buscar y tarjetas) ──
-async function loadTarjetasEn(stackId, emptyId){
-  const stack=document.getElementById(stackId);
-  const emptyEl=document.getElementById(emptyId);
-  if(!stack)return;
-  stack.innerHTML='<p style="color:var(--text2);text-align:center;padding:20px">Cargando...</p>';
-  emptyEl?.classList.add('hidden');
-  try{
-    const[miSnap,allSnap]=await Promise.all([
-      db.collection('usuarios').doc(currentUser.uid).get(),
-      db.collection('usuarios').get()
-    ]);
-    const yo=miSnap.exists?miSnap.data():null;
-    if(!yo?.citasActivo){
-      stack.innerHTML='';emptyEl?.classList.remove('hidden');
-      if(emptyEl)emptyEl.innerHTML='Activa "¿Citas?" en Ajustes → Datos personales para ver tarjetas.';
-      return;
-    }
-    const yaValorados=new Set((yo.swipes||[]).map(s=>s.uid));
-    let usuarios=allSnap.docs.map(d=>({uid:d.id,...d.data()}))
-      .filter(u=>u.uid!==currentUser.uid&&u.citasActivo&&perfilCompleto(u)&&!yaValorados.has(u.uid));
-    usuarios=usuarios.map(u=>({...u,_score:calcularScore(yo,u)})).sort((a,b)=>b._score-a._score);
-    if(!usuarios.length){
-      stack.innerHTML='';emptyEl?.classList.remove('hidden');
-      if(emptyEl)emptyEl.innerHTML='¡Has visto todas las tarjetas! 🛼';
-      return;
-    }
-    // Guardar en variable específica para este stack
-    window['_swiperCards_'+stackId]=usuarios;
-    window['_swiperIdx_'+stackId]=0;
-    renderSwiperStackEn(stack,stackId);
-    initSwipeGesturesEn(stack,stackId);
-  }catch(e){stack.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;}
-}
-
-function renderSwiperStackEn(stack,stackId){
-  const cards=window['_swiperCards_'+stackId]||[];
-  const idx=window['_swiperIdx_'+stackId]||0;
-  stack.innerHTML='';
-  const visible=cards.slice(idx,idx+3);
-  visible.reverse().forEach((u,vi)=>{
-    const cls=vi===2?'is-top':vi===1?'below':'below2';
-    const card=document.createElement('div');card.className=`swiper-card ${cls}`;
-    const busco=Array.isArray(u.relacionBusco)?u.relacionBusco.join(', '):(u.relacionBusco||'');
-    const estado=Array.isArray(u.relacionEstado)?u.relacionEstado.join(', '):(u.relacionEstado||'');
-    const gustan=Array.isArray(u.gustanMe)?u.gustanMe.join(', '):(u.gustanMe||'');
-    const stars='★'.repeat(Math.min(u._score,5))+'☆'.repeat(Math.max(0,5-u._score));
-    card.innerHTML=`
-      <div class="swipe-label-like">LIKE</div>
-      <div class="swipe-label-nope">NOPE</div>
-      <div class="swipe-label-super">💘 SUPER</div>
-      <div class="tarjeta-avatar">${getInicial(u.username||u.nombre||'?')}</div>
-      <div class="tarjeta-username">@${u.username||u.nombre||''}</div>
-      <div class="tarjeta-edad">${u.edad||'?'} años · ${u.sexo||''}</div>
-      ${u._score>0?`<div class="tarjeta-score">${stars}</div>`:''}
-      <hr class="tarjeta-sep"/>
-      <p class="tarjeta-desc">${u.descripcion||''}</p>
-      <div class="tarjeta-tags">
-        ${busco?`<span class="tarjeta-tag">${busco}</span>`:''}
-        ${estado?`<span class="tarjeta-tag">${estado}</span>`:''}
-        ${gustan?`<span class="tarjeta-tag">Le gustan: ${gustan}</span>`:''}
-      </div>`;
-    if(vi===2){card.dataset.uid=u.uid;card.dataset.stackId=stackId;}
-    stack.appendChild(card);
-  });
-}
-
-function initSwipeGesturesEn(stack,stackId){
-  const newStack=stack.cloneNode(true);
-  stack.parentNode?.replaceChild(newStack,stack);
-  stack=newStack;
-  const getTop=()=>stack.querySelector('.swiper-card.is-top');
-  let sx=0,sy=0,dragging=false,cdx=0,cdy=0;
-  const onStart=e=>{const card=getTop();if(!card)return;dragging=true;cdx=0;cdy=0;const pt=e.touches?e.touches[0]:e;sx=pt.clientX;sy=pt.clientY;card.style.transition='none';if(e.cancelable)e.preventDefault();};
-  const onMove=e=>{if(!dragging)return;const card=getTop();if(!card)return;const pt=e.touches?e.touches[0]:e;cdx=pt.clientX-sx;cdy=pt.clientY-sy;card.style.transform=`translateX(${cdx}px) translateY(${cdy}px) rotate(${cdx*0.07}deg)`;card.classList.remove('swiping-right','swiping-left','swiping-down');if(Math.abs(cdx)>Math.abs(cdy)){if(cdx>30)card.classList.add('swiping-right');else if(cdx<-30)card.classList.add('swiping-left');}else if(cdy>30)card.classList.add('swiping-down');if(e.cancelable)e.preventDefault();};
-  const onEnd=e=>{if(!dragging)return;dragging=false;const card=getTop();if(!card)return;const T=60;card.style.transition='transform 0.35s cubic-bezier(.25,.46,.45,.94)';if(Math.abs(cdx)>Math.abs(cdy)&&Math.abs(cdx)>T){animateSwipeEn(card,cdx>0?'like':'nope',stackId);}else if(Math.abs(cdy)>T&&cdy>0){animateSwipeEn(card,'super',stackId);}else{card.style.transform='';card.classList.remove('swiping-right','swiping-left','swiping-down');}};
-  stack.addEventListener('mousedown',onStart);window.addEventListener('mousemove',onMove);window.addEventListener('mouseup',onEnd);
-  stack.addEventListener('touchstart',onStart,{passive:false});stack.addEventListener('touchmove',onMove,{passive:false});stack.addEventListener('touchend',onEnd,{passive:true});
-}
-
-function swipeCardEn(stackId,tipo){
-  const stack=document.getElementById(stackId);
-  const card=stack?.querySelector('.swiper-card.is-top');
-  if(!card)return;
-  card.style.transition='transform 0.4s ease';
-  if(tipo==='like')card.style.transform='translateX(150%) rotate(20deg)';
-  else if(tipo==='nope')card.style.transform='translateX(-150%) rotate(-20deg)';
-  else card.style.transform='translateY(150%)';
-  setTimeout(()=>registrarSwipeEn(card.dataset.uid,tipo,stackId),400);
-}
-
-function animateSwipeEn(card,tipo,stackId){
-  if(tipo==='like')card.style.transform='translateX(150%) rotate(20deg)';
-  else if(tipo==='nope')card.style.transform='translateX(-150%) rotate(-20deg)';
-  else card.style.transform='translateY(150%)';
-  setTimeout(()=>registrarSwipeEn(card.dataset.uid,tipo,stackId),350);
-}
-
-async function registrarSwipeEn(uid,tipo,stackId){
-  if(!uid)return;
-  window['_swiperIdx_'+stackId]=(window['_swiperIdx_'+stackId]||0)+1;
-  try{await db.collection('usuarios').doc(currentUser.uid).update({swipes:firebase.firestore.FieldValue.arrayUnion({uid,tipo,fecha:new Date().toISOString()})});}catch(e){console.error(e);}
-  const cards=window['_swiperCards_'+stackId]||[];
-  const idx=window['_swiperIdx_'+stackId]||0;
-  const stack=document.getElementById(stackId);
-  const emptyId=stackId==='buscar-card-stack'?'buscar-tarjetas-empty':'tarjetas-empty';
-  const emptyEl=document.getElementById(emptyId);
-  if(idx>=cards.length){if(stack)stack.innerHTML='';emptyEl?.classList.remove('hidden');if(emptyEl)emptyEl.innerHTML='¡Has visto todas las tarjetas! 🛼';return;}
-  if(stack){renderSwiperStackEn(stack,stackId);initSwipeGesturesEn(stack,stackId);}
-}
 
 document.addEventListener('keydown',e=>{
   if(e.key!=='Enter')return;
@@ -1504,28 +1330,19 @@ function toggleCitasMode(activo, guardar=true){
 // MENÚ USUARIO
 // ═══════════════════════════════════════════
 function toggleUserMenu(){
-  // Gestionar ambos dropdowns (inicio y rutas)
-  const activeScreen=document.querySelector('.screen.active');
-  const isRutas=activeScreen?.id==='screen-rutas';
-  const ddId=isRutas?'user-dropdown-rutas':'user-dropdown';
-  const btnId=isRutas?'user-menu-btn-rutas':'user-menu-btn';
-  const dd=document.getElementById(ddId);
-  const btn=document.getElementById(btnId);
+  const dd=document.getElementById('user-dropdown');
+  const btn=document.getElementById('user-menu-btn');
   if(!dd)return;
-  // Cerrar el otro si está abierto
-  ['user-dropdown','user-dropdown-rutas'].forEach(id=>{if(id!==ddId)document.getElementById(id)?.classList.add('hidden');});
   dd.classList.toggle('hidden');
   btn?.classList.toggle('open',!dd.classList.contains('hidden'));
 }
+// Cerrar menú al clicar fuera
 document.addEventListener('click',e=>{
-  ['user-dropdown','user-dropdown-rutas'].forEach(ddId=>{
-    const dd=document.getElementById(ddId);
-    const btnId=ddId==='user-dropdown'?'user-menu-btn':'user-menu-btn-rutas';
-    const btn=document.getElementById(btnId);
-    if(dd&&!dd.contains(e.target)&&!btn?.contains(e.target)){
-      dd.classList.add('hidden');btn?.classList.remove('open');
-    }
-  });
+  const dd=document.getElementById('user-dropdown');
+  const btn=document.getElementById('user-menu-btn');
+  if(dd&&!dd.contains(e.target)&&!btn?.contains(e.target)){
+    dd.classList.add('hidden');btn?.classList.remove('open');
+  }
 });
 
 // ═══════════════════════════════════════════
@@ -1580,7 +1397,35 @@ function renderItinerarioEvento(itinerario, accentColor){
 let swiperCards=[];
 let swiperIndex=0;
 
-
+async function loadTarjetas(){
+  const stack=document.getElementById('tarjetas-card-stack');
+  const emptyEl=document.getElementById('tarjetas-empty');
+  if(!stack)return;
+  stack.innerHTML='<p style="color:var(--text-muted);padding:20px;text-align:center">Cargando...</p>';
+  emptyEl?.classList.add('hidden');
+  try{
+    const[miSnap,allSnap]=await Promise.all([
+      db.collection('usuarios').doc(currentUser.uid).get(),
+      db.collection('usuarios').get()
+    ]);
+    const yo=miSnap.exists?miSnap.data():null;
+    if(!yo?.citasActivo){
+      stack.innerHTML='';emptyEl?.classList.remove('hidden');
+      emptyEl.innerHTML='Activa "¿Te gustaría tener citas?" en Ajustes → Datos personales para ver tarjetas.';
+      return;
+    }
+    // Obtener IDs ya valorados
+    const yaValorados=new Set((yo.swipes||[]).map(s=>s.uid));
+    const miSiguiendo=yo.siguiendo||[];
+    let usuarios=allSnap.docs.map(d=>({uid:d.id,...d.data()}))
+      .filter(u=>u.uid!==currentUser.uid&&u.citasActivo&&perfilCompleto(u)&&!yaValorados.has(u.uid));
+    usuarios=usuarios.map(u=>({...u,_score:calcularScore(yo,u)})).sort((a,b)=>b._score-a._score);
+    swiperCards=usuarios;swiperIndex=0;
+    if(!usuarios.length){stack.innerHTML='';emptyEl?.classList.remove('hidden');emptyEl.innerHTML='¡Has visto todas las tarjetas! Vuelve más tarde. 🛼';return;}
+    renderSwiperStack(stack);
+    initSwipeGestures(document.getElementById('tarjetas-card-stack')||stack);
+  }catch(e){stack.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;}
+}
 
 function renderSwiperStack(stack){
   stack.innerHTML='';
@@ -1789,6 +1634,7 @@ async function buscarEnSeguidores(){
     const listEl=document.getElementById(listId);const emptyEl=document.getElementById(emptyId);
     if(!listEl)return;
     listEl.innerHTML='';emptyEl?.classList.add('hidden');
+    // Buscar en toda la colección
     const snap=await db.collection('usuarios').get();
     const miSnap=await db.collection('usuarios').doc(currentUser.uid).get();
     const miData=miSnap.exists?miSnap.data():{};
@@ -1798,12 +1644,9 @@ async function buscarEnSeguidores(){
     todos.forEach((u,i)=>{
       const yaSigo=miSiguiendo.includes(u.uid);
       const item=document.createElement('div');item.className='seg-user-item';item.style.animationDelay=`${i*0.04}s`;
-      // Click en avatar o nombre → ver perfil (nunca al chat)
       item.innerHTML=`
-        <div class="chat-avatar" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${u.uid}')">${getInicial(u.username||u.nombre||'?')}</div>
-        <div class="seg-user-info" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${u.uid}')">
-          <p class="seg-username seg-user-nombre-link">@${u.username||u.nombre}</p>
-        </div>
+        <div class="chat-avatar">${getInicial(u.username||u.nombre||'?')}</div>
+        <div class="seg-user-info"><p class="seg-username seg-user-nombre-link" onclick="verPerfilDesdeSeguidores('${u.uid}')">@${u.username||u.nombre}</p></div>
         <button class="btn-seguir ${yaSigo?'siguiendo':'no-siguiendo'}" onclick="toggleSeguir('${u.uid}',${yaSigo},this)">${yaSigo?'Siguiendo':'Seguir'}</button>`;
       listEl.appendChild(item);
     });
@@ -1911,8 +1754,7 @@ async function adminBanUser(uid,username,btn){
 function actualizarMenuAdmin(){
   const adminWrap=document.getElementById('user-dropdown-admin');
   if(adminWrap)adminWrap.style.display=esAdmin()?'block':'none';
-  const adminRutas=document.getElementById('user-dropdown-admin-rutas');
-  if(adminRutas)adminRutas.style.display=esAdmin()?'block':'none';
+  // También mostrar/ocultar tarjetas y matches según citas
 }
 
 // ═══════════════════════════════════════════
@@ -1929,15 +1771,20 @@ const SCREENS_CON_NAV=['screen-inicio','screen-buscar','screen-chats','screen-aj
   'screen-tarjetas','screen-matches','screen-panel-admin'];
 
 function navTo(dest){
+  // Actualizar botón activo
   document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
   const activeBtn=document.getElementById('bnav-'+dest);
   if(activeBtn)activeBtn.classList.add('active');
+
   switch(dest){
-    case 'rutas':  showScreen('screen-rutas');break;
-    case 'inicio': showScreen('screen-inicio');break;
-    case 'buscar': showScreen('screen-buscar');initBuscar();swipeBuscarTo(0);break;
-    case 'chats':  showScreen('screen-chats');loadChats();swipeChatsTo(0);break;
-    case 'ajustes':showScreen('screen-ajustes');loadAjustes();break;
+    case 'inicio':
+      showScreen('screen-inicio');break;
+    case 'buscar':
+      showScreen('screen-buscar');initBuscar();break;
+    case 'chats':
+      showScreen('screen-chats');loadChats();break;
+    case 'ajustes':
+      showScreen('screen-ajustes');loadAjustes();break;
   }
 }
 
