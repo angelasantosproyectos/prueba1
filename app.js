@@ -97,27 +97,6 @@ async function doLogin(){
   catch(e){errEl.textContent='Credenciales incorrectas.';errEl.classList.remove('hidden');}
 }
 
-async function loginConGoogle(){
-  const errEl=document.getElementById('login-error');errEl.classList.add('hidden');
-  try{
-    const provider=new firebase.auth.GoogleAuthProvider();
-    const result=await auth.signInWithPopup(provider);
-    const user=result.user;
-    // Si es nuevo usuario, crear doc en Firestore
-    const snap=await db.collection('usuarios').doc(user.uid).get();
-    if(!snap.exists){
-      const username=(user.displayName||user.email.split('@')[0]).toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9_]/g,'');
-      const rol=user.email===ADMIN_EMAIL?'admin':'usuario';
-      await db.collection('usuarios').doc(user.uid).set({
-        uid:user.uid,username,nombre:user.displayName||username,
-        email:user.email,foto:user.photoURL||'',
-        seguidores:[],siguiendo:[],rol,
-        creadoEn:firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
-  }catch(e){errEl.textContent='Error al iniciar con Google.';errEl.classList.remove('hidden');}
-}
 function doLogout(){if(mensajesListener)mensajesListener();auth.signOut();}
 
 // ═══════════════════════════════════════════
