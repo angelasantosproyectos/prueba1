@@ -48,6 +48,25 @@ const SVG_OK   = `<svg viewBox="0 0 24 24" fill="none" stroke="#c8ff00" stroke-w
 const SVG_ERR  = `<svg viewBox="0 0 24 24" fill="none" stroke="#ff5e5e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 const SVG_WAIT = `<svg viewBox="0 0 24 24" fill="none" stroke="#888899" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
 
+// ── showScreen UNIFICADO (navegación + bottom nav) ──
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});
+  const t=document.getElementById(id);
+  if(!t){console.warn('Screen no encontrada:',id);return;}
+  t.style.display='flex';t.classList.add('active');
+  if(id==='screen-convocar'&&!editandoRutaId){resetForm();loadRutaNames();}
+  if(id==='screen-eventos'){const b=document.getElementById('btn-crear-evento');if(b)b.style.display=esAdmin()?'inline-flex':'none';}
+  // Bottom nav
+  const nav=document.getElementById('bottom-nav');
+  const esAuth=id==='screen-login'||id==='screen-registro';
+  if(nav) nav.style.display=(!esAuth&&currentUser)?'flex':'none';
+  document.body.classList.toggle('has-bottom-nav',!esAuth&&!!currentUser);
+  // Actualizar tab activo en bottom nav
+  const tabMap={'screen-rutas':'rutas','screen-inicio':'inicio','screen-buscar':'buscar','screen-chats':'chats','screen-ajustes':'ajustes'};
+  document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
+  if(tabMap[id]){const ab=document.getElementById('bnav-'+tabMap[id]);if(ab)ab.classList.add('active');}
+}
+
 // ═══════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════
@@ -58,10 +77,24 @@ auth.onAuthStateChanged(async user => {
     currentUserData = snap && snap.exists ? snap.data() : null;
     const dn = currentUserData?.username ? '@'+currentUserData.username : (user.displayName||user.email.split('@')[0]);
     document.getElementById('user-display').textContent = dn;
+    const avTop=document.getElementById('user-avatar-top');if(avTop)avTop.textContent=getInicial(dn.replace('@',''));
+    // Sincronizar en screen-rutas
+    const dispRutas=document.getElementById('user-display-rutas');if(dispRutas)dispRutas.textContent=dn;
+    const avRutas=document.getElementById('user-avatar-rutas');if(avRutas)avRutas.textContent=getInicial(dn.replace('@',''));
+    const adminRutas=document.getElementById('user-dropdown-admin-rutas');if(adminRutas)setTimeout(()=>adminRutas.style.display=esAdmin()?'block':'none',350);
     showScreen('screen-inicio');
     loadRutaNames();
     escucharNoLeidos();
     escucharSolicitudes();
+    setTimeout(()=>{
+      actualizarMenuAdmin();
+      // Mostrar/ocultar tarjetas y matches según citas
+      const citas=currentUserData?.citasActivo;
+      const btnT=document.getElementById('btn-tarjetas-grid');
+      const btnM=document.getElementById('btn-matches-grid');
+      if(btnT)btnT.style.display=citas?'':'none';
+      if(btnM)btnM.style.display=citas?'':'none';
+    },300);
   } else {
     currentUser = null; currentUserData = null;
     showScreen('screen-login');
@@ -86,6 +119,7 @@ async function doLogin(){
   try{await auth.signInWithEmailAndPassword(email,pass);}
   catch(e){errEl.textContent='Credenciales incorrectas.';errEl.classList.remove('hidden');}
 }
+
 function doLogout(){if(mensajesListener)mensajesListener();auth.signOut();}
 
 // ═══════════════════════════════════════════
@@ -133,22 +167,23 @@ async function doRegistro(){
   if(!email){errEl.textContent='Introduce tu correo electrónico.';errEl.classList.remove('hidden');return;}
   const dia=parseInt(diaStr,10),mes=parseInt(mesStr,10),anio=parseInt(anioStr,10);
   if(!diaStr||!mesStr||!anioStr||anioStr.length<4){errEl.textContent='Introduce la fecha de nacimiento completa.';errEl.classList.remove('hidden');return;}
-  if(isNaN(dia)||dia<1||dia>31){errEl.textContent='Día inválido (1-31).';errEl.classList.remove('hidden');return;}
-  if(isNaN(mes)||mes<1||mes>12){errEl.textContent='Mes inválido (1-12).';errEl.classList.remove('hidden');return;}
+  if(isNaN(dia)||dia<1||dia>31){errEl.textContent='Día incorrecto (1-31).';errEl.classList.remove('hidden');return;}
+  if(isNaN(mes)||mes<1||mes>12){errEl.textContent='Mes incorrecto (1-12).';errEl.classList.remove('hidden');return;}
   const anioActual=new Date().getFullYear();
-  if(isNaN(anio)||anio<1920||anio>anioActual){errEl.textContent='Año inválido.';errEl.classList.remove('hidden');return;}
+  if(isNaN(anio)||anio<1920||anio>anioActual){errEl.textContent='Año incorrecto.';errEl.classList.remove('hidden');return;}
   const fobj=new Date(anio,mes-1,dia);
   if(fobj.getDate()!==dia||fobj.getMonth()!==mes-1){errEl.textContent=`La fecha ${dia}/${mes}/${anio} no existe.`;errEl.classList.remove('hidden');return;}
   const hoy=new Date();let edad=hoy.getFullYear()-anio;
   if(hoy.getMonth()+1<mes||(hoy.getMonth()+1===mes&&hoy.getDate()<dia))edad--;
   if(edad<18){errEl.textContent='Debes tener al menos 18 años.';errEl.classList.remove('hidden');return;}
-  if(!telNum||telNum.length<6){errEl.textContent='Teléfono inválido.';errEl.classList.remove('hidden');return;}
+  if(!telNum||telNum.length<6){errEl.textContent='Teléfono incorrecto.';errEl.classList.remove('hidden');return;}
   if(!selectedSexo){errEl.textContent='Selecciona tu sexo.';errEl.classList.remove('hidden');return;}
   if(pass.length<6){errEl.textContent='La contraseña debe tener al menos 6 caracteres.';errEl.classList.remove('hidden');return;}
   if(pass!==pass2){errEl.textContent='Las contraseñas no coinciden.';errEl.classList.remove('hidden');return;}
   try{
     const snap=await db.collection('usuarios').get();
     if(snap.docs.some(d=>(d.data().username||'').toLowerCase()===username)){errEl.textContent='Ese @usuario ya está en uso.';errEl.classList.remove('hidden');usernameValido=false;document.getElementById('username-status').innerHTML=SVG_ERR;return;}
+    if(snap.docs.some(d=>(d.data().email||'').toLowerCase()===email.toLowerCase())){errEl.textContent='Ese correo ya está registrado en otra cuenta.';errEl.classList.remove('hidden');return;}
   }catch(e){}
   try{
     const cred=await auth.createUserWithEmailAndPassword(email,pass);
@@ -166,7 +201,7 @@ async function doRegistro(){
   }catch(e){
     let msg='Error al crear cuenta.';
     if(e.code==='auth/email-already-in-use')msg='Ese correo ya está registrado.';
-    if(e.code==='auth/invalid-email')msg='El correo no tiene formato válido.';
+    if(e.code==='auth/invalid-email')msg='El formato del correo es incorrecto.';
     if(e.code==='auth/weak-password')msg='Contraseña demasiado débil.';
     errEl.textContent=msg;errEl.classList.remove('hidden');
   }
@@ -175,12 +210,6 @@ async function doRegistro(){
 // ═══════════════════════════════════════════
 // NAVEGACIÓN / UI
 // ═══════════════════════════════════════════
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});
-  const t=document.getElementById(id);t.style.display='flex';t.classList.add('active');
-  if(id==='screen-convocar'&&!editandoRutaId){resetForm();loadRutaNames();}
-  if(id==='screen-eventos'){const b=document.getElementById('btn-crear-evento');if(b)b.style.display=esAdmin()?'inline-flex':'none';}
-}
 function togglePass(inputId,btn){
   const input=document.getElementById(inputId);const visible=input.type==='text';
   input.type=visible?'password':'text';
@@ -815,9 +844,9 @@ async function renderSegPanel(idx){
       const yaSigo=miSiguiendo.includes(uid);
       const item=document.createElement('div');item.className='seg-user-item';item.style.animationDelay=`${i*0.04}s`;
       item.innerHTML=`
-        <div class="chat-avatar">${getInicial(u.username||u.nombre||'?')}</div>
-        <div class="seg-user-info">
-          <p class="seg-username seg-user-nombre-link" onclick="verPerfilDesdeSeguidores('${uid}')" title="Ver perfil">@${u.username||u.nombre}</p>
+        <div class="chat-avatar" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${uid}')">${getInicial(u.username||u.nombre||'?')}</div>
+        <div class="seg-user-info" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${uid}')">
+          <p class="seg-username seg-user-nombre-link">@${u.username||u.nombre}</p>
           <p class="seg-realname">${(u.nombre&&u.nombre!==u.username)?u.nombre:''}</p>
         </div>
         <button class="btn-seguir ${yaSigo?'siguiendo':'no-siguiendo'}" onclick="toggleSeguir('${uid}',${yaSigo},this)">${yaSigo?'Siguiendo':'Seguir'}</button>`;
@@ -852,6 +881,33 @@ async function verPerfilDesdeSeguidores(uid){
 
 // Alias para compatibilidad
 function switchSegTab(tab,btn){}
+
+// ── BLOQUEAR USUARIO ────────────────────
+async function bloquearUsuario(targetUid,targetUsername){
+  if(!confirm(`¿Bloquear a @${targetUsername}? No podrá ver tu perfil ni enviarte mensajes.`))return;
+  try{
+    await db.collection('usuarios').doc(currentUser.uid).update({
+      bloqueados:firebase.firestore.FieldValue.arrayUnion(targetUid)
+    });
+    await db.collection('bloqueos').add({
+      deUid:currentUser.uid,paraUid:targetUid,
+      deEmail:currentUser.email,paraUsername:targetUsername,
+      fecha:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert(`@${targetUsername} ha sido bloqueado.`);
+    // Si estaba en una conversación, cerrar
+    if(chatActualUser&&chatActualUser.uid===targetUid)cerrarConversacion();
+  }catch(e){alert('Error al bloquear: '+e.message);}
+}
+async function desbloquearUsuario(targetUid,targetUsername){
+  if(!confirm(`¿Desbloquear a @${targetUsername}?`))return;
+  try{
+    await db.collection('usuarios').doc(currentUser.uid).update({
+      bloqueados:firebase.firestore.FieldValue.arrayRemove(targetUid)
+    });
+    alert(`@${targetUsername} ha sido desbloqueado.`);
+  }catch(e){alert('Error: '+e.message);}
+}
 async function toggleSeguir(targetUid,yaSigo,btn){
   const miRef=db.collection('usuarios').doc(currentUser.uid);
   const elRef=db.collection('usuarios').doc(targetUid);
@@ -894,52 +950,7 @@ function calcularScore(yo,otro){
 }
 function perfilCompleto(u){return u&&u.descripcion&&u.edad&&u.sexo;}
 
-async function loadTarjetas(){
-  const el=document.getElementById('tarjetas-grid');if(!el)return;
-  el.innerHTML='<p style="color:var(--text-muted);padding:20px">Cargando...</p>';
-  document.getElementById('tarjetas-empty').classList.add('hidden');
-  try{
-    const[miSnap,allSnap]=await Promise.all([db.collection('usuarios').doc(currentUser.uid).get(),db.collection('usuarios').get()]);
-    const yo=miSnap.exists?miSnap.data():null;
-    if(!perfilCompleto(yo)){
-      el.innerHTML='';
-      const em=document.getElementById('tarjetas-empty');em.classList.remove('hidden');
-      em.innerHTML='¡Completa tu perfil para ver tarjetas!<br><small>Necesitas: descripción, edad y sexo en Datos Personales.</small><br><br><button class="btn-primary" style="max-width:220px;margin-top:12px" onclick="showScreen(\'screen-ajustes\');loadAjustes()">IR A AJUSTES</button>';
-      return;
-    }
-    const miSiguiendo=yo.siguiendo||[];
-    let usuarios=allSnap.docs.map(d=>({uid:d.id,...d.data()})).filter(u=>u.uid!==currentUser.uid&&perfilCompleto(u));
-    usuarios=usuarios.map(u=>({...u,_score:calcularScore(yo,u)})).sort((a,b)=>b._score-a._score);
-    if(!usuarios.length){el.innerHTML='';document.getElementById('tarjetas-empty').classList.remove('hidden');
-      document.getElementById('tarjetas-empty').innerHTML='No hay otros usuarios con perfil completo aún.';return;}
-    el.innerHTML='';
-    usuarios.forEach((u,i)=>{
-      const card=document.createElement('div');card.className='tarjeta-user';card.style.animationDelay=`${i*0.06}s`;
-      const stars='★'.repeat(Math.min(u._score,5))+'☆'.repeat(Math.max(0,5-u._score));
-      const yaSigo=miSiguiendo.includes(u.uid);
-      const estado=Array.isArray(u.relacionEstado)?u.relacionEstado.join(', '):(u.relacionEstado||'');
-      const busco=Array.isArray(u.relacionBusco)?u.relacionBusco.join(', '):(u.relacionBusco||'');
-      const gustan=Array.isArray(u.gustanMe)?u.gustanMe.join(', '):(u.gustanMe||'');
-      card.innerHTML=`
-        <div class="tarjeta-avatar">${getInicial(u.username||u.nombre||'?')}</div>
-        <div class="tarjeta-username">@${u.username||u.nombre||''}</div>
-        <div class="tarjeta-edad">${u.edad||'?'} años · ${u.sexo||''}</div>
-        ${u._score>0?`<div class="tarjeta-score" title="${u._score} cosas en común">${stars}</div>`:''}
-        <hr class="tarjeta-sep"/>
-        <p class="tarjeta-desc">${u.descripcion||''}</p>
-        <div class="tarjeta-tags">
-          ${busco?`<span class="tarjeta-tag">${busco}</span>`:''}
-          ${estado?`<span class="tarjeta-tag">${estado}</span>`:''}
-          ${gustan?`<span class="tarjeta-tag">Le gustan: ${gustan}</span>`:''}
-        </div>
-        <div style="display:flex;gap:8px;margin-top:12px;justify-content:center">
-          <button class="btn-seguir ${yaSigo?'siguiendo':'no-siguiendo'}" style="font-size:0.78rem;padding:5px 14px" onclick="toggleSeguirTarjeta('${u.uid}',this)">${yaSigo?'Siguiendo':'Seguir'}</button>
-          <button class="btn-chat-mini" onclick="abrirChatConUid('${u.uid}')">💬 Chat</button>
-        </div>`;
-      el.appendChild(card);
-    });
-  }catch(e){el.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;}
-}
+
 async function toggleSeguirTarjeta(uid,btn){await toggleSeguir(uid,btn.classList.contains('siguiendo'),btn);}
 
 // Chat directo desde tarjeta (carga usuario y abre conversación)
@@ -1157,7 +1168,7 @@ async function loadAjustes(){
   // Sincronizar toggle de tema
   const temaSaved=localStorage.getItem('rutaskate_tema');
   const toggleTema=document.getElementById('toggle-tema');
-  if(toggleTema)toggleTema.checked=(temaSaved==='claro');
+  if(toggleTema)toggleTema.checked=(document.body.classList.contains('light'));
   try{
     const snap=await db.collection('usuarios').doc(currentUser.uid).get();
     if(snap.exists){
@@ -1173,7 +1184,10 @@ async function loadAjustes(){
       setVal('aj-edad',d.edad||'');
       setSelectVal('aj-sexo',d.sexo||'');
       setVal('aj-telefono-display',d.telefono||'');
-      setVal('aj-hobby',d.hobby);setVal('aj-musica',d.musica);setVal('aj-animal',d.animal);
+      setVal('aj-hobby',d.hobby||'');setVal('aj-musica',d.musica||'');setVal('aj-animal',d.animal||'');
+      // Citas switch
+      const citasEl=document.getElementById('toggle-citas');
+      if(citasEl){const cA=!!(d.citasActivo);citasEl.checked=cA;toggleCitasMode(cA,false);}
       setVal('aj-color',d.color);setVal('aj-estudios',d.estudios);
       // Checkboxes múltiple
       setChecked(['ec-soltero','ec-pareja','ec-casado','ec-divorciado','ec-hijos','ec-sinhijos'],d.relacionEstado||[]);
@@ -1181,9 +1195,9 @@ async function loadAjustes(){
       setChecked(['bq-amistad','bq-amor','bq-rollo','bq-surja','bq-gente'],d.relacionBusco||[]);
     }else{
       const n=getNombre(currentUser);
-      document.getElementById('aj-nombre').value=n;
-      document.getElementById('perfil-nombre-display').textContent=n;
-      document.getElementById('perfil-avatar-display').textContent=getInicial(n);
+      setVal('aj-nombre',n);setVal('aj-email',currentUser.email||'');
+      const pn=document.getElementById('perfil-nombre-display');if(pn)pn.textContent=n;
+      const pa=document.getElementById('perfil-avatar-display');if(pa)pa.textContent=getInicial(n);
     }
   }catch(e){console.error(e);}
 }
@@ -1193,13 +1207,22 @@ function selectNivelAj(btn){document.querySelectorAll('#screen-ajustes .nivel-bt
 function getVal(id){const el=document.getElementById(id);return el?el.value.trim():'';}
 
 async function guardarPerfil(){
-  const nombre=document.getElementById('aj-nombre').value.trim();
-  const bio=document.getElementById('aj-bio').value.trim();
+  const nombre=document.getElementById('aj-nombre')?.value.trim()||'';
+  const bio=document.getElementById('aj-descripcion')?.value.trim()||'';
+  const edad=parseInt(document.getElementById('aj-edad')?.value||'0',10)||0;
+  const sexo=document.getElementById('aj-sexo')?.value||'';
+  const emailNuevo=document.getElementById('aj-email')?.value.trim()||currentUser.email;
   const okEl=document.getElementById('aj-ok');okEl.classList.add('hidden');
   if(!nombre){alert('El nombre no puede estar vacío.');return;}
   const nombreAnterior=getNombre(currentUser);
   try{
-    await db.collection('usuarios').doc(currentUser.uid).set({nombre,bio,email:currentUser.email,uid:currentUser.uid,...(selectedNivelAjustes?{nivel:selectedNivelAjustes}:{})},{merge:true});
+    const datos={
+      nombre,bio,descripcion:bio,email:emailNuevo,uid:currentUser.uid,
+      ...(selectedNivelAjustes?{nivel:selectedNivelAjustes}:{}),
+      ...(edad>=18?{edad}:{}),
+      ...(sexo?{sexo}:{})
+    };
+    await db.collection('usuarios').doc(currentUser.uid).set(datos,{merge:true});
     await currentUser.updateProfile({displayName:nombre});
     if(nombre!==nombreAnterior){
       const rutasSnap=await db.collection('rutas').where('convocadoPorEmail','==',currentUser.email).get();
@@ -1207,22 +1230,20 @@ async function guardarPerfil(){
       if(!rutasSnap.empty)await batch.commit();
     }
     document.getElementById('user-display').textContent=nombre;
-    document.getElementById('perfil-nombre-display').textContent=nombre;
-    document.getElementById('perfil-avatar-display').textContent=getInicial(nombre);
+    const dispN=document.getElementById('perfil-nombre-display');if(dispN)dispN.textContent=nombre;
+    const dispA=document.getElementById('perfil-avatar-display');if(dispA)dispA.textContent=getInicial(nombre);
     okEl.classList.remove('hidden');setTimeout(()=>okEl.classList.add('hidden'),2500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){alert('Error al guardar perfil: '+e.message);}
 }
 
 async function guardarDatosPersonales(){
   const okEl=document.getElementById('aj-datos-ok');okEl.classList.add('hidden');
-  const edadVal=parseInt(getVal('aj-edad'),10)||0;
   const estadoCivil=getChecked(['ec-soltero','ec-pareja','ec-casado','ec-divorciado','ec-hijos','ec-sinhijos']);
   const meGustan=getChecked(['mg-hombres','mg-mujeres','mg-ambos','mg-otros']);
   const busco=getChecked(['bq-amistad','bq-amor','bq-rollo','bq-surja','bq-gente']);
+  const citasActivo=document.getElementById('toggle-citas')?.checked||false;
   const datos={
-    descripcion:getVal('aj-descripcion'),bio:getVal('aj-descripcion'),
-    ...(edadVal>=18&&edadVal<=120?{edad:edadVal}:{}),
-    ...(getVal('aj-sexo')?{sexo:getVal('aj-sexo')}:{}),
+    citasActivo,
     hobby:getVal('aj-hobby'),musica:getVal('aj-musica'),animal:getVal('aj-animal'),
     color:getVal('aj-color'),estudios:getVal('aj-estudios'),
     relacionEstado:estadoCivil,gustanMe:meGustan,relacionBusco:busco,
@@ -1267,14 +1288,12 @@ function formatHora(date){
 function escapeHtml(str){return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
 // ─── APARIENCIA / TEMA ───
 function aplicarTema(claro){
-  if(claro){
-    document.body.classList.add('tema-claro');
-  } else {
-    document.body.classList.remove('tema-claro');
-  }
-  localStorage.setItem('rutaskate_tema', claro?'claro':'oscuro');
-  const toggle=document.getElementById('toggle-tema');
-  if(toggle)toggle.checked=claro;
+  document.body.classList.toggle('light',claro);
+  localStorage.setItem('rutaskate_tema',claro?'claro':'oscuro');
+  // Actualizar todos los botones de tema
+  document.querySelectorAll('.btn-tema-single').forEach(b=>b.textContent=claro?'☀️':'🌙');
+  // Toggle en ajustes si existe
+  const toggle=document.getElementById('toggle-tema');if(toggle)toggle.checked=claro;
 }
 function cambiarTema(claro){
   aplicarTema(claro);
@@ -1282,7 +1301,7 @@ function cambiarTema(claro){
 // Aplicar tema guardado al cargar
 (function(){
   const tema=localStorage.getItem('rutaskate_tema');
-  if(tema==='claro')aplicarTema(true);
+  aplicarTema(tema==='claro');  // aplica tema guardado al inicio
 })();
 
 // ─── EXPLICACIÓN ESTRELLAS (FAQ inline) ───
@@ -1291,8 +1310,651 @@ function cambiarTema(claro){
 // estudios, sexo y qué buscas. Máximo 5 estrellas mostradas.
 // Ejemplo: si los dos buscáis "amistad" y tenéis el mismo hobby → 2 estrellas.
 
+
+// ── Swipe Buscar (3 paneles) ──────────────────
+let buscarTabIndex=0;
+function swipeBuscarTo(idx){
+  buscarTabIndex=idx;
+  const track=document.getElementById('buscar-swipe-track');
+  if(track)track.style.transform=`translateX(-${idx*100}%)`;
+  document.querySelectorAll('#buscar-tabs-bar .seg-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  if(idx===1){
+    // Cargar tarjetas en el panel de buscar
+    const stack=document.getElementById('buscar-card-stack');
+    if(stack&&!stack.dataset.loaded){
+      stack.dataset.loaded='1';
+      loadTarjetasEn('buscar-card-stack','buscar-tarjetas-empty');
+    }
+  }
+  if(idx===2) swipeMatchesTo(0);
+}
+
+// ── Swipe Chats (2 paneles) ───────────────────
+let chatsTabIndex=0;
+function swipeChatsTo(idx){
+  chatsTabIndex=idx;
+  const track=document.getElementById('chats-swipe-track');
+  if(track)track.style.transform=`translateX(-${idx*100}%)`;
+  document.querySelectorAll('#chats-tabs-bar .seg-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  if(idx===1){swipeSolTo(0);}
+}
+
+// ── Buscador de usuario para chatear ─────────
+let buscarChatTimeout=null;
+async function buscarUsuarioChat(){
+  clearTimeout(buscarChatTimeout);
+  const q=document.getElementById('buscar-usuario-chat')?.value.trim().toLowerCase().replace(/^@/,'');
+  const resEl=document.getElementById('buscar-usuario-chat-results');
+  if(!resEl)return;
+  if(!q){resEl.classList.add('hidden');resEl.innerHTML='';return;}
+  buscarChatTimeout=setTimeout(async()=>{
+    if(!todosUsuarios.length){
+      const snap=await db.collection('usuarios').get();
+      todosUsuarios=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(u=>u.uid!==currentUser.uid);
+    }
+    const filtrados=todosUsuarios.filter(u=>(u.username||'').toLowerCase().includes(q)||(u.nombre||'').toLowerCase().includes(q));
+    resEl.innerHTML='';
+    if(!filtrados.length){resEl.classList.remove('hidden');resEl.innerHTML='<p style="color:var(--text2);font-size:0.85rem;padding:10px">Sin resultados</p>';return;}
+    resEl.classList.remove('hidden');
+    filtrados.slice(0,5).forEach(u=>{
+      const item=document.createElement('div');
+      item.style.cssText='display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer';
+      item.innerHTML=`<div class="chat-avatar" style="width:36px;height:36px;font-size:0.9rem">${getInicial(u.username||u.nombre||'?')}</div><div><p style="font-weight:600;font-size:0.9rem">@${u.username||u.nombre}</p></div>`;
+      item.onclick=()=>{
+        document.getElementById('buscar-usuario-chat').value='';
+        resEl.classList.add('hidden');resEl.innerHTML='';
+        iniciarChatCon(u);
+      };
+      resEl.appendChild(item);
+    });
+  },200);
+}
+
+// ── loadTarjetas genérico (para buscar y tarjetas) ──
+async function loadTarjetasEn(stackId, emptyId){
+  const stack=document.getElementById(stackId);
+  const emptyEl=document.getElementById(emptyId);
+  if(!stack)return;
+  stack.innerHTML='<p style="color:var(--text2);text-align:center;padding:20px">Cargando...</p>';
+  emptyEl?.classList.add('hidden');
+  try{
+    const[miSnap,allSnap]=await Promise.all([
+      db.collection('usuarios').doc(currentUser.uid).get(),
+      db.collection('usuarios').get()
+    ]);
+    const yo=miSnap.exists?miSnap.data():null;
+    if(!yo?.citasActivo){
+      stack.innerHTML='';emptyEl?.classList.remove('hidden');
+      if(emptyEl)emptyEl.innerHTML='Activa "¿Citas?" en Ajustes → Datos personales para ver tarjetas.';
+      return;
+    }
+    const yaValorados=new Set((yo.swipes||[]).map(s=>s.uid));
+    let usuarios=allSnap.docs.map(d=>({uid:d.id,...d.data()}))
+      .filter(u=>u.uid!==currentUser.uid&&u.citasActivo&&perfilCompleto(u)&&!yaValorados.has(u.uid));
+    usuarios=usuarios.map(u=>({...u,_score:calcularScore(yo,u)})).sort((a,b)=>b._score-a._score);
+    if(!usuarios.length){
+      stack.innerHTML='';emptyEl?.classList.remove('hidden');
+      if(emptyEl)emptyEl.innerHTML='¡Has visto todas las tarjetas! 🛼';
+      return;
+    }
+    // Guardar en variable específica para este stack
+    window['_swiperCards_'+stackId]=usuarios;
+    window['_swiperIdx_'+stackId]=0;
+    renderSwiperStackEn(stack,stackId);
+    initSwipeGesturesEn(stack,stackId);
+  }catch(e){stack.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;}
+}
+
+function renderSwiperStackEn(stack,stackId){
+  const cards=window['_swiperCards_'+stackId]||[];
+  const idx=window['_swiperIdx_'+stackId]||0;
+  stack.innerHTML='';
+  const visible=cards.slice(idx,idx+3);
+  visible.reverse().forEach((u,vi)=>{
+    const cls=vi===2?'is-top':vi===1?'below':'below2';
+    const card=document.createElement('div');card.className=`swiper-card ${cls}`;
+    const busco=Array.isArray(u.relacionBusco)?u.relacionBusco.join(', '):(u.relacionBusco||'');
+    const estado=Array.isArray(u.relacionEstado)?u.relacionEstado.join(', '):(u.relacionEstado||'');
+    const gustan=Array.isArray(u.gustanMe)?u.gustanMe.join(', '):(u.gustanMe||'');
+    const stars='★'.repeat(Math.min(u._score,5))+'☆'.repeat(Math.max(0,5-u._score));
+    card.innerHTML=`
+      <div class="swipe-label-like">LIKE</div>
+      <div class="swipe-label-nope">NOPE</div>
+      <div class="swipe-label-super">💘 SUPER</div>
+      <div class="tarjeta-avatar">${getInicial(u.username||u.nombre||'?')}</div>
+      <div class="tarjeta-username">@${u.username||u.nombre||''}</div>
+      <div class="tarjeta-edad">${u.edad||'?'} años · ${u.sexo||''}</div>
+      ${u._score>0?`<div class="tarjeta-score">${stars}</div>`:''}
+      <hr class="tarjeta-sep"/>
+      <p class="tarjeta-desc">${u.descripcion||''}</p>
+      <div class="tarjeta-tags">
+        ${busco?`<span class="tarjeta-tag">${busco}</span>`:''}
+        ${estado?`<span class="tarjeta-tag">${estado}</span>`:''}
+        ${gustan?`<span class="tarjeta-tag">Le gustan: ${gustan}</span>`:''}
+      </div>`;
+    if(vi===2){card.dataset.uid=u.uid;card.dataset.stackId=stackId;}
+    stack.appendChild(card);
+  });
+}
+
+function initSwipeGesturesEn(stack,stackId){
+  const newStack=stack.cloneNode(true);
+  stack.parentNode?.replaceChild(newStack,stack);
+  stack=newStack;
+  const getTop=()=>stack.querySelector('.swiper-card.is-top');
+  let sx=0,sy=0,dragging=false,cdx=0,cdy=0;
+  const onStart=e=>{const card=getTop();if(!card)return;dragging=true;cdx=0;cdy=0;const pt=e.touches?e.touches[0]:e;sx=pt.clientX;sy=pt.clientY;card.style.transition='none';if(e.cancelable)e.preventDefault();};
+  const onMove=e=>{if(!dragging)return;const card=getTop();if(!card)return;const pt=e.touches?e.touches[0]:e;cdx=pt.clientX-sx;cdy=pt.clientY-sy;card.style.transform=`translateX(${cdx}px) translateY(${cdy}px) rotate(${cdx*0.07}deg)`;card.classList.remove('swiping-right','swiping-left','swiping-down');if(Math.abs(cdx)>Math.abs(cdy)){if(cdx>30)card.classList.add('swiping-right');else if(cdx<-30)card.classList.add('swiping-left');}else if(cdy>30)card.classList.add('swiping-down');if(e.cancelable)e.preventDefault();};
+  const onEnd=e=>{if(!dragging)return;dragging=false;const card=getTop();if(!card)return;const T=60;card.style.transition='transform 0.35s cubic-bezier(.25,.46,.45,.94)';if(Math.abs(cdx)>Math.abs(cdy)&&Math.abs(cdx)>T){animateSwipeEn(card,cdx>0?'like':'nope',stackId);}else if(Math.abs(cdy)>T&&cdy>0){animateSwipeEn(card,'super',stackId);}else{card.style.transform='';card.classList.remove('swiping-right','swiping-left','swiping-down');}};
+  stack.addEventListener('mousedown',onStart);window.addEventListener('mousemove',onMove);window.addEventListener('mouseup',onEnd);
+  stack.addEventListener('touchstart',onStart,{passive:false});stack.addEventListener('touchmove',onMove,{passive:false});stack.addEventListener('touchend',onEnd,{passive:true});
+}
+
+function swipeCardEn(stackId,tipo){
+  const stack=document.getElementById(stackId);
+  const card=stack?.querySelector('.swiper-card.is-top');
+  if(!card)return;
+  card.style.transition='transform 0.4s ease';
+  if(tipo==='like')card.style.transform='translateX(150%) rotate(20deg)';
+  else if(tipo==='nope')card.style.transform='translateX(-150%) rotate(-20deg)';
+  else card.style.transform='translateY(150%)';
+  setTimeout(()=>registrarSwipeEn(card.dataset.uid,tipo,stackId),400);
+}
+
+function animateSwipeEn(card,tipo,stackId){
+  if(tipo==='like')card.style.transform='translateX(150%) rotate(20deg)';
+  else if(tipo==='nope')card.style.transform='translateX(-150%) rotate(-20deg)';
+  else card.style.transform='translateY(150%)';
+  setTimeout(()=>registrarSwipeEn(card.dataset.uid,tipo,stackId),350);
+}
+
+async function registrarSwipeEn(uid,tipo,stackId){
+  if(!uid)return;
+  window['_swiperIdx_'+stackId]=(window['_swiperIdx_'+stackId]||0)+1;
+  try{await db.collection('usuarios').doc(currentUser.uid).update({swipes:firebase.firestore.FieldValue.arrayUnion({uid,tipo,fecha:new Date().toISOString()})});}catch(e){console.error(e);}
+  const cards=window['_swiperCards_'+stackId]||[];
+  const idx=window['_swiperIdx_'+stackId]||0;
+  const stack=document.getElementById(stackId);
+  const emptyId=stackId==='buscar-card-stack'?'buscar-tarjetas-empty':'tarjetas-empty';
+  const emptyEl=document.getElementById(emptyId);
+  if(idx>=cards.length){if(stack)stack.innerHTML='';emptyEl?.classList.remove('hidden');if(emptyEl)emptyEl.innerHTML='¡Has visto todas las tarjetas! 🛼';return;}
+  if(stack){renderSwiperStackEn(stack,stackId);initSwipeGesturesEn(stack,stackId);}
+}
+
 document.addEventListener('keydown',e=>{
   if(e.key!=='Enter')return;
   if(document.getElementById('screen-login').classList.contains('active'))doLogin();
   if(document.getElementById('screen-registro').classList.contains('active'))doRegistro();
 });
+
+// ═══════════════════════════════════════════
+// CITAS: toggle modo
+// ═══════════════════════════════════════════
+function toggleCitasMode(activo, guardar=true){
+  const fields=document.getElementById('citas-fields');
+  if(fields)fields.style.display=activo?'block':'none';
+  // Mostrar/ocultar botones Tarjetas y Matches en el grid
+  const btnT=document.getElementById('btn-tarjetas-grid');
+  const btnM=document.getElementById('btn-matches-grid');
+  if(btnT)btnT.style.display=activo?'':' none';
+  if(btnM)btnM.style.display=activo?'':' none';
+}
+
+// ═══════════════════════════════════════════
+// MENÚ USUARIO
+// ═══════════════════════════════════════════
+function toggleUserMenu(){
+  // Gestionar ambos dropdowns (inicio y rutas)
+  const activeScreen=document.querySelector('.screen.active');
+  const isRutas=activeScreen?.id==='screen-rutas';
+  const ddId=isRutas?'user-dropdown-rutas':'user-dropdown';
+  const btnId=isRutas?'user-menu-btn-rutas':'user-menu-btn';
+  const dd=document.getElementById(ddId);
+  const btn=document.getElementById(btnId);
+  if(!dd)return;
+  // Cerrar el otro si está abierto
+  ['user-dropdown','user-dropdown-rutas'].forEach(id=>{if(id!==ddId)document.getElementById(id)?.classList.add('hidden');});
+  dd.classList.toggle('hidden');
+  btn?.classList.toggle('open',!dd.classList.contains('hidden'));
+}
+document.addEventListener('click',e=>{
+  ['user-dropdown','user-dropdown-rutas'].forEach(ddId=>{
+    const dd=document.getElementById(ddId);
+    const btnId=ddId==='user-dropdown'?'user-menu-btn':'user-menu-btn-rutas';
+    const btn=document.getElementById(btnId);
+    if(dd&&!dd.contains(e.target)&&!btn?.contains(e.target)){
+      dd.classList.add('hidden');btn?.classList.remove('open');
+    }
+  });
+});
+
+// ═══════════════════════════════════════════
+// TEMA: botón luna/sol en top bar
+// ═══════════════════════════════════════════
+function toggleTemaBtn(){
+  aplicarTema(!document.body.classList.contains('light'));
+}
+// Actualizar icono al aplicar tema
+// aplicarTema ya definida más arriba, solo actualizar icono al llamarla
+
+// ═══════════════════════════════════════════
+// EVENTOS: separar itinerario por días
+// ═══════════════════════════════════════════
+function renderItinerarioEvento(itinerario, accentColor){
+  if(!itinerario||!itinerario.length)return'';
+  const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  // Agrupar por día
+  const grupos={};
+  itinerario.forEach(it=>{
+    const key=it.dia||'';
+    if(!grupos[key])grupos[key]=[];
+    grupos[key].push(it);
+  });
+  let html='<div class="itinerario-block">';
+  html+=`<p class="itinerario-titulo" style="color:${accentColor}">📍 Itinerario</p>`;
+  Object.keys(grupos).sort().forEach(dia=>{
+    let diaLabel='';
+    if(dia){
+      const[y,m,d]=dia.split('-');
+      const dow=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][new Date(dia).getDay()];
+      diaLabel=`${dow} ${parseInt(d)} ${meses[parseInt(m)-1]}`;
+    }
+    if(diaLabel){
+      html+=`<div class="itinerario-dia-header" style="color:${accentColor}">${diaLabel}</div>`;
+    }
+    grupos[dia].forEach(it=>{
+      html+=`<div class="itinerario-item-display">
+        <span class="it-hora" style="color:${accentColor}">${it.hora||''}</span>
+        <div><span class="it-lugar" style="font-weight:600">${escapeHtml(it.lugar)}</span>${it.desc?`<br><span style="font-size:0.8rem;opacity:0.7">${escapeHtml(it.desc)}</span>`:''}</div>
+      </div>`;
+    });
+    html+=`<div style="height:8px"></div>`;
+  });
+  html+='</div>';
+  return html;
+}
+
+// ═══════════════════════════════════════════
+// TARJETAS SWIPER (estilo Tinder)
+// ═══════════════════════════════════════════
+let swiperCards=[];
+let swiperIndex=0;
+
+
+
+function renderSwiperStack(stack){
+  stack.innerHTML='';
+  const visible=swiperCards.slice(swiperIndex,swiperIndex+3);
+  visible.reverse().forEach((u,vi)=>{
+    const cls=vi===2?'is-top':vi===1?'below':'below2';
+    const card=document.createElement('div');card.className=`swiper-card ${cls}`;
+    const estado=Array.isArray(u.relacionEstado)?u.relacionEstado.join(', '):(u.relacionEstado||'');
+    const busco=Array.isArray(u.relacionBusco)?u.relacionBusco.join(', '):(u.relacionBusco||'');
+    const gustan=Array.isArray(u.gustanMe)?u.gustanMe.join(', '):(u.gustanMe||'');
+    const stars='★'.repeat(Math.min(u._score,5))+'☆'.repeat(Math.max(0,5-u._score));
+    card.innerHTML=`
+      <div class="swipe-label-like">LIKE</div>
+      <div class="swipe-label-nope">NOPE</div>
+      <div class="swipe-label-super">💘 MATCH</div>
+      <div class="tarjeta-avatar">${getInicial(u.username||u.nombre||'?')}</div>
+      <div class="tarjeta-username">@${u.username||u.nombre||''}</div>
+      <div class="tarjeta-edad">${u.edad||'?'} años · ${u.sexo||''}</div>
+      ${u._score>0?`<div class="tarjeta-score">${stars}</div>`:''}
+      <hr class="tarjeta-sep"/>
+      <p class="tarjeta-desc">${u.descripcion||''}</p>
+      <div class="tarjeta-tags">
+        ${busco?`<span class="tarjeta-tag">${busco}</span>`:''}
+        ${estado?`<span class="tarjeta-tag">${estado}</span>`:''}
+        ${gustan?`<span class="tarjeta-tag">Le gustan: ${gustan}</span>`:''}
+      </div>`;
+    if(vi===2){
+      card.dataset.uid=u.uid;
+      card.style.cursor='grab';
+    }
+    stack.appendChild(card);
+  });
+}
+
+function initSwipeGestures(stack){
+  // Limpiar listeners previos clonando el elemento
+  const newStack=stack.cloneNode(true);
+  stack.parentNode.replaceChild(newStack,stack);
+  stack=newStack;
+
+  const getTopCard=()=>stack.querySelector('.swiper-card.is-top');
+  let startX=0,startY=0,isDragging=false,currentDX=0,currentDY=0;
+
+  const onStart=e=>{
+    const card=getTopCard();if(!card)return;
+    isDragging=true; currentDX=0; currentDY=0;
+    const pt=e.touches?e.touches[0]:e;
+    startX=pt.clientX;startY=pt.clientY;
+    card.style.transition='none';
+    e.stopPropagation();
+  };
+
+  const onMove=e=>{
+    if(!isDragging)return;
+    const card=getTopCard();if(!card)return;
+    const pt=e.touches?e.touches[0]:e;
+    currentDX=pt.clientX-startX;
+    currentDY=pt.clientY-startY;
+    const rot=currentDX*0.08;
+    card.style.transform=`translateX(${currentDX}px) translateY(${currentDY}px) rotate(${rot}deg)`;
+    card.classList.remove('swiping-right','swiping-left','swiping-down');
+    const absDX=Math.abs(currentDX), absDY=Math.abs(currentDY);
+    if(absDX > absDY){
+      if(currentDX>30)card.classList.add('swiping-right');
+      else if(currentDX<-30)card.classList.add('swiping-left');
+    } else if(currentDY>30){card.classList.add('swiping-down');}
+    if(e.cancelable)e.preventDefault();
+  };
+
+  const onEnd=e=>{
+    if(!isDragging)return;isDragging=false;
+    const card=getTopCard();if(!card)return;
+    const absDX=Math.abs(currentDX), absDY=Math.abs(currentDY);
+    card.style.transition='transform 0.35s cubic-bezier(.25,.46,.45,.94)';
+    const THRESHOLD=60;
+    if(absDX>absDY&&absDX>THRESHOLD){
+      animateSwipe(card,currentDX>0?'like':'nope');
+    } else if(absDY>THRESHOLD&&currentDY>0){
+      animateSwipe(card,'super');
+    } else {
+      resetCard(card);
+    }
+  };
+
+  // Eventos de ratón
+  stack.addEventListener('mousedown',onStart);
+  window.addEventListener('mousemove',onMove);
+  window.addEventListener('mouseup',onEnd);
+  // Eventos táctiles
+  stack.addEventListener('touchstart',onStart,{passive:false});
+  stack.addEventListener('touchmove',onMove,{passive:false});
+  stack.addEventListener('touchend',onEnd,{passive:true});
+}
+function resetCard(card){card.style.transform='';card.classList.remove('swiping-right','swiping-left','swiping-down');}
+function animateSwipe(card,tipo){
+  const uid=card.dataset.uid;
+  if(tipo==='like'){card.style.transform='translateX(150%) rotate(20deg)';}
+  else if(tipo==='nope'){card.style.transform='translateX(-150%) rotate(-20deg)';}
+  else{card.style.transform='translateY(150%)';}
+  setTimeout(()=>{registrarSwipe(uid,tipo);},300);
+}
+function swipeCard(tipo){
+  const stack=document.getElementById('tarjetas-card-stack');
+  const card=stack?.querySelector('.swiper-card.is-top');
+  if(!card)return;
+  const uid=card.dataset.uid;
+  card.style.transition='transform 0.4s ease';
+  if(tipo==='like')card.style.transform='translateX(150%) rotate(20deg)';
+  else if(tipo==='nope')card.style.transform='translateX(-150%) rotate(-20deg)';
+  else card.style.transform='translateY(150%)';
+  setTimeout(()=>registrarSwipe(uid,tipo),400);
+}
+async function registrarSwipe(uid,tipo){
+  swiperIndex++;
+  // Guardar swipe en Firestore
+  try{
+    await db.collection('usuarios').doc(currentUser.uid).update({
+      swipes:firebase.firestore.FieldValue.arrayUnion({uid,tipo,fecha:new Date().toISOString()})
+    });
+  }catch(e){console.error(e);}
+  const stack=document.getElementById('tarjetas-card-stack');
+  if(swiperIndex>=swiperCards.length){
+    stack.innerHTML='';
+    const em=document.getElementById('tarjetas-empty');
+    em?.classList.remove('hidden');em&&(em.innerHTML='¡Has visto todas las tarjetas! Vuelve más tarde. 🛼');
+    return;
+  }
+  const stackEl=document.getElementById('tarjetas-card-stack');
+  if(stackEl){renderSwiperStack(stackEl);initSwipeGestures(stackEl);}
+}
+
+// ═══════════════════════════════════════════
+// MATCHES
+// ═══════════════════════════════════════════
+let matchesTabIndex=0;
+async function loadMatches(){matchesTabIndex=0;swipeMatchesTo(0);}
+function swipeMatchesTo(idx){
+  matchesTabIndex=idx;
+  const track=document.getElementById('matches-swipe-track');
+  if(track)track.style.transform=`translateX(-${idx*100}%)`;
+  document.querySelectorAll('#matches-tabs-bar .seg-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  renderMatchesPanel(idx);
+}
+async function renderMatchesPanel(idx){
+  const listId=`matches-list-${idx}`;const emptyId=`matches-empty-${idx}`;
+  const listEl=document.getElementById(listId);const emptyEl=document.getElementById(emptyId);
+  if(!listEl)return;
+  listEl.innerHTML='<p style="color:var(--text-muted);padding:20px">Cargando...</p>';emptyEl?.classList.add('hidden');
+  try{
+    const snap=await db.collection('usuarios').doc(currentUser.uid).get();
+    const yo=snap.exists?snap.data():{};
+    // idx: 0=like, 1=super, 2=nope, 3=pendientes (solicitudes enviadas)
+    let swipes=[];
+    if(idx===3){
+      // Pendientes: solicitudes de seguir enviadas que aún no han respondido
+      const solSnap=await db.collection('solicitudes')
+        .where('deUid','==',currentUser.uid)
+        .where('tipo','==','solicitud_seguir')
+        .where('estado','==','pendiente').get();
+      listEl.innerHTML='';
+      if(solSnap.empty){emptyEl?.classList.remove('hidden');return;}
+      for(const doc of solSnap.docs){
+        const s=doc.data();
+        const uSnap=await db.collection('usuarios').doc(s.paraUid).get();
+        const u=uSnap.exists?uSnap.data():{username:s.paraUid};
+        const item=document.createElement('div');item.className='seg-user-item';
+        item.innerHTML=`
+          <div class="chat-avatar">${getInicial(u.username||u.nombre||'?')}</div>
+          <div class="seg-user-info"><p class="seg-username">@${u.username||u.nombre||s.paraUid}</p>
+            <p class="seg-realname" style="color:#f5a623">⏳ Solicitud pendiente</p>
+          </div>`;
+        listEl.appendChild(item);
+      }
+      return;
+    }
+    const tipos=['like','super','nope'];const tipo=tipos[idx];
+    swipes=(yo.swipes||[]).filter(s=>s.tipo===tipo);
+    if(!swipes.length){listEl.innerHTML='';emptyEl?.classList.remove('hidden');return;}
+    listEl.innerHTML='';
+    for(const s of swipes){
+      const uSnap=await db.collection('usuarios').doc(s.uid).get();
+      const u=uSnap.exists?uSnap.data():{username:s.uid};
+      const item=document.createElement('div');item.className='seg-user-item';
+      item.innerHTML=`
+        <div class="chat-avatar">${getInicial(u.username||u.nombre||'?')}</div>
+        <div class="seg-user-info"><p class="seg-username">@${u.username||u.nombre||s.uid}</p>
+          <p class="seg-realname">${u.descripcion?u.descripcion.slice(0,40)+'…':''}</p>
+        </div>
+        <button class="btn-chat-mini" onclick="abrirChatConUid('${s.uid}')">💬</button>`;
+      listEl.appendChild(item);
+    }
+  }catch(e){listEl.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;}
+}
+
+// ═══════════════════════════════════════════
+// BUSCADOR EN SEGUIDORES
+// ═══════════════════════════════════════════
+let segSearchTimeout=null;
+async function buscarEnSeguidores(){
+  clearTimeout(segSearchTimeout);
+  const q=document.getElementById('seg-search-input')?.value.trim().toLowerCase().replace(/^@/,'');
+  if(!q){renderSegPanel(segTabIndex);return;}
+  segSearchTimeout=setTimeout(async()=>{
+    const panelIdx=segTabIndex;
+    const listId=`seg-list-${panelIdx}`;const emptyId=`seg-empty-${panelIdx}`;
+    const listEl=document.getElementById(listId);const emptyEl=document.getElementById(emptyId);
+    if(!listEl)return;
+    listEl.innerHTML='';emptyEl?.classList.add('hidden');
+    const snap=await db.collection('usuarios').get();
+    const miSnap=await db.collection('usuarios').doc(currentUser.uid).get();
+    const miData=miSnap.exists?miSnap.data():{};
+    const miSiguiendo=miData.siguiendo||[];
+    const todos=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(u=>u.uid!==currentUser.uid&&(u.username||'').toLowerCase().includes(q));
+    if(!todos.length){emptyEl?.classList.remove('hidden');return;}
+    todos.forEach((u,i)=>{
+      const yaSigo=miSiguiendo.includes(u.uid);
+      const item=document.createElement('div');item.className='seg-user-item';item.style.animationDelay=`${i*0.04}s`;
+      // Click en avatar o nombre → ver perfil (nunca al chat)
+      item.innerHTML=`
+        <div class="chat-avatar" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${u.uid}')">${getInicial(u.username||u.nombre||'?')}</div>
+        <div class="seg-user-info" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${u.uid}')">
+          <p class="seg-username seg-user-nombre-link">@${u.username||u.nombre}</p>
+        </div>
+        <button class="btn-seguir ${yaSigo?'siguiendo':'no-siguiendo'}" onclick="toggleSeguir('${u.uid}',${yaSigo},this)">${yaSigo?'Siguiendo':'Seguir'}</button>`;
+      listEl.appendChild(item);
+    });
+  },250);
+}
+
+// ═══════════════════════════════════════════
+// PANEL ADMIN
+// ═══════════════════════════════════════════
+async function loadPanelAdmin(){
+  if(!esAdmin()){showScreen('screen-inicio');return;}
+  showScreen('screen-panel-admin');
+  try{
+    const[usersSnap,rutasSnap,evSnap,bloqueosSnap]=await Promise.all([
+      db.collection('usuarios').get(),
+      db.collection('rutas').get(),
+      db.collection('eventos').get(),
+      db.collection('bloqueos').get()
+    ]);
+
+    // Calcular actividad: registros por día
+    const registrosPorDia={};
+    usersSnap.docs.forEach(d=>{
+      const u=d.data();
+      if(u.creadoEn&&u.creadoEn.toDate){
+        const dia=u.creadoEn.toDate().toLocaleDateString('es-ES');
+        registrosPorDia[dia]=(registrosPorDia[dia]||0)+1;
+      }
+    });
+
+    const ul=document.getElementById('admin-users-list');ul.innerHTML='';
+    // Stats globales
+    const statsDiv=document.createElement('div');statsDiv.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px';
+    statsDiv.innerHTML=`
+      <div class="admin-kpi"><span>${usersSnap.size}</span><small>Usuarios</small></div>
+      <div class="admin-kpi"><span>${rutasSnap.size}</span><small>Rutas</small></div>
+      <div class="admin-kpi"><span>${evSnap.size}</span><small>Eventos</small></div>`;
+    ul.appendChild(statsDiv);
+
+    // Actividad por día
+    const actDiv=document.createElement('div');actDiv.style.cssText='margin-bottom:12px;padding:10px;background:var(--bg2);border-radius:10px';
+    actDiv.innerHTML='<p style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px">Registros por día</p>'+
+      Object.entries(registrosPorDia).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7).map(([dia,n])=>
+        `<div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:3px 0;border-bottom:1px solid var(--border)"><span>${dia}</span><strong>${n}</strong></div>`
+      ).join('');
+    ul.appendChild(actDiv);
+
+    // Lista de usuarios
+    usersSnap.docs.forEach(d=>{
+      const u=d.data();
+      const reg=u.creadoEn&&u.creadoEn.toDate?u.creadoEn.toDate().toLocaleDateString('es-ES'):'—';
+      const div=document.createElement('div');div.className='admin-stat';
+      div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
+        <div><strong>@${u.username||u.nombre||'—'}</strong> <span style="opacity:0.5;font-size:0.75rem">${u.rol||'usuario'}</span><br>
+        <span style="font-size:0.78rem;color:var(--text-muted)">${u.email} — Registro: ${reg}</span></div>
+        <button style="background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.3);color:#ff5e5e;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:0.75rem"
+          onclick="adminBanUser('${d.id}','${u.username||u.nombre}',this)">
+          ${u.baneado?'✓ Baneado':'Ban'}
+        </button>
+      </div>`;
+      ul.appendChild(div);
+    });
+
+    const rl=document.getElementById('admin-rutas-list');rl.innerHTML='';
+    rutasSnap.docs.forEach(d=>{
+      const r=d.data();
+      const div=document.createElement('div');div.className='admin-stat';
+      div.innerHTML=`<strong>${r.nombre}</strong> — ${r.fecha||''} — @${r.convocadoPor||''}${r.cancelada?` <span style="color:#ef4444">[CANCELADA${r.motivoCancelacion?': '+r.motivoCancelacion:''}]</span>`:''}`;
+      rl.appendChild(div);
+    });
+
+    const el=document.getElementById('admin-eventos-list');el.innerHTML='';
+    evSnap.docs.forEach(d=>{
+      const ev=d.data();
+      const div=document.createElement('div');div.className='admin-stat';
+      div.innerHTML=`<strong>${ev.nombre}</strong> — 📍 ${ev.ciudad} — 📅 ${ev.fechaInicio||''}${ev.fechaFin&&ev.fechaFin!==ev.fechaInicio?' → '+ev.fechaFin:''} — por @${ev.creadoPor||''}`;
+      el.appendChild(div);
+    });
+
+    // Bloqueos
+    const bl=document.getElementById('admin-bloqueos-list');
+    if(bl){bl.innerHTML='';
+      if(bloqueosSnap.empty){bl.innerHTML='<p style="color:var(--text-muted);font-size:0.85rem">Sin bloqueos registrados</p>';}
+      bloqueosSnap.docs.forEach(d=>{
+        const b=d.data();
+        const fecha=b.fecha&&b.fecha.toDate?b.fecha.toDate().toLocaleDateString('es-ES'):'—';
+        const div=document.createElement('div');div.className='admin-stat';
+        div.innerHTML=`<span style="color:#ff5e5e">@${b.deEmail}</span> bloqueó a <strong>@${b.paraUsername}</strong> — ${fecha}`;
+        bl.appendChild(div);
+      });
+    }
+  }catch(e){console.error('Panel admin error:',e);}
+}
+
+async function adminBanUser(uid,username,btn){
+  const esBaneado=btn.textContent.trim().includes('Baneado');
+  if(!confirm(esBaneado?`Desbanear a @${username}?`:`Banear a @${username}? No podrá acceder.`))return;
+  try{
+    await db.collection('usuarios').doc(uid).update({baneado:!esBaneado});
+    btn.textContent=esBaneado?'Ban':'✓ Baneado';
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// Mostrar botón Panel Admin en el menú si es admin
+function actualizarMenuAdmin(){
+  const adminWrap=document.getElementById('user-dropdown-admin');
+  if(adminWrap)adminWrap.style.display=esAdmin()?'block':'none';
+  const adminRutas=document.getElementById('user-dropdown-admin-rutas');
+  if(adminRutas)adminRutas.style.display=esAdmin()?'block':'none';
+}
+
+// ═══════════════════════════════════════════
+// ONAUTH: actualizar menú admin + citas
+// ═══════════════════════════════════════════
+// Parchear onAuthStateChanged para llamar a actualizarMenuAdmin
+const _origAuthChanged = auth.onAuthStateChanged.bind(auth);
+
+// ═══════════════════════════════════════════
+// NAVEGACIÓN INFERIOR (Bottom Nav)
+// ═══════════════════════════════════════════
+const SCREENS_CON_NAV=['screen-inicio','screen-buscar','screen-chats','screen-ajustes',
+  'screen-ver','screen-convocar','screen-eventos','screen-seguidores','screen-solicitudes',
+  'screen-tarjetas','screen-matches','screen-panel-admin'];
+
+function navTo(dest){
+  document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
+  const activeBtn=document.getElementById('bnav-'+dest);
+  if(activeBtn)activeBtn.classList.add('active');
+  switch(dest){
+    case 'rutas':  showScreen('screen-rutas');break;
+    case 'inicio': showScreen('screen-inicio');break;
+    case 'buscar': showScreen('screen-buscar');initBuscar();swipeBuscarTo(0);break;
+    case 'chats':  showScreen('screen-chats');loadChats();swipeChatsTo(0);break;
+    case 'ajustes':showScreen('screen-ajustes');loadAjustes();break;
+  }
+}
+
+
+
+// Botón bloquear en perfil usuario
+function mostrarBotonesPerfilUsuario(uid, username){
+  const statsEl=document.getElementById('pu-stats');
+  if(!statsEl)return;
+  // Verificar si está bloqueado
+  const bloqueados=currentUserData?.bloqueados||[];
+  const estaBloqueado=bloqueados.includes(uid);
+  const bloquearBtn=document.createElement('button');
+  bloquearBtn.style.cssText='margin-top:16px;background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.3);color:#ff5e5e;border-radius:8px;padding:7px 16px;cursor:pointer;font-size:0.82rem';
+  bloquearBtn.textContent=estaBloqueado?'🔓 Desbloquear':'🚫 Bloquear';
+  bloquearBtn.onclick=()=>estaBloqueado?desbloquearUsuario(uid,username):bloquearUsuario(uid,username);
+  statsEl.appendChild(bloquearBtn);
+}
+
+
