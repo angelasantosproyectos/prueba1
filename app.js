@@ -59,7 +59,8 @@ auth.onAuthStateChanged(async user => {
     const dn = currentUserData?.username ? '@'+currentUserData.username : (user.displayName||user.email.split('@')[0]);
     document.getElementById('user-display').textContent = dn;
     const ud2=document.getElementById('user-display-rutas');if(ud2)ud2.textContent=dn;
-    showScreen('screen-inicio');
+    showScreen('screen-detalles');
+    setTimeout(()=>actualizarBotonesCitas(currentUserData?.citasActivo||false),500);
     loadRutaNames();
     escucharNoLeidos();
     escucharSolicitudes();
@@ -195,7 +196,7 @@ function showScreen(id){
   const esAuth=(id==='screen-login'||id==='screen-registro');
   if(nav)nav.style.display=(!esAuth&&currentUser)?'flex':'none';
   document.body.classList.toggle('has-bottom-nav',!esAuth&&!!currentUser);
-  const tabMap={'screen-rutas':'rutas','screen-inicio':'inicio','screen-buscar':'buscar','screen-chats':'chats','screen-ajustes':'ajustes'};
+  const tabMap={'screen-rutas':'rutas','screen-detalles':'detalles','screen-buscar':'buscar','screen-chats':'chats','screen-ajustes':'ajustes'};
   document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
   if(tabMap[id]){const ab=document.getElementById('bnav-'+tabMap[id]);if(ab)ab.classList.add('active');}
 }
@@ -203,11 +204,11 @@ function navTo(dest){
   document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
   const ab=document.getElementById('bnav-'+dest);if(ab)ab.classList.add('active');
   switch(dest){
-    case 'rutas':  showScreen('screen-rutas');break;
-    case 'inicio': showScreen('screen-inicio');break;
-    case 'buscar': showScreen('screen-buscar');initBuscar();break;
-    case 'chats':  showScreen('screen-chats');loadChats();break;
-    case 'ajustes':showScreen('screen-ajustes');loadAjustes();break;
+    case 'rutas':    showScreen('screen-rutas');break;
+    case 'detalles': showScreen('screen-detalles');break;
+    case 'buscar':   showScreen('screen-buscar');initBuscar();break;
+    case 'chats':    showScreen('screen-chats');loadChats();break;
+    case 'ajustes':  showScreen('screen-ajustes');loadAjustes();break;
   }
 }
 function togglePass(inputId,btn){
@@ -217,7 +218,7 @@ function togglePass(inputId,btn){
   if(sh)sh.style.display=visible?'block':'none';
   if(hi)hi.style.display=visible?'none':'block';
 }
-function volverDesdeConvocar(){editandoRutaId=null;resetForm();showScreen('screen-inicio');}
+function volverDesdeConvocar(){editandoRutaId=null;resetForm();showScreen('screen-rutas');}
 
 // Acordeón de ajustes
 function toggleAccordion(id,btn){
@@ -735,6 +736,32 @@ async function guardarEvento(){
     setTimeout(()=>{okEl.classList.add('hidden');showScreen('screen-eventos');loadEventos();},1200);
   }catch(e){showError(errEl,'Error: '+e.message);}
 }
+
+// ── Renderizar itinerario de evento con separadores por día ──
+function renderItinerarioEvento(itinerario, accentColor){
+  if(!itinerario||!itinerario.length)return'';
+  const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const grupos={};
+  itinerario.forEach(it=>{const k=it.dia||'';if(!grupos[k])grupos[k]=[];grupos[k].push(it);});
+  let html='<div class="itinerario-block">';
+  html+=`<p class="itinerario-titulo" style="color:${accentColor}">📍 Itinerario</p>`;
+  Object.keys(grupos).sort().forEach(dia=>{
+    if(dia){
+      const[y,m,d]=dia.split('-');
+      const dow=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][new Date(dia).getDay()];
+      html+=`<div class="itinerario-dia-sep" style="color:${accentColor}">${dow} ${parseInt(d)} ${meses[parseInt(m)-1]}</div>`;
+    }
+    grupos[dia].forEach(it=>{
+      html+=`<div class="itinerario-item-display">
+        <span class="it-hora" style="color:${accentColor}">${it.hora||''}</span>
+        <div><span class="it-lugar" style="font-weight:600">${escapeHtml(it.lugar)}</span>
+        ${it.desc?`<br><span style="font-size:0.8rem;opacity:0.7">${escapeHtml(it.desc)}</span>`:''}</div>
+      </div>`;
+    });
+  });
+  html+='</div>';return html;
+}
+
 async function loadEventos(){
   const listEl=document.getElementById('eventos-list');const emptyEl=document.getElementById('eventos-empty');
   listEl.innerHTML='<p style="color:var(--text-muted);padding:20px">Cargando eventos...</p>';emptyEl.classList.add('hidden');
@@ -759,11 +786,7 @@ async function loadEventos(){
       }else if(ev.fechaInicio){fechaStr=formatFechaEventoLarga(ev.fechaInicio);}
 
       const detalleId='ev-det-'+ev.id;
-      const itHTML=(ev.itinerario&&ev.itinerario.length)?`
-        <div class="itinerario-block" style="border-top:1px solid ${col.border};margin-top:12px;padding-top:12px">
-          <p class="itinerario-titulo" style="color:${col.accent}">📍 Itinerario</p>
-          ${ev.itinerario.map(it=>`<div class="itinerario-item-display"><span class="it-hora" style="color:${col.accent}">${it.hora||''}</span><span class="it-lugar">${escapeHtml(it.lugar)}</span></div>`).join('')}
-        </div>`:'';
+      const itHTML=ev.itinerario&&ev.itinerario.length?renderItinerarioEvento(ev.itinerario,col.accent):'';
       const btnEditar=esAdmin()?`<button class="btn-editar-evento" onclick="editarEvento('${ev.id}')" style="border-color:${col.border};color:${col.accent};margin-top:12px">✏️ Editar evento</button>`:'';
 
       const card=document.createElement('div');
@@ -881,6 +904,46 @@ async function verPerfilDesdeSeguidores(uid){
 
 // Alias para compatibilidad
 function switchSegTab(tab,btn){}
+
+// ── Buscador en tiempo real en Seguidores ──
+let segSearchTimeout=null;
+async function buscarEnSeguidores(){
+  clearTimeout(segSearchTimeout);
+  const q=document.getElementById('seg-search-input')?.value.trim().toLowerCase().replace(/^@/,'');
+  const panelIdx=segTabIndex||0;
+  if(!q){renderSegPanel(panelIdx);return;}
+  segSearchTimeout=setTimeout(async()=>{
+    const listId=`seg-list-${panelIdx}`;
+    const listEl=document.getElementById(listId);
+    if(!listEl)return;
+    listEl.innerHTML='';
+    const miSnap=await db.collection('usuarios').doc(currentUser.uid).get();
+    const miData=miSnap.exists?miSnap.data():{siguiendo:[],seguidores:[]};
+    const miSiguiendo=miData.siguiendo||[];
+    const lista=panelIdx===0?miSiguiendo:(miData.seguidores||[]);
+    const resultados=[];
+    for(const uid of lista){
+      const uSnap=await db.collection('usuarios').doc(uid).get();
+      const u=uSnap.exists?uSnap.data():{username:uid,nombre:uid};
+      if((u.username||'').toLowerCase().includes(q)||(u.nombre||'').toLowerCase().includes(q)){
+        resultados.push({uid,u});
+      }
+    }
+    if(!resultados.length){listEl.innerHTML='<p style="color:var(--text-muted);padding:16px">Sin resultados</p>';return;}
+    resultados.forEach(({uid,u},i)=>{
+      const yaSigo=miSiguiendo.includes(uid);
+      const item=document.createElement('div');item.className='seg-user-item';item.style.animationDelay=`${i*0.04}s`;
+      item.innerHTML=`
+        <div class="chat-avatar" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${uid}')">${getInicial(u.username||u.nombre||'?')}</div>
+        <div class="seg-user-info" style="cursor:pointer" onclick="verPerfilDesdeSeguidores('${uid}')">
+          <p class="seg-username seg-user-nombre-link">@${u.username||u.nombre}</p>
+          <p class="seg-realname">${(u.nombre&&u.nombre!==u.username)?u.nombre:''}</p>
+        </div>
+        <button class="btn-seguir ${yaSigo?'siguiendo':'no-siguiendo'}" onclick="toggleSeguir('${uid}',${yaSigo},this)">${yaSigo?'Siguiendo':'Seguir'}</button>`;
+      listEl.appendChild(item);
+    });
+  },250);
+}
 async function toggleSeguir(targetUid,yaSigo,btn){
   const miRef=db.collection('usuarios').doc(currentUser.uid);
   const elRef=db.collection('usuarios').doc(targetUid);
@@ -1004,6 +1067,17 @@ async function verPerfilUsuario(userData){
   document.getElementById('pu-stats').innerHTML=`
     <div class="perfil-u-stat"><strong>${seguidores}</strong><span>Seguidores</span></div>
     <div class="perfil-u-stat"><strong>${siguiendo}</strong><span>Siguiendo</span></div>`;
+  // Cargar estado de bloqueo
+  const miBloqueados=(await db.collection('usuarios').doc(currentUser.uid).get()).data()?.bloqueados||[];
+  const estaBloqueado=miBloqueados.includes(userData.uid);
+  const btnB=document.getElementById('pu-btn-bloquear');
+  if(btnB){
+    btnB.dataset.targetUid=userData.uid;
+    btnB.dataset.targetUsername=u.username||u.nombre||userData.uid;
+    btnB.dataset.bloqueado=estaBloqueado?'1':'0';
+    btnB.textContent=estaBloqueado?'✅ Desbloqueado (tap para desbloquear)':'🚫 Bloquear';
+    btnB.style.display=userData.uid!==currentUser.uid?'inline-flex':'none';
+  }
   showScreen('screen-perfil-usuario');
 }
 async function toggleSeguirPerfil(){
@@ -1343,11 +1417,10 @@ function toggleCitasMode(activo){
   actualizarBotonesCitas(activo);
 }
 function actualizarBotonesCitas(activo){
-  // El botón de tarjetas solo visible si citas activo
-  const btnT=document.getElementById('btn-tarjetas-grid');
-  if(btnT)btnT.style.display=activo?'':'none';
-  const btnM=document.getElementById('btn-matches-grid');
-  if(btnM)btnM.style.display=activo?'':'none';
+  // Botón tarjetas en Detalles
+  ['btn-tarjetas-detalles','btn-tarjetas-grid','btn-matches-grid'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display=activo?'':'none';
+  });
 }
 
 // ═══════════════════════════════════════════
@@ -1452,17 +1525,28 @@ async function loadPanelAdmin(){
 // BLOQUEAR USUARIO
 // ═══════════════════════════════════════════
 async function bloquearUsuario(targetUid,targetUsername){
-  if(!confirm(`¿Bloquear a @${targetUsername}?\nNo podrá ver tu perfil ni enviarte mensajes.`))return;
   try{
+    // Bloquear
     await db.collection('usuarios').doc(currentUser.uid).update({
       bloqueados:firebase.firestore.FieldValue.arrayUnion(targetUid)
     });
+    // Dejar de seguirse mutuamente
+    await db.collection('usuarios').doc(currentUser.uid).update({
+      siguiendo:firebase.firestore.FieldValue.arrayRemove(targetUid)
+    });
+    await db.collection('usuarios').doc(targetUid).update({
+      seguidores:firebase.firestore.FieldValue.arrayRemove(currentUser.uid),
+      siguiendo:firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
+    });
+    await db.collection('usuarios').doc(currentUser.uid).update({
+      seguidores:firebase.firestore.FieldValue.arrayRemove(targetUid)
+    });
+    // Registrar bloqueo
     await db.collection('bloqueos').add({
       deUid:currentUser.uid,deEmail:currentUser.email,
       paraUid:targetUid,paraUsername:targetUsername,
       fecha:firebase.firestore.FieldValue.serverTimestamp()
     });
-    alert(`@${targetUsername} bloqueado correctamente.`);
     if(chatActualUser&&chatActualUser.uid===targetUid)cerrarConversacion();
   }catch(e){alert('Error al bloquear: '+e.message);}
 }
@@ -1474,6 +1558,24 @@ async function desbloquearUsuario(targetUid,targetUsername){
     });
     alert(`@${targetUsername} desbloqueado.`);
   }catch(e){alert('Error: '+e.message);}
+}
+
+
+// ── Bloquear/desbloquear desde la pantalla de perfil ──
+async function toggleBloquearPerfil(){
+  const btn=document.getElementById('pu-btn-bloquear');
+  if(!btn)return;
+  const targetUid=btn.dataset.targetUid;
+  const targetUsername=btn.dataset.targetUsername;
+  const estaBloqueado=btn.dataset.bloqueado==='1';
+  if(estaBloqueado){
+    await desbloquearUsuario(targetUid,targetUsername);
+    btn.textContent='🚫 Bloquear';btn.dataset.bloqueado='0';
+  } else {
+    if(!confirm(`¿Bloquear a @${targetUsername}?\nDejarás de seguiros mutuamente y no podrá enviarte mensajes.`))return;
+    await bloquearUsuario(targetUid,targetUsername);
+    btn.textContent='✅ Desbloqueado (tap para desbloquear)';btn.dataset.bloqueado='1';
+  }
 }
 
 // ═══════════════════════════════════════════
