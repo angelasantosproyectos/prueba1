@@ -101,6 +101,22 @@
   </div>
 </div>
 
+<!-- ════ RUTAS HUB ════ -->
+<div id="screen-rutas" class="screen">
+  <header class="top-bar">
+    <span class="logo-title small">RUTAS ⚡</span>
+    <div class="user-pill"><span id="user-display-rutas">—</span></div>
+  </header>
+  <main class="home-main">
+    <div class="hero-text"><p class="hero-label">¿Hoy dónde se patina?</p><h2 class="hero-heading">ESCOGE TU<br>MOVIMIENTO</h2></div>
+    <div class="action-grid">
+      <button class="action-card convocar" onclick="editandoRutaId=null;resetForm();loadRutaNames();showScreen('screen-convocar')"><span class="action-icon">📣</span><span class="action-label">CONVOCAR<br>RUTA</span><span class="action-arrow">→</span></button>
+      <button class="action-card ver" onclick="showScreen('screen-ver');loadRutas()"><span class="action-icon">🗺️</span><span class="action-label">VER<br>RUTAS</span><span class="action-arrow">→</span></button>
+      <button class="action-card eventos" onclick="showScreen('screen-eventos');loadEventos()"><span class="action-icon">🎪</span><span class="action-label">EVENTOS</span><span class="action-arrow">→</span></button>
+    </div>
+  </main>
+</div>
+
 <!-- ════ INICIO ════ -->
 <div id="screen-inicio" class="screen">
   <header class="top-bar">
@@ -400,10 +416,27 @@
       <div class="aj-accordion-body hidden" id="acc-perfil">
         <div class="perfil-avatar-block">
           <div class="perfil-avatar" id="perfil-avatar-display">?</div>
-          <div><p class="perfil-nombre" id="perfil-nombre-display">—</p><p class="perfil-email" id="perfil-email-display">—</p></div>
+          <div>
+            <p class="perfil-nombre" id="perfil-nombre-display">—</p>
+            <p class="perfil-email" id="perfil-email-display">—</p>
+            <div id="aj-perfil-stats" style="display:flex;gap:16px;margin-top:6px"></div>
+          </div>
         </div>
         <div class="field"><label>Nombre para mostrar</label><input type="text" id="aj-nombre" placeholder="Tu nombre visible"/></div>
-        <div class="field"><label>Bio (opcional)</label><textarea id="aj-bio" rows="2" placeholder="Cuéntanos algo sobre ti..."></textarea></div>
+        <div class="field"><label>Descripción / Bio</label><textarea id="aj-bio" rows="3" placeholder="Cuéntanos algo sobre ti..."></textarea></div>
+        <div class="field-row">
+          <div class="field"><label>Edad</label><input type="number" id="aj-edad" placeholder="Ej: 25" min="18" max="120"/></div>
+          <div class="field"><label>Sexo</label>
+            <select id="aj-sexo">
+              <option value="">— Selecciona —</option>
+              <option value="hombre">Hombre</option><option value="mujer">Mujer</option><option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Teléfono</label>
+          <input type="text" id="aj-telefono-display" placeholder="+34 600 000 000" readonly style="opacity:0.6;cursor:not-allowed"/>
+          <p style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">Para cambiarlo contacta con soporte.</p>
+        </div>
         <div class="field">
           <label>Nivel de patinaje</label>
           <div class="nivel-grid">
@@ -424,36 +457,33 @@
         <span>📋 Datos personales</span><span class="aj-chevron">▼</span>
       </button>
       <div class="aj-accordion-body hidden" id="acc-datos">
-        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px">Necesarios para aparecer en Tarjetas.</p>
-        <div class="field"><label>Descripción / Bio</label>
-          <textarea id="aj-descripcion" rows="3" placeholder="Cuéntanos algo sobre ti..."></textarea>
-        </div>
-        <div class="field-row">
-          <div class="field"><label>Edad</label><input type="number" id="aj-edad" placeholder="Ej: 25" min="18" max="120"/></div>
-          <div class="field"><label>Sexo</label>
-            <select id="aj-sexo">
-              <option value="">— Selecciona —</option>
-              <option value="hombre">Hombre</option><option value="mujer">Mujer</option><option value="otro">Otro</option>
-            </select>
+        <!-- Switch ¿Te gustaría usar esto como app de citas también? -->
+        <div class="citas-switch-wrap">
+          <div style="flex:1;min-width:0">
+            <p style="font-weight:600;font-size:0.95rem">💘 ¿Usar también como app de citas?</p>
+            <p style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">Actívalo para aparecer en Tarjetas y ver las de otros.</p>
           </div>
+          <label class="citas-toggle">
+            <input type="checkbox" id="toggle-citas" onchange="toggleCitasMode(this.checked)"/>
+            <span class="citas-slider"></span>
+          </label>
         </div>
-        <div class="field"><label>Teléfono</label>
-          <input type="text" id="aj-telefono-display" placeholder="+34 600 000 000" readonly style="opacity:0.6;cursor:not-allowed"/>
-        </div>
-        <div class="field-row">
-          <div class="field"><label>Hobby</label><input type="text" id="aj-hobby" placeholder="Ej: escalada"/></div>
-          <div class="field"><label>Música</label><input type="text" id="aj-musica" placeholder="Ej: rock"/></div>
-        </div>
-        <div class="field-row">
-          <div class="field"><label>Animal favorito</label><input type="text" id="aj-animal" placeholder="Ej: perro"/></div>
-          <div class="field"><label>Color favorito</label><input type="text" id="aj-color" placeholder="Ej: azul"/></div>
-        </div>
-        <div class="field"><label>Estudios</label><input type="text" id="aj-estudios" placeholder="Ej: Diseño gráfico"/></div>
-        <!-- Estado civil: checkboxes múltiple -->
-        <div class="field">
-          <label>Estado civil / familiar <span class="label-hint">(puede ser varias)</span></label>
-          <div class="checkbox-grid">
-            <label class="checkbox-item"><input type="checkbox" value="soltero/a" id="ec-soltero"/> Soltero/a</label>
+        <!-- Campos de citas — ocultos por defecto -->
+        <div id="citas-fields" style="display:none">
+          <div class="field-row">
+            <div class="field"><label>Hobby</label><input type="text" id="aj-hobby" placeholder="Ej: escalada"/></div>
+            <div class="field"><label>Música</label><input type="text" id="aj-musica" placeholder="Ej: rock"/></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Animal favorito</label><input type="text" id="aj-animal" placeholder="Ej: perro"/></div>
+            <div class="field"><label>Color favorito</label><input type="text" id="aj-color" placeholder="Ej: azul"/></div>
+          </div>
+          <div class="field"><label>Estudios</label><input type="text" id="aj-estudios" placeholder="Ej: Diseño gráfico"/></div>
+          <!-- Estado civil: checkboxes múltiple -->
+          <div class="field">
+            <label>Estado civil / familiar <span class="label-hint">(puede ser varias)</span></label>
+            <div class="checkbox-grid">
+              <label class="checkbox-item"><input type="checkbox" value="soltero/a" id="ec-soltero"/> Soltero/a</label>
             <label class="checkbox-item"><input type="checkbox" value="con pareja" id="ec-pareja"/> Con pareja</label>
             <label class="checkbox-item"><input type="checkbox" value="casado/a" id="ec-casado"/> Casado/a</label>
             <label class="checkbox-item"><input type="checkbox" value="divorciado/a" id="ec-divorciado"/> Divorciado/a</label>
@@ -482,6 +512,7 @@
             <label class="checkbox-item"><input type="checkbox" value="conocer gente" id="bq-gente"/> Conocer gente</label>
           </div>
         </div>
+        </div><!-- /citas-fields -->
         <div id="aj-datos-ok" class="ok-msg hidden">¡Datos personales guardados! ✓</div>
         <button class="btn-primary" onclick="guardarDatosPersonales()">GUARDAR DATOS PERSONALES</button>
       </div>
@@ -542,12 +573,56 @@
 
     <!-- Cerrar sesión -->
     <div style="padding:8px 0">
+    <!-- Panel Admin solo admin -->
+    <div class="aj-accordion" id="acc-admin-wrap" style="display:none">
+      <button class="aj-accordion-header" onclick="toggleAccordion('acc-admin',this)">
+        <span>🛡️ Panel Admin</span><span class="aj-chevron">▼</span>
+      </button>
+      <div class="aj-accordion-body hidden" id="acc-admin">
+        <button class="btn-primary" style="margin-bottom:12px" onclick="loadPanelAdmin()">🔄 Actualizar datos</button>
+        <div id="admin-kpi-wrap" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px"></div>
+        <h4 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px">Usuarios registrados</h4>
+        <div id="admin-users-list"></div>
+        <h4 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin:12px 0 8px">Bloqueos de usuarios</h4>
+        <div id="admin-bloqueos-list"></div>
+        <h4 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin:12px 0 8px">Rutas convocadas</h4>
+        <div id="admin-rutas-list"></div>
+        <h4 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin:12px 0 8px">Actividad (últimos 7 días)</h4>
+        <div id="admin-actividad-list"></div>
+      </div>
+    </div>
+
       <button class="btn-danger" style="width:100%" onclick="doLogout()">🚪 CERRAR SESIÓN</button>
     </div>
 
   </main>
 </div>
 
+
+<!-- ════ MENÚ INFERIOR ════ -->
+<nav class="bottom-nav" id="bottom-nav" style="display:none">
+  <button class="bottom-nav-btn" id="bnav-rutas" onclick="navTo('rutas')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-10"/><polyline points="14 7 21 7 21 14"/></svg>
+    <span>Rutas</span>
+  </button>
+  <button class="bottom-nav-btn active" id="bnav-inicio" onclick="navTo('inicio')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Inicio</span>
+  </button>
+  <button class="bottom-nav-btn" id="bnav-buscar" onclick="navTo('buscar')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span>Buscar</span>
+  </button>
+  <button class="bottom-nav-btn" id="bnav-chats" onclick="navTo('chats')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span>Chats</span>
+    <span class="bnav-badge hidden" id="bnav-chat-badge">0</span>
+  </button>
+  <button class="bottom-nav-btn" id="bnav-ajustes" onclick="navTo('ajustes')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>Ajustes</span>
+  </button>
+</nav>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>

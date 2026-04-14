@@ -58,10 +58,18 @@ auth.onAuthStateChanged(async user => {
     currentUserData = snap && snap.exists ? snap.data() : null;
     const dn = currentUserData?.username ? '@'+currentUserData.username : (user.displayName||user.email.split('@')[0]);
     document.getElementById('user-display').textContent = dn;
+    const ud2=document.getElementById('user-display-rutas');if(ud2)ud2.textContent=dn;
     showScreen('screen-inicio');
     loadRutaNames();
     escucharNoLeidos();
     escucharSolicitudes();
+    // Mostrar/ocultar Panel Admin en ajustes
+    setTimeout(()=>{
+      const adminWrap=document.getElementById('acc-admin-wrap');
+      if(adminWrap)adminWrap.style.display=esAdmin()?'block':'none';
+      // Tarjetas: visible solo si citasActivo
+      actualizarBotonesCitas(currentUserData?.citasActivo||false);
+    },400);
   } else {
     currentUser = null; currentUserData = null;
     showScreen('screen-login');
@@ -177,9 +185,30 @@ async function doRegistro(){
 // ═══════════════════════════════════════════
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});
-  const t=document.getElementById(id);t.style.display='flex';t.classList.add('active');
+  const t=document.getElementById(id);
+  if(!t){console.warn('Screen no encontrada:',id);return;}
+  t.style.display='flex';t.classList.add('active');
   if(id==='screen-convocar'&&!editandoRutaId){resetForm();loadRutaNames();}
   if(id==='screen-eventos'){const b=document.getElementById('btn-crear-evento');if(b)b.style.display=esAdmin()?'inline-flex':'none';}
+  // Bottom nav
+  const nav=document.getElementById('bottom-nav');
+  const esAuth=(id==='screen-login'||id==='screen-registro');
+  if(nav)nav.style.display=(!esAuth&&currentUser)?'flex':'none';
+  document.body.classList.toggle('has-bottom-nav',!esAuth&&!!currentUser);
+  const tabMap={'screen-rutas':'rutas','screen-inicio':'inicio','screen-buscar':'buscar','screen-chats':'chats','screen-ajustes':'ajustes'};
+  document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
+  if(tabMap[id]){const ab=document.getElementById('bnav-'+tabMap[id]);if(ab)ab.classList.add('active');}
+}
+function navTo(dest){
+  document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
+  const ab=document.getElementById('bnav-'+dest);if(ab)ab.classList.add('active');
+  switch(dest){
+    case 'rutas':  showScreen('screen-rutas');break;
+    case 'inicio': showScreen('screen-inicio');break;
+    case 'buscar': showScreen('screen-buscar');initBuscar();break;
+    case 'chats':  showScreen('screen-chats');loadChats();break;
+    case 'ajustes':showScreen('screen-ajustes');loadAjustes();break;
+  }
 }
 function togglePass(inputId,btn){
   const input=document.getElementById(inputId);const visible=input.type==='text';
@@ -1164,16 +1193,23 @@ async function loadAjustes(){
       const d=snap.data();
       const nombre=d.nombre||getNombre(currentUser);
       document.getElementById('aj-nombre').value=nombre;
-      document.getElementById('aj-bio').value=d.bio||'';
+      document.getElementById('aj-bio').value=d.bio||d.descripcion||'';
+      setVal('aj-edad',d.edad||'');
+      setSelectVal('aj-sexo',d.sexo||'');
+      setVal('aj-telefono-display',d.telefono||'');
+      // Stats seguidores/siguiendo
+      const statsEl=document.getElementById('aj-perfil-stats');
+      if(statsEl){
+        const seg=(d.seguidores||[]).length,sig=(d.siguiendo||[]).length;
+        statsEl.innerHTML=`<span style="font-size:0.78rem;color:var(--text-muted)"><strong style="color:var(--text)">${seg}</strong> seguidores</span><span style="font-size:0.78rem;color:var(--text-muted);margin-left:12px"><strong style="color:var(--text)">${sig}</strong> siguiendo</span>`;
+      }
       document.getElementById('perfil-nombre-display').textContent='@'+(d.username||nombre);
       document.getElementById('perfil-avatar-display').textContent=getInicial(d.username||nombre);
       if(d.nivel){document.querySelectorAll('#screen-ajustes .nivel-btn').forEach(b=>b.classList.toggle('selected',b.dataset.nivel===d.nivel));selectedNivelAjustes=d.nivel;}
       // Datos personales
+      // aj-descripcion es alias de aj-bio en datos personales (ambos muestran bio)
       setVal('aj-descripcion',d.descripcion||d.bio||'');
-      setVal('aj-edad',d.edad||'');
-      setSelectVal('aj-sexo',d.sexo||'');
-      setVal('aj-telefono-display',d.telefono||'');
-      setVal('aj-hobby',d.hobby);setVal('aj-musica',d.musica);setVal('aj-animal',d.animal);
+      setVal('aj-hobby',d.hobby||'');setVal('aj-musica',d.musica||'');setVal('aj-animal',d.animal||'');
       setVal('aj-color',d.color);setVal('aj-estudios',d.estudios);
       // Checkboxes múltiple
       setChecked(['ec-soltero','ec-pareja','ec-casado','ec-divorciado','ec-hijos','ec-sinhijos'],d.relacionEstado||[]);
@@ -1195,11 +1231,14 @@ function getVal(id){const el=document.getElementById(id);return el?el.value.trim
 async function guardarPerfil(){
   const nombre=document.getElementById('aj-nombre').value.trim();
   const bio=document.getElementById('aj-bio').value.trim();
+  const edadP=parseInt(document.getElementById('aj-edad')?.value||'0',10)||0;
+  const sexoP=document.getElementById('aj-sexo')?.value||'';
   const okEl=document.getElementById('aj-ok');okEl.classList.add('hidden');
   if(!nombre){alert('El nombre no puede estar vacío.');return;}
   const nombreAnterior=getNombre(currentUser);
   try{
-    await db.collection('usuarios').doc(currentUser.uid).set({nombre,bio,email:currentUser.email,uid:currentUser.uid,...(selectedNivelAjustes?{nivel:selectedNivelAjustes}:{})},{merge:true});
+    const datos={nombre,bio,descripcion:bio,email:currentUser.email,uid:currentUser.uid,...(selectedNivelAjustes?{nivel:selectedNivelAjustes}:{}),...(edadP>=18?{edad:edadP}:{}),...(sexoP?{sexo:sexoP}:{})};
+    await db.collection('usuarios').doc(currentUser.uid).set(datos,{merge:true});
     await currentUser.updateProfile({displayName:nombre});
     if(nombre!==nombreAnterior){
       const rutasSnap=await db.collection('rutas').where('convocadoPorEmail','==',currentUser.email).get();
@@ -1215,14 +1254,12 @@ async function guardarPerfil(){
 
 async function guardarDatosPersonales(){
   const okEl=document.getElementById('aj-datos-ok');okEl.classList.add('hidden');
-  const edadVal=parseInt(getVal('aj-edad'),10)||0;
+  const citasActivo=document.getElementById('toggle-citas')?.checked||false;
   const estadoCivil=getChecked(['ec-soltero','ec-pareja','ec-casado','ec-divorciado','ec-hijos','ec-sinhijos']);
   const meGustan=getChecked(['mg-hombres','mg-mujeres','mg-ambos','mg-otros']);
   const busco=getChecked(['bq-amistad','bq-amor','bq-rollo','bq-surja','bq-gente']);
   const datos={
-    descripcion:getVal('aj-descripcion'),bio:getVal('aj-descripcion'),
-    ...(edadVal>=18&&edadVal<=120?{edad:edadVal}:{}),
-    ...(getVal('aj-sexo')?{sexo:getVal('aj-sexo')}:{}),
+    citasActivo,
     hobby:getVal('aj-hobby'),musica:getVal('aj-musica'),animal:getVal('aj-animal'),
     color:getVal('aj-color'),estudios:getVal('aj-estudios'),
     relacionEstado:estadoCivil,gustanMe:meGustan,relacionBusco:busco,
@@ -1296,3 +1333,185 @@ document.addEventListener('keydown',e=>{
   if(document.getElementById('screen-login').classList.contains('active'))doLogin();
   if(document.getElementById('screen-registro').classList.contains('active'))doRegistro();
 });
+
+// ═══════════════════════════════════════════
+// SWITCH CITAS
+// ═══════════════════════════════════════════
+function toggleCitasMode(activo){
+  const fields=document.getElementById('citas-fields');
+  if(fields)fields.style.display=activo?'block':'none';
+  actualizarBotonesCitas(activo);
+}
+function actualizarBotonesCitas(activo){
+  // El botón de tarjetas solo visible si citas activo
+  const btnT=document.getElementById('btn-tarjetas-grid');
+  if(btnT)btnT.style.display=activo?'':'none';
+  const btnM=document.getElementById('btn-matches-grid');
+  if(btnM)btnM.style.display=activo?'':'none';
+}
+
+// ═══════════════════════════════════════════
+// PANEL ADMIN
+// ═══════════════════════════════════════════
+async function loadPanelAdmin(){
+  if(!esAdmin())return;
+  try{
+    const[usersSnap,rutasSnap,bloqueosSnap]=await Promise.all([
+      db.collection('usuarios').get(),
+      db.collection('rutas').get(),
+      db.collection('bloqueos').get()
+    ]);
+
+    // KPIs
+    const kpi=document.getElementById('admin-kpi-wrap');
+    if(kpi){
+      kpi.innerHTML=`
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.6rem;font-weight:700;color:var(--accent)">${usersSnap.size}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted)">Usuarios</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.6rem;font-weight:700;color:var(--accent)">${rutasSnap.size}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted)">Rutas</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.6rem;font-weight:700;color:var(--accent)">${bloqueosSnap.size}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted)">Bloqueos</div>
+        </div>`;
+    }
+
+    // Actividad últimos 7 días
+    const hoy=new Date();hoy.setHours(0,0,0,0);
+    const hace7=new Date(hoy);hace7.setDate(hace7.getDate()-6);
+    const registrosPorDia={};
+    usersSnap.docs.forEach(d=>{
+      const u=d.data();
+      if(u.creadoEn?.toDate){
+        const dia=u.creadoEn.toDate().toLocaleDateString('es-ES');
+        registrosPorDia[dia]=(registrosPorDia[dia]||0)+1;
+      }
+    });
+
+    const ul=document.getElementById('admin-users-list');
+    if(ul){
+      ul.innerHTML='';
+      usersSnap.docs.forEach(d=>{
+        const u=d.data();
+        const reg=u.creadoEn?.toDate?u.creadoEn.toDate().toLocaleDateString('es-ES'):'—';
+        const div=document.createElement('div');
+        div.style.cssText='padding:8px 0;border-bottom:1px solid var(--border);font-size:0.85rem';
+        div.innerHTML=`<strong>@${u.username||u.nombre||'—'}</strong> <span style="opacity:0.5;font-size:0.72rem">${u.rol||'usuario'}</span><br>
+          <span style="color:var(--text-muted)">${u.email} · Registro: ${reg}</span>
+          ${u.citasActivo?'<span style="color:var(--accent);font-size:0.72rem;margin-left:8px">💘 Citas ON</span>':''}`;
+        ul.appendChild(div);
+      });
+    }
+
+    const bl=document.getElementById('admin-bloqueos-list');
+    if(bl){
+      bl.innerHTML='';
+      if(bloqueosSnap.empty){bl.innerHTML='<p style="color:var(--text-muted);font-size:0.85rem">Sin bloqueos registrados</p>';}
+      bloqueosSnap.docs.forEach(d=>{
+        const b=d.data();
+        const fecha=b.fecha?.toDate?b.fecha.toDate().toLocaleDateString('es-ES'):'—';
+        const div=document.createElement('div');
+        div.style.cssText='padding:6px 0;border-bottom:1px solid var(--border);font-size:0.85rem';
+        div.innerHTML=`<span style="color:#ff5e5e">@${b.deEmail||b.deUid}</span> bloqueó a <strong>@${b.paraUsername||b.paraUid}</strong> · ${fecha}`;
+        bl.appendChild(div);
+      });
+    }
+
+    const rl=document.getElementById('admin-rutas-list');
+    if(rl){
+      rl.innerHTML='';
+      const rutas=rutasSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.fechaTS-a.fechaTS);
+      rutas.forEach(r=>{
+        const div=document.createElement('div');
+        div.style.cssText='padding:7px 0;border-bottom:1px solid var(--border);font-size:0.85rem';
+        div.innerHTML=`<strong>${r.nombre}</strong> · ${r.fecha||''} · @${r.convocadoPor||''}
+          ${r.cancelada?'<span style="color:#ff5e5e"> [CANCELADA]</span>':''}`;
+        rl.appendChild(div);
+      });
+    }
+
+    const al=document.getElementById('admin-actividad-list');
+    if(al){
+      al.innerHTML='';
+      if(!Object.keys(registrosPorDia).length){al.innerHTML='<p style="color:var(--text-muted);font-size:0.85rem">Sin registros recientes</p>';}
+      Object.entries(registrosPorDia).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7).forEach(([dia,n])=>{
+        const div=document.createElement('div');
+        div.style.cssText='display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.85rem';
+        div.innerHTML=`<span>${dia}</span><strong>${n} registro${n!==1?'s':''}</strong>`;
+        al.appendChild(div);
+      });
+    }
+  }catch(e){console.error('Panel admin error:',e);}
+}
+
+// ═══════════════════════════════════════════
+// BLOQUEAR USUARIO
+// ═══════════════════════════════════════════
+async function bloquearUsuario(targetUid,targetUsername){
+  if(!confirm(`¿Bloquear a @${targetUsername}?\nNo podrá ver tu perfil ni enviarte mensajes.`))return;
+  try{
+    await db.collection('usuarios').doc(currentUser.uid).update({
+      bloqueados:firebase.firestore.FieldValue.arrayUnion(targetUid)
+    });
+    await db.collection('bloqueos').add({
+      deUid:currentUser.uid,deEmail:currentUser.email,
+      paraUid:targetUid,paraUsername:targetUsername,
+      fecha:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert(`@${targetUsername} bloqueado correctamente.`);
+    if(chatActualUser&&chatActualUser.uid===targetUid)cerrarConversacion();
+  }catch(e){alert('Error al bloquear: '+e.message);}
+}
+async function desbloquearUsuario(targetUid,targetUsername){
+  if(!confirm(`¿Desbloquear a @${targetUsername}?`))return;
+  try{
+    await db.collection('usuarios').doc(currentUser.uid).update({
+      bloqueados:firebase.firestore.FieldValue.arrayRemove(targetUid)
+    });
+    alert(`@${targetUsername} desbloqueado.`);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// ═══════════════════════════════════════════
+// CARGAR AJUSTES: sincronizar citas y nuevos campos
+// ═══════════════════════════════════════════
+// Extender el loadAjustes original para cargar citasActivo y checkboxes
+const _origLoadAjustes = loadAjustes;
+loadAjustes = async function(){
+  await _origLoadAjustes();
+  // Leer datos frescos para campos extra
+  if(!currentUser)return;
+  try{
+    const snap=await db.collection('usuarios').doc(currentUser.uid).get();
+    if(!snap.exists)return;
+    const d=snap.data();
+    // Citas switch
+    const citasEl=document.getElementById('toggle-citas');
+    const cA=!!(d.citasActivo);
+    if(citasEl){citasEl.checked=cA;toggleCitasMode(cA);}
+    // Checkboxes
+    if(typeof setChecked==='function'){
+      setChecked(['ec-soltero','ec-pareja','ec-casado','ec-divorciado','ec-hijos','ec-sinhijos'],d.relacionEstado||[]);
+      setChecked(['mg-hombres','mg-mujeres','mg-ambos','mg-otros'],d.gustanMe||[]);
+      setChecked(['bq-amistad','bq-amor','bq-rollo','bq-surja','bq-gente'],d.relacionBusco||[]);
+    }
+    // Admin panel
+    const adminWrap=document.getElementById('acc-admin-wrap');
+    if(adminWrap)adminWrap.style.display=esAdmin()?'block':'none';
+  }catch(e){console.error('loadAjustes extra:',e);}
+};
+
+// Función setChecked si no existe
+if(typeof setChecked==='undefined'){
+  window.setChecked=function(ids,valores){
+    const arr=Array.isArray(valores)?valores:(valores?[valores]:[]);
+    ids.forEach(id=>{const el=document.getElementById(id);if(el)el.checked=arr.includes(el.value);});
+  };
+}
+if(typeof getChecked==='undefined'){
+  window.getChecked=function(ids){return ids.filter(id=>document.getElementById(id)?.checked).map(id=>document.getElementById(id).value);};
+}
