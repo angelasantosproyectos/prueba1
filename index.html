@@ -310,8 +310,20 @@
     <div></div>
   </header>
   <main class="tarjetas-main">
-    <div id="tarjetas-grid"></div>
-    <div id="tarjetas-empty" class="empty-msg hidden"></div>
+    <div class="swiper-stack-wrap" id="swiper-wrap">
+      <div id="swiper-stack"></div>
+    </div>
+    <div id="tarjetas-empty" class="empty-msg hidden" style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column"></div>
+    <div class="swiper-hints">
+      <span class="hint-nope">← Nope</span>
+      <span class="hint-match">↓ Supermatch 💘</span>
+      <span class="hint-like">Like →</span>
+    </div>
+    <div class="swiper-btns">
+      <button class="swiper-btn nope" onclick="swipeAccion('nope')" title="No me interesa">✕</button>
+      <button class="swiper-btn super" onclick="swipeAccion('super')" title="Supermatch">💘</button>
+      <button class="swiper-btn like" onclick="swipeAccion('like')" title="Me gusta">♥</button>
+    </div>
   </main>
 </div>
 

@@ -986,53 +986,163 @@ function calcularScore(yo,otro){
 }
 function perfilCompleto(u){return u&&u.descripcion&&u.edad&&u.sexo;}
 
+// ═══ TARJETAS SWIPER ═══════════════════════════
+let swiperUsuarios=[];
+let swiperIdx=0;
+
 async function loadTarjetas(){
-  const el=document.getElementById('tarjetas-grid');if(!el)return;
-  el.innerHTML='<p style="color:var(--text-muted);padding:20px">Cargando...</p>';
-  document.getElementById('tarjetas-empty').classList.add('hidden');
+  const emEl=document.getElementById('tarjetas-empty');
+  const stack=document.getElementById('swiper-stack');
+  if(!stack)return;
+  stack.innerHTML='';emEl?.classList.add('hidden');
   try{
-    const[miSnap,allSnap]=await Promise.all([db.collection('usuarios').doc(currentUser.uid).get(),db.collection('usuarios').get()]);
+    const[miSnap,allSnap]=await Promise.all([
+      db.collection('usuarios').doc(currentUser.uid).get(),
+      db.collection('usuarios').get()
+    ]);
     const yo=miSnap.exists?miSnap.data():null;
     if(!perfilCompleto(yo)){
-      el.innerHTML='';
-      const em=document.getElementById('tarjetas-empty');em.classList.remove('hidden');
-      em.innerHTML='¡Completa tu perfil para ver tarjetas!<br><small>Necesitas: descripción, edad y sexo en Datos Personales.</small><br><br><button class="btn-primary" style="max-width:220px;margin-top:12px" onclick="showScreen(\'screen-ajustes\');loadAjustes()">IR A AJUSTES</button>';
+      emEl?.classList.remove('hidden');
+      if(emEl)emEl.innerHTML='¡Completa tu perfil para ver tarjetas!<br><small>Necesitas: descripción, edad y sexo.</small><br><br><button class="btn-primary" style="max-width:220px;margin-top:12px" onclick="showScreen('screen-ajustes');loadAjustes()">IR A AJUSTES</button>';
       return;
     }
-    const miSiguiendo=yo.siguiendo||[];
-    let usuarios=allSnap.docs.map(d=>({uid:d.id,...d.data()})).filter(u=>u.uid!==currentUser.uid&&perfilCompleto(u));
+    // Filtrar usuarios con citas activas y perfil completo, excluir ya valorados
+    const yaValorados=new Set((yo.swipes||[]).map(s=>s.uid));
+    let usuarios=allSnap.docs.map(d=>({uid:d.id,...d.data()}))
+      .filter(u=>u.uid!==currentUser.uid&&perfilCompleto(u)&&u.citasActivo&&!yaValorados.has(u.uid));
     usuarios=usuarios.map(u=>({...u,_score:calcularScore(yo,u)})).sort((a,b)=>b._score-a._score);
-    if(!usuarios.length){el.innerHTML='';document.getElementById('tarjetas-empty').classList.remove('hidden');
-      document.getElementById('tarjetas-empty').innerHTML='No hay otros usuarios con perfil completo aún.';return;}
-    el.innerHTML='';
-    usuarios.forEach((u,i)=>{
-      const card=document.createElement('div');card.className='tarjeta-user';card.style.animationDelay=`${i*0.06}s`;
-      const stars='★'.repeat(Math.min(u._score,5))+'☆'.repeat(Math.max(0,5-u._score));
-      const yaSigo=miSiguiendo.includes(u.uid);
-      const estado=Array.isArray(u.relacionEstado)?u.relacionEstado.join(', '):(u.relacionEstado||'');
-      const busco=Array.isArray(u.relacionBusco)?u.relacionBusco.join(', '):(u.relacionBusco||'');
-      const gustan=Array.isArray(u.gustanMe)?u.gustanMe.join(', '):(u.gustanMe||'');
-      card.innerHTML=`
-        <div class="tarjeta-avatar">${getInicial(u.username||u.nombre||'?')}</div>
-        <div class="tarjeta-username">@${u.username||u.nombre||''}</div>
-        <div class="tarjeta-edad">${u.edad||'?'} años · ${u.sexo||''}</div>
-        ${u._score>0?`<div class="tarjeta-score" title="${u._score} cosas en común">${stars}</div>`:''}
-        <hr class="tarjeta-sep"/>
-        <p class="tarjeta-desc">${u.descripcion||''}</p>
-        <div class="tarjeta-tags">
-          ${busco?`<span class="tarjeta-tag">${busco}</span>`:''}
-          ${estado?`<span class="tarjeta-tag">${estado}</span>`:''}
-          ${gustan?`<span class="tarjeta-tag">Le gustan: ${gustan}</span>`:''}
-        </div>
-        <div style="display:flex;gap:8px;margin-top:12px;justify-content:center">
-          <button class="btn-seguir ${yaSigo?'siguiendo':'no-siguiendo'}" style="font-size:0.78rem;padding:5px 14px" onclick="toggleSeguirTarjeta('${u.uid}',this)">${yaSigo?'Siguiendo':'Seguir'}</button>
-          <button class="btn-chat-mini" onclick="abrirChatConUid('${u.uid}')">💬 Chat</button>
-        </div>`;
-      el.appendChild(card);
-    });
-  }catch(e){el.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;}
+    if(!usuarios.length){
+      emEl?.classList.remove('hidden');
+      if(emEl)emEl.innerHTML='¡Has visto todas las tarjetas! Vuelve más tarde 🛼';
+      return;
+    }
+    swiperUsuarios=usuarios;swiperIdx=0;
+    renderSwiperStack();
+    initSwiperGestures();
+  }catch(e){
+    stack.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;
+  }
 }
-async function toggleSeguirTarjeta(uid,btn){await toggleSeguir(uid,btn.classList.contains('siguiendo'),btn);}
+
+function renderSwiperStack(){
+  const stack=document.getElementById('swiper-stack');
+  if(!stack)return;
+  stack.innerHTML='';
+  // Mostrar hasta 3 cartas apiladas
+  const visible=swiperUsuarios.slice(swiperIdx,swiperIdx+3);
+  if(!visible.length){
+    document.getElementById('tarjetas-empty')?.classList.remove('hidden');
+    document.getElementById('tarjetas-empty').innerHTML='¡Has visto todas las tarjetas! 🛼';
+    return;
+  }
+  [...visible].reverse().forEach((u,vi)=>{
+    const posClass=vi===2?'is-top':vi===1?'is-below':'is-below2';
+    const card=document.createElement('div');
+    card.className=`swiper-card ${posClass}`;
+    if(vi===2) card.dataset.uid=u.uid;
+    const stars='★'.repeat(Math.min(u._score,5))+'☆'.repeat(Math.max(0,5-u._score));
+    const estado=Array.isArray(u.relacionEstado)?u.relacionEstado.join(', '):(u.relacionEstado||'');
+    const busco=Array.isArray(u.relacionBusco)?u.relacionBusco.join(', '):(u.relacionBusco||'');
+    const gustan=Array.isArray(u.gustanMe)?u.gustanMe.join(', '):(u.gustanMe||'');
+    card.innerHTML=`
+      <div class="swipe-lbl swipe-lbl-like">LIKE ♥</div>
+      <div class="swipe-lbl swipe-lbl-nope">NOPE ✕</div>
+      <div class="swipe-lbl swipe-lbl-super">💘 SUPER</div>
+      <div class="tarjeta-avatar">${getInicial(u.username||u.nombre||'?')}</div>
+      <div class="tarjeta-username">@${u.username||u.nombre||''}</div>
+      <div class="tarjeta-edad">${u.edad||'?'} años · ${u.sexo||''}</div>
+      ${u._score>0?`<div class="tarjeta-score">${stars}</div>`:''}
+      <hr class="tarjeta-sep"/>
+      <p class="tarjeta-desc">${u.descripcion||''}</p>
+      <div class="tarjeta-tags">
+        ${busco?`<span class="tarjeta-tag">${busco}</span>`:''}
+        ${estado?`<span class="tarjeta-tag">${estado}</span>`:''}
+        ${gustan?`<span class="tarjeta-tag">Le gustan: ${gustan}</span>`:''}
+      </div>`;
+    stack.appendChild(card);
+  });
+}
+
+function initSwiperGestures(){
+  const stack=document.getElementById('swiper-stack');
+  if(!stack)return;
+  // Clonar para limpiar listeners previos
+  const ns=stack.cloneNode(true);stack.parentNode.replaceChild(ns,stack);
+  const s=document.getElementById('swiper-stack');
+
+  const getTop=()=>s.querySelector('.swiper-card.is-top');
+  let startX=0,startY=0,dragging=false,cdx=0,cdy=0;
+
+  const onStart=e=>{
+    const c=getTop();if(!c)return;
+    dragging=true;cdx=0;cdy=0;
+    const pt=e.touches?e.touches[0]:e;
+    startX=pt.clientX;startY=pt.clientY;
+    c.style.transition='none';
+    if(e.cancelable)e.preventDefault();
+  };
+  const onMove=e=>{
+    if(!dragging)return;
+    const c=getTop();if(!c)return;
+    const pt=e.touches?e.touches[0]:e;
+    cdx=pt.clientX-startX;cdy=pt.clientY-startY;
+    const rot=cdx*0.07;
+    c.style.transform=`translateX(${cdx}px) translateY(${cdy}px) rotate(${rot}deg)`;
+    c.classList.remove('sw-right','sw-left','sw-down');
+    if(Math.abs(cdx)>Math.abs(cdy)){
+      if(cdx>30)c.classList.add('sw-right');
+      else if(cdx<-30)c.classList.add('sw-left');
+    } else if(cdy>30) c.classList.add('sw-down');
+    if(e.cancelable)e.preventDefault();
+  };
+  const onEnd=()=>{
+    if(!dragging)return;dragging=false;
+    const c=getTop();if(!c)return;
+    const T=70;
+    c.style.transition='transform 0.35s ease';
+    if(Math.abs(cdx)>Math.abs(cdy)&&Math.abs(cdx)>T){
+      animarSwipe(c,cdx>0?'like':'nope');
+    } else if(cdy>T){
+      animarSwipe(c,'super');
+    } else {
+      // reset
+      c.style.transform='';c.classList.remove('sw-right','sw-left','sw-down');
+    }
+  };
+
+  s.addEventListener('mousedown',onStart);
+  window.addEventListener('mousemove',onMove);
+  window.addEventListener('mouseup',onEnd);
+  s.addEventListener('touchstart',onStart,{passive:false});
+  s.addEventListener('touchmove',onMove,{passive:false});
+  s.addEventListener('touchend',onEnd,{passive:true});
+}
+
+function animarSwipe(card,tipo){
+  card.style.transition='transform 0.4s ease';
+  if(tipo==='like')   card.style.transform='translateX(160%) rotate(20deg)';
+  else if(tipo==='nope') card.style.transform='translateX(-160%) rotate(-20deg)';
+  else               card.style.transform='translateY(160%)';
+  setTimeout(()=>registrarSwipe(card.dataset.uid,tipo),420);
+}
+
+function swipeAccion(tipo){
+  const card=document.getElementById('swiper-stack')?.querySelector('.swiper-card.is-top');
+  if(!card){return;}
+  animarSwipe(card,tipo);
+}
+
+async function registrarSwipe(uid,tipo){
+  if(!uid)return;
+  swiperIdx++;
+  try{
+    await db.collection('usuarios').doc(currentUser.uid).update({
+      swipes:firebase.firestore.FieldValue.arrayUnion({uid,tipo,fecha:new Date().toISOString()})
+    });
+  }catch(e){console.error('swipe save error:',e);}
+  renderSwiperStack();
+  initSwiperGestures();
+}
 
 // Chat directo desde tarjeta (carga usuario y abre conversación)
 async function abrirChatConUid(uid){
@@ -1046,7 +1156,9 @@ async function abrirChatConUid(uid){
 // ═══════════════════════════════════════════
 async function verPerfilUsuario(userData){
   if(!userData||!userData.uid)return;
-  perfilVistoPrevScreen='screen-conversacion';
+  // Guardar la pantalla activa para poder volver a ella
+  const screenActiva=document.querySelector('.screen.active');
+  perfilVistoPrevScreen=screenActiva?.id||'screen-detalles';
   const snap=await db.collection('usuarios').doc(userData.uid).get();
   const u=snap.exists?snap.data():userData;
   const miSnap=await db.collection('usuarios').doc(currentUser.uid).get();
