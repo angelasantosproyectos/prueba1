@@ -101,24 +101,34 @@
   </div>
 </div>
 
+<!-- ════ RUTAS HUB ════ -->
+<div id="screen-rutas" class="screen">
+  <header class="top-bar">
+    <span class="logo-title small">RUTAS ⚡</span>
+    <div class="user-pill"><span id="user-display-rutas">—</span></div>
+  </header>
+  <main class="home-main">
+    <div class="hero-text"><p class="hero-label">¿Hoy dónde se patina?</p><h2 class="hero-heading">ESCOGE TU<br>MOVIMIENTO</h2></div>
+    <div class="action-grid">
+      <button class="action-card convocar" onclick="editandoRutaId=null;resetForm();loadRutaNames();showScreen('screen-convocar')"><span class="action-icon">📣</span><span class="action-label">CONVOCAR<br>RUTA</span><span class="action-arrow">→</span></button>
+      <button class="action-card ver" onclick="showScreen('screen-ver');loadRutas()"><span class="action-icon">🗺️</span><span class="action-label">VER<br>RUTAS</span><span class="action-arrow">→</span></button>
+      <button class="action-card eventos" onclick="showScreen('screen-eventos');loadEventos()"><span class="action-icon">🎪</span><span class="action-label">EVENTOS</span><span class="action-arrow">→</span></button>
+    </div>
+  </main>
+</div>
+
 <!-- ════ INICIO ════ -->
-<div id="screen-inicio" class="screen">
+<div id="screen-detalles" class="screen">
   <header class="top-bar">
     <span class="logo-title small">RUTASKATE</span>
     <div class="user-pill"><span id="user-display">—</span><button class="btn-logout" onclick="doLogout()">✕</button></div>
   </header>
   <main class="home-main">
-    <div class="hero-text"><p class="hero-label">¿Qué hacemos hoy?</p><h2 class="hero-heading">ELIGE TU<br>MOVIMIENTO</h2></div>
+    <div class="hero-text"><p class="hero-label">Tu actividad</p><h2 class="hero-heading">DETALLES</h2></div>
     <div class="action-grid">
-      <button class="action-card convocar" onclick="editandoRutaId=null;resetForm();loadRutaNames();showScreen('screen-convocar')"><span class="action-icon">📣</span><span class="action-label">CONVOCAR<br>RUTA</span><span class="action-arrow">→</span></button>
-      <button class="action-card ver" onclick="showScreen('screen-ver');loadRutas()"><span class="action-icon">🗺️</span><span class="action-label">VER<br>RUTAS</span><span class="action-arrow">→</span></button>
-      <button class="action-card chats" onclick="showScreen('screen-chats');loadChats()"><span class="action-icon">💬</span><span class="action-label">CHATS</span><span class="chat-badge hidden" id="home-chat-badge">0</span><span class="action-arrow">→</span></button>
-      <button class="action-card eventos" onclick="showScreen('screen-eventos');loadEventos()"><span class="action-icon">🎪</span><span class="action-label">EVENTOS</span><span class="action-arrow">→</span></button>
-      <button class="action-card buscar" onclick="showScreen('screen-buscar');initBuscar()"><span class="action-icon">🔍</span><span class="action-label">BUSCAR</span><span class="action-arrow">→</span></button>
-      <button class="action-card tarjetas" onclick="showScreen('screen-tarjetas');loadTarjetas()"><span class="action-icon">🃏</span><span class="action-label">TARJETAS</span><span class="action-arrow">→</span></button>
-      <button class="action-card seguidores" onclick="showScreen('screen-seguidores');loadSeguidores()"><span class="action-icon">👥</span><span class="action-label">SEGUIDORES</span><span class="action-arrow">→</span></button>
       <button class="action-card solicitudes" onclick="showScreen('screen-solicitudes');loadSolicitudes()"><span class="action-icon">🔔</span><span class="action-label">SOLICITUDES</span><span class="chat-badge hidden" id="home-sol-badge">0</span><span class="action-arrow">→</span></button>
-      <button class="action-card ajustes" onclick="showScreen('screen-ajustes');loadAjustes()"><span class="action-icon">⚙️</span><span class="action-label">AJUSTES</span><span class="action-arrow">→</span></button>
+      <button class="action-card seguidores" onclick="showScreen('screen-seguidores');loadSeguidores()"><span class="action-icon">👥</span><span class="action-label">SEGUIDORES</span><span class="action-arrow">→</span></button>
+      <button class="action-card tarjetas" id="btn-tarjetas-detalles" onclick="showScreen('screen-tarjetas');loadTarjetas()" style="display:none"><span class="action-icon">🃏</span><span class="action-label">TARJETAS</span><span class="action-arrow">→</span></button>
     </div>
   </main>
 </div>
@@ -192,7 +202,7 @@
 <!-- ════ EVENTOS ════ -->
 <div id="screen-eventos" class="screen">
   <header class="top-bar">
-    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <button class="btn-back" onclick="showScreen('screen-rutas')">← Volver</button>
     <span class="logo-title small">EVENTOS</span>
     <button class="btn-convocar-fab" id="btn-crear-evento" onclick="abrirCrearEvento()" style="display:none">＋ Evento</button>
   </header>
@@ -232,11 +242,15 @@
 <!-- ════ SEGUIDORES ════ -->
 <div id="screen-seguidores" class="screen">
   <header class="top-bar">
-    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <button class="btn-back" onclick="showScreen('screen-detalles')">← Volver</button>
     <span class="logo-title small">SEGUIDORES</span>
     <div></div>
   </header>
   <main class="seguidores-main" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+    <div class="buscar-input-wrap" style="margin:10px 14px 0;flex-shrink:0">
+      <span class="buscar-icon-prefix">🔍</span>
+      <input type="text" id="seg-search-input" placeholder="Busca por @usuario..." oninput="buscarEnSeguidores()" autocomplete="off"/>
+    </div>
     <div class="seg-tabs" id="seg-tabs-bar">
       <button class="seg-tab active" onclick="swipeSegTo(0)">Siguiendo</button>
       <button class="seg-tab" onclick="swipeSegTo(1)">Seguidores</button>
@@ -259,7 +273,7 @@
 <!-- ════ SOLICITUDES ════ -->
 <div id="screen-solicitudes" class="screen">
   <header class="top-bar">
-    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <button class="btn-back" onclick="showScreen('screen-detalles')">← Volver</button>
     <span class="logo-title small">SOLICITUDES</span>
     <div></div>
   </header>
@@ -291,7 +305,7 @@
 <!-- ════ TARJETAS ════ -->
 <div id="screen-tarjetas" class="screen">
   <header class="top-bar">
-    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <button class="btn-back" onclick="showScreen('screen-detalles')">← Volver</button>
     <span class="logo-title small">TARJETAS</span>
     <div></div>
   </header>
@@ -306,7 +320,7 @@
   <header class="top-bar">
     <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
     <span class="logo-title small">CHATS</span>
-    <button class="btn-icon" onclick="showScreen('screen-nuevo-chat');loadUsuarios()">✏️</button>
+    <button class="btn-icon" onclick="showScreen('screen-nuevo-chat');loadUsuarios()" title="Nueva conversación" style="font-size:1.4rem;font-weight:300">＋</button>
   </header>
   <main class="chats-main">
     <div id="chats-list"></div>
@@ -331,7 +345,7 @@
 <!-- ════ BUSCAR ════ -->
 <div id="screen-buscar" class="screen">
   <header class="top-bar">
-    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <button class="btn-back" onclick="showScreen('screen-detalles')">← Volver</button>
     <span class="logo-title small">BUSCAR</span>
     <div></div>
   </header>
@@ -348,8 +362,8 @@
 </div>
 
 <!-- ════ CONVERSACIÓN ════ -->
-<div id="screen-conversacion" class="screen">
-  <header class="top-bar">
+<div id="screen-conversacion" class="screen" style="height:100dvh;max-height:100dvh;overflow:hidden">
+  <header class="top-bar" style="flex-shrink:0">
     <button class="btn-back" onclick="cerrarConversacion()">← Volver</button>
     <div class="chat-header-info" style="cursor:pointer" onclick="verPerfilUsuario(chatActualUser)">
       <div class="chat-avatar-sm" id="conv-avatar">?</div>
@@ -357,8 +371,8 @@
     </div>
     <div></div>
   </header>
-  <main class="conv-main" id="conv-main"><div id="mensajes-container"></div></main>
-  <footer class="conv-footer">
+  <main class="conv-main" id="conv-main" style="flex:1;overflow-y:auto;min-height:0"><div id="mensajes-container"></div></main>
+  <footer class="conv-footer" style="flex-shrink:0;z-index:10;position:relative">
     <input type="text" id="msg-input" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')enviarMensaje()"/>
     <button class="btn-send" onclick="enviarMensaje()">➤</button>
   </footer>
@@ -380,13 +394,16 @@
     <p class="perfil-u-desc" id="pu-desc"></p>
     <div class="tarjeta-tags" id="pu-tags" style="justify-content:center;margin-top:8px"></div>
     <div class="perfil-u-stats" id="pu-stats"></div>
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <button class="btn-secondary" id="pu-btn-bloquear" onclick="toggleBloquearPerfil()" style="font-size:0.85rem;padding:8px 18px;width:auto">🚫 Bloquear</button>
+    </div>
   </main>
 </div>
 
 <!-- ════ AJUSTES ════ -->
 <div id="screen-ajustes" class="screen">
   <header class="top-bar">
-    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <button class="btn-back" onclick="showScreen('screen-detalles')">← Volver</button>
     <span class="logo-title small">AJUSTES</span>
     <div></div>
   </header>
@@ -400,10 +417,27 @@
       <div class="aj-accordion-body hidden" id="acc-perfil">
         <div class="perfil-avatar-block">
           <div class="perfil-avatar" id="perfil-avatar-display">?</div>
-          <div><p class="perfil-nombre" id="perfil-nombre-display">—</p><p class="perfil-email" id="perfil-email-display">—</p></div>
+          <div>
+            <p class="perfil-nombre" id="perfil-nombre-display">—</p>
+            <p class="perfil-email" id="perfil-email-display">—</p>
+            <div id="aj-perfil-stats" style="display:flex;gap:16px;margin-top:6px"></div>
+          </div>
         </div>
         <div class="field"><label>Nombre para mostrar</label><input type="text" id="aj-nombre" placeholder="Tu nombre visible"/></div>
-        <div class="field"><label>Bio (opcional)</label><textarea id="aj-bio" rows="2" placeholder="Cuéntanos algo sobre ti..."></textarea></div>
+        <div class="field"><label>Descripción / Bio</label><textarea id="aj-bio" rows="3" placeholder="Cuéntanos algo sobre ti..."></textarea></div>
+        <div class="field-row">
+          <div class="field"><label>Edad</label><input type="number" id="aj-edad" placeholder="Ej: 25" min="18" max="120"/></div>
+          <div class="field"><label>Sexo</label>
+            <select id="aj-sexo">
+              <option value="">— Selecciona —</option>
+              <option value="hombre">Hombre</option><option value="mujer">Mujer</option><option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Teléfono</label>
+          <input type="text" id="aj-telefono-display" placeholder="+34 600 000 000" readonly style="opacity:0.6;cursor:not-allowed"/>
+          <p style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">Para cambiarlo contacta con soporte.</p>
+        </div>
         <div class="field">
           <label>Nivel de patinaje</label>
           <div class="nivel-grid">
@@ -424,36 +458,33 @@
         <span>📋 Datos personales</span><span class="aj-chevron">▼</span>
       </button>
       <div class="aj-accordion-body hidden" id="acc-datos">
-        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px">Necesarios para aparecer en Tarjetas.</p>
-        <div class="field"><label>Descripción / Bio</label>
-          <textarea id="aj-descripcion" rows="3" placeholder="Cuéntanos algo sobre ti..."></textarea>
-        </div>
-        <div class="field-row">
-          <div class="field"><label>Edad</label><input type="number" id="aj-edad" placeholder="Ej: 25" min="18" max="120"/></div>
-          <div class="field"><label>Sexo</label>
-            <select id="aj-sexo">
-              <option value="">— Selecciona —</option>
-              <option value="hombre">Hombre</option><option value="mujer">Mujer</option><option value="otro">Otro</option>
-            </select>
+        <!-- Switch ¿Te gustaría usar esto como app de citas también? -->
+        <div class="citas-switch-wrap">
+          <div style="flex:1;min-width:0">
+            <p style="font-weight:600;font-size:0.95rem">💘 ¿Usar también como app de citas?</p>
+            <p style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">Actívalo para aparecer en Tarjetas y ver las de otros.</p>
           </div>
+          <label class="citas-toggle">
+            <input type="checkbox" id="toggle-citas" onchange="toggleCitasMode(this.checked)"/>
+            <span class="citas-slider"></span>
+          </label>
         </div>
-        <div class="field"><label>Teléfono</label>
-          <input type="text" id="aj-telefono-display" placeholder="+34 600 000 000" readonly style="opacity:0.6;cursor:not-allowed"/>
-        </div>
-        <div class="field-row">
-          <div class="field"><label>Hobby</label><input type="text" id="aj-hobby" placeholder="Ej: escalada"/></div>
-          <div class="field"><label>Música</label><input type="text" id="aj-musica" placeholder="Ej: rock"/></div>
-        </div>
-        <div class="field-row">
-          <div class="field"><label>Animal favorito</label><input type="text" id="aj-animal" placeholder="Ej: perro"/></div>
-          <div class="field"><label>Color favorito</label><input type="text" id="aj-color" placeholder="Ej: azul"/></div>
-        </div>
-        <div class="field"><label>Estudios</label><input type="text" id="aj-estudios" placeholder="Ej: Diseño gráfico"/></div>
-        <!-- Estado civil: checkboxes múltiple -->
-        <div class="field">
-          <label>Estado civil / familiar <span class="label-hint">(puede ser varias)</span></label>
-          <div class="checkbox-grid">
-            <label class="checkbox-item"><input type="checkbox" value="soltero/a" id="ec-soltero"/> Soltero/a</label>
+        <!-- Campos de citas — ocultos por defecto -->
+        <div id="citas-fields" style="display:none">
+          <div class="field-row">
+            <div class="field"><label>Hobby</label><input type="text" id="aj-hobby" placeholder="Ej: escalada"/></div>
+            <div class="field"><label>Música</label><input type="text" id="aj-musica" placeholder="Ej: rock"/></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Animal favorito</label><input type="text" id="aj-animal" placeholder="Ej: perro"/></div>
+            <div class="field"><label>Color favorito</label><input type="text" id="aj-color" placeholder="Ej: azul"/></div>
+          </div>
+          <div class="field"><label>Estudios</label><input type="text" id="aj-estudios" placeholder="Ej: Diseño gráfico"/></div>
+          <!-- Estado civil: checkboxes múltiple -->
+          <div class="field">
+            <label>Estado civil / familiar <span class="label-hint">(puede ser varias)</span></label>
+            <div class="checkbox-grid">
+              <label class="checkbox-item"><input type="checkbox" value="soltero/a" id="ec-soltero"/> Soltero/a</label>
             <label class="checkbox-item"><input type="checkbox" value="con pareja" id="ec-pareja"/> Con pareja</label>
             <label class="checkbox-item"><input type="checkbox" value="casado/a" id="ec-casado"/> Casado/a</label>
             <label class="checkbox-item"><input type="checkbox" value="divorciado/a" id="ec-divorciado"/> Divorciado/a</label>
@@ -482,6 +513,7 @@
             <label class="checkbox-item"><input type="checkbox" value="conocer gente" id="bq-gente"/> Conocer gente</label>
           </div>
         </div>
+        </div><!-- /citas-fields -->
         <div id="aj-datos-ok" class="ok-msg hidden">¡Datos personales guardados! ✓</div>
         <button class="btn-primary" onclick="guardarDatosPersonales()">GUARDAR DATOS PERSONALES</button>
       </div>
@@ -542,12 +574,56 @@
 
     <!-- Cerrar sesión -->
     <div style="padding:8px 0">
+    <!-- Panel Admin solo admin -->
+    <div class="aj-accordion" id="acc-admin-wrap" style="display:none">
+      <button class="aj-accordion-header" onclick="toggleAccordion('acc-admin',this)">
+        <span>🛡️ Panel Admin</span><span class="aj-chevron">▼</span>
+      </button>
+      <div class="aj-accordion-body hidden" id="acc-admin">
+        <button class="btn-primary" style="margin-bottom:12px" onclick="loadPanelAdmin()">🔄 Actualizar datos</button>
+        <div id="admin-kpi-wrap" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px"></div>
+        <h4 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px">Usuarios registrados</h4>
+        <div id="admin-users-list"></div>
+        <h4 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin:12px 0 8px">Bloqueos de usuarios</h4>
+        <div id="admin-bloqueos-list"></div>
+        <h4 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin:12px 0 8px">Rutas convocadas</h4>
+        <div id="admin-rutas-list"></div>
+        <h4 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin:12px 0 8px">Actividad (últimos 7 días)</h4>
+        <div id="admin-actividad-list"></div>
+      </div>
+    </div>
+
       <button class="btn-danger" style="width:100%" onclick="doLogout()">🚪 CERRAR SESIÓN</button>
     </div>
 
   </main>
 </div>
 
+
+<!-- ════ MENÚ INFERIOR ════ -->
+<nav class="bottom-nav" id="bottom-nav" style="display:none">
+  <button class="bottom-nav-btn" id="bnav-rutas" onclick="navTo('rutas')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-10"/><polyline points="14 7 21 7 21 14"/></svg>
+    <span>Rutas</span>
+  </button>
+  <button class="bottom-nav-btn active" id="bnav-detalles" onclick="navTo('detalles')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/></svg>
+    <span>Detalles</span>
+  </button>
+  <button class="bottom-nav-btn" id="bnav-buscar" onclick="navTo('buscar')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span>Buscar</span>
+  </button>
+  <button class="bottom-nav-btn" id="bnav-chats" onclick="navTo('chats')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span>Chats</span>
+    <span class="bnav-badge hidden" id="bnav-chat-badge">0</span>
+  </button>
+  <button class="bottom-nav-btn" id="bnav-ajustes" onclick="navTo('ajustes')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>Ajustes</span>
+  </button>
+</nav>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
