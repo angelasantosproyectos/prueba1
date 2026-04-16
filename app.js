@@ -48,25 +48,6 @@ const SVG_OK   = `<svg viewBox="0 0 24 24" fill="none" stroke="#c8ff00" stroke-w
 const SVG_ERR  = `<svg viewBox="0 0 24 24" fill="none" stroke="#ff5e5e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 const SVG_WAIT = `<svg viewBox="0 0 24 24" fill="none" stroke="#888899" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
 
-// ── showScreen UNIFICADO (navegación + bottom nav) ──
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});
-  const t=document.getElementById(id);
-  if(!t){console.warn('Screen no encontrada:',id);return;}
-  t.style.display='flex';t.classList.add('active');
-  if(id==='screen-convocar'&&!editandoRutaId){resetForm();loadRutaNames();}
-  if(id==='screen-eventos'){const b=document.getElementById('btn-crear-evento');if(b)b.style.display=esAdmin()?'inline-flex':'none';}
-  // Bottom nav
-  const nav=document.getElementById('bottom-nav');
-  const esAuth=id==='screen-login'||id==='screen-registro';
-  if(nav) nav.style.display=(!esAuth&&currentUser)?'flex':'none';
-  document.body.classList.toggle('has-bottom-nav',!esAuth&&!!currentUser);
-  // Actualizar tab activo en bottom nav
-  const tabMap={'screen-inicio':'inicio','screen-buscar':'buscar','screen-chats':'chats','screen-ajustes':'ajustes'};
-  document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
-  if(tabMap[id]){const ab=document.getElementById('bnav-'+tabMap[id]);if(ab)ab.classList.add('active');}
-}
-
 // ═══════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════
@@ -206,6 +187,7 @@ async function doRegistro(){
 // ═══════════════════════════════════════════
 // NAVEGACIÓN / UI
 // ═══════════════════════════════════════════
+// showScreen definida más abajo (versión con bottom-nav)
 function togglePass(inputId,btn){
   const input=document.getElementById(inputId);const visible=input.type==='text';
   input.type=visible?'password':'text';
@@ -946,7 +928,52 @@ function calcularScore(yo,otro){
 }
 function perfilCompleto(u){return u&&u.descripcion&&u.edad&&u.sexo;}
 
-
+async function loadTarjetas(){
+  const el=document.getElementById('tarjetas-grid');if(!el)return;
+  el.innerHTML='<p style="color:var(--text-muted);padding:20px">Cargando...</p>';
+  document.getElementById('tarjetas-empty').classList.add('hidden');
+  try{
+    const[miSnap,allSnap]=await Promise.all([db.collection('usuarios').doc(currentUser.uid).get(),db.collection('usuarios').get()]);
+    const yo=miSnap.exists?miSnap.data():null;
+    if(!perfilCompleto(yo)){
+      el.innerHTML='';
+      const em=document.getElementById('tarjetas-empty');em.classList.remove('hidden');
+      em.innerHTML='¡Completa tu perfil para ver tarjetas!<br><small>Necesitas: descripción, edad y sexo en Datos Personales.</small><br><br><button class="btn-primary" style="max-width:220px;margin-top:12px" onclick="showScreen(\'screen-ajustes\');loadAjustes()">IR A AJUSTES</button>';
+      return;
+    }
+    const miSiguiendo=yo.siguiendo||[];
+    let usuarios=allSnap.docs.map(d=>({uid:d.id,...d.data()})).filter(u=>u.uid!==currentUser.uid&&perfilCompleto(u));
+    usuarios=usuarios.map(u=>({...u,_score:calcularScore(yo,u)})).sort((a,b)=>b._score-a._score);
+    if(!usuarios.length){el.innerHTML='';document.getElementById('tarjetas-empty').classList.remove('hidden');
+      document.getElementById('tarjetas-empty').innerHTML='No hay otros usuarios con perfil completo aún.';return;}
+    el.innerHTML='';
+    usuarios.forEach((u,i)=>{
+      const card=document.createElement('div');card.className='tarjeta-user';card.style.animationDelay=`${i*0.06}s`;
+      const stars='★'.repeat(Math.min(u._score,5))+'☆'.repeat(Math.max(0,5-u._score));
+      const yaSigo=miSiguiendo.includes(u.uid);
+      const estado=Array.isArray(u.relacionEstado)?u.relacionEstado.join(', '):(u.relacionEstado||'');
+      const busco=Array.isArray(u.relacionBusco)?u.relacionBusco.join(', '):(u.relacionBusco||'');
+      const gustan=Array.isArray(u.gustanMe)?u.gustanMe.join(', '):(u.gustanMe||'');
+      card.innerHTML=`
+        <div class="tarjeta-avatar">${getInicial(u.username||u.nombre||'?')}</div>
+        <div class="tarjeta-username">@${u.username||u.nombre||''}</div>
+        <div class="tarjeta-edad">${u.edad||'?'} años · ${u.sexo||''}</div>
+        ${u._score>0?`<div class="tarjeta-score" title="${u._score} cosas en común">${stars}</div>`:''}
+        <hr class="tarjeta-sep"/>
+        <p class="tarjeta-desc">${u.descripcion||''}</p>
+        <div class="tarjeta-tags">
+          ${busco?`<span class="tarjeta-tag">${busco}</span>`:''}
+          ${estado?`<span class="tarjeta-tag">${estado}</span>`:''}
+          ${gustan?`<span class="tarjeta-tag">Le gustan: ${gustan}</span>`:''}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;justify-content:center">
+          <button class="btn-seguir ${yaSigo?'siguiendo':'no-siguiendo'}" style="font-size:0.78rem;padding:5px 14px" onclick="toggleSeguirTarjeta('${u.uid}',this)">${yaSigo?'Siguiendo':'Seguir'}</button>
+          <button class="btn-chat-mini" onclick="abrirChatConUid('${u.uid}')">💬 Chat</button>
+        </div>`;
+      el.appendChild(card);
+    });
+  }catch(e){el.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;}
+}
 async function toggleSeguirTarjeta(uid,btn){await toggleSeguir(uid,btn.classList.contains('siguiendo'),btn);}
 
 // Chat directo desde tarjeta (carga usuario y abre conversación)
@@ -1286,9 +1313,10 @@ function escapeHtml(str){return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt
 function aplicarTema(claro){
   document.body.classList.toggle('light',claro);
   localStorage.setItem('rutaskate_tema',claro?'claro':'oscuro');
-  // Botón único luna/sol
-  const btn=document.getElementById('btn-tema-single');
-  if(btn)btn.textContent=claro?'☀️':'🌙';
+  // Pill
+  const pd=document.getElementById('pill-dark');const pl=document.getElementById('pill-light');
+  if(pd){pd.classList.toggle('active',!claro);}
+  if(pl){pl.classList.toggle('active',claro);}
   // Toggle en ajustes si existe
   const toggle=document.getElementById('toggle-tema');if(toggle)toggle.checked=claro;
 }
@@ -1298,7 +1326,7 @@ function cambiarTema(claro){
 // Aplicar tema guardado al cargar
 (function(){
   const tema=localStorage.getItem('rutaskate_tema');
-  aplicarTema(tema==='claro');  // aplica tema guardado al inicio
+  aplicarTema(tema==='claro');
 })();
 
 // ─── EXPLICACIÓN ESTRELLAS (FAQ inline) ───
@@ -1349,7 +1377,8 @@ document.addEventListener('click',e=>{
 // TEMA: botón luna/sol en top bar
 // ═══════════════════════════════════════════
 function toggleTemaBtn(){
-  aplicarTema(!document.body.classList.contains('light'));
+  const claro=document.body.classList.contains('light');
+  aplicarTema(!claro);
 }
 // Actualizar icono al aplicar tema
 // aplicarTema ya definida más arriba, solo actualizar icono al llamarla
@@ -1423,7 +1452,7 @@ async function loadTarjetas(){
     swiperCards=usuarios;swiperIndex=0;
     if(!usuarios.length){stack.innerHTML='';emptyEl?.classList.remove('hidden');emptyEl.innerHTML='¡Has visto todas las tarjetas! Vuelve más tarde. 🛼';return;}
     renderSwiperStack(stack);
-    initSwipeGestures(document.getElementById('tarjetas-card-stack')||stack);
+    initSwipeGestures(stack);
   }catch(e){stack.innerHTML=`<p style="color:#ff5e5e;padding:20px">Error: ${e.message}</p>`;}
 }
 
@@ -1461,63 +1490,47 @@ function renderSwiperStack(stack){
 }
 
 function initSwipeGestures(stack){
-  // Limpiar listeners previos clonando el elemento
-  const newStack=stack.cloneNode(true);
-  stack.parentNode.replaceChild(newStack,stack);
-  stack=newStack;
-
   const getTopCard=()=>stack.querySelector('.swiper-card.is-top');
-  let startX=0,startY=0,isDragging=false,currentDX=0,currentDY=0;
-
+  let startX=0,startY=0,isDragging=false;
   const onStart=e=>{
     const card=getTopCard();if(!card)return;
-    isDragging=true; currentDX=0; currentDY=0;
+    isDragging=true;
     const pt=e.touches?e.touches[0]:e;
     startX=pt.clientX;startY=pt.clientY;
     card.style.transition='none';
-    e.stopPropagation();
   };
-
   const onMove=e=>{
     if(!isDragging)return;
     const card=getTopCard();if(!card)return;
     const pt=e.touches?e.touches[0]:e;
-    currentDX=pt.clientX-startX;
-    currentDY=pt.clientY-startY;
-    const rot=currentDX*0.08;
-    card.style.transform=`translateX(${currentDX}px) translateY(${currentDY}px) rotate(${rot}deg)`;
+    const dx=pt.clientX-startX;const dy=pt.clientY-startY;
+    const rot=dx*0.1;
+    card.style.transform=`translateX(${dx}px) translateY(${dy}px) rotate(${rot}deg)`;
     card.classList.remove('swiping-right','swiping-left','swiping-down');
-    const absDX=Math.abs(currentDX), absDY=Math.abs(currentDY);
-    if(absDX > absDY){
-      if(currentDX>30)card.classList.add('swiping-right');
-      else if(currentDX<-30)card.classList.add('swiping-left');
-    } else if(currentDY>30){card.classList.add('swiping-down');}
-    if(e.cancelable)e.preventDefault();
+    if(Math.abs(dx)>Math.abs(dy)*1.5){
+      if(dx>40)card.classList.add('swiping-right');
+      else if(dx<-40)card.classList.add('swiping-left');
+    } else if(dy>40){card.classList.add('swiping-down');}
   };
-
   const onEnd=e=>{
     if(!isDragging)return;isDragging=false;
     const card=getTopCard();if(!card)return;
-    const absDX=Math.abs(currentDX), absDY=Math.abs(currentDY);
-    card.style.transition='transform 0.35s cubic-bezier(.25,.46,.45,.94)';
-    const THRESHOLD=60;
-    if(absDX>absDY&&absDX>THRESHOLD){
-      animateSwipe(card,currentDX>0?'like':'nope');
-    } else if(absDY>THRESHOLD&&currentDY>0){
-      animateSwipe(card,'super');
-    } else {
-      resetCard(card);
-    }
+    const pt=e.changedTouches?e.changedTouches[0]:e;
+    const dx=pt.clientX-startX;const dy=pt.clientY-startY;
+    card.style.transition='transform 0.3s ease';
+    if(Math.abs(dx)>Math.abs(dy)*1.5){
+      if(dx>80){animateSwipe(card,'like');}
+      else if(dx<-80){animateSwipe(card,'nope');}
+      else resetCard(card);
+    } else if(dy>80){animateSwipe(card,'super');}
+    else resetCard(card);
   };
-
-  // Eventos de ratón
   stack.addEventListener('mousedown',onStart);
-  window.addEventListener('mousemove',onMove);
-  window.addEventListener('mouseup',onEnd);
-  // Eventos táctiles
-  stack.addEventListener('touchstart',onStart,{passive:false});
+  stack.addEventListener('mousemove',onMove);
+  stack.addEventListener('mouseup',onEnd);
+  stack.addEventListener('touchstart',onStart,{passive:true});
   stack.addEventListener('touchmove',onMove,{passive:false});
-  stack.addEventListener('touchend',onEnd,{passive:true});
+  stack.addEventListener('touchend',onEnd);
 }
 function resetCard(card){card.style.transform='';card.classList.remove('swiping-right','swiping-left','swiping-down');}
 function animateSwipe(card,tipo){
@@ -1553,8 +1566,8 @@ async function registrarSwipe(uid,tipo){
     em?.classList.remove('hidden');em&&(em.innerHTML='¡Has visto todas las tarjetas! Vuelve más tarde. 🛼');
     return;
   }
-  const stackEl=document.getElementById('tarjetas-card-stack');
-  if(stackEl){renderSwiperStack(stackEl);initSwipeGestures(stackEl);}
+  renderSwiperStack(stack);
+  initSwipeGestures(stack);
 }
 
 // ═══════════════════════════════════════════
@@ -1577,32 +1590,8 @@ async function renderMatchesPanel(idx){
   try{
     const snap=await db.collection('usuarios').doc(currentUser.uid).get();
     const yo=snap.exists?snap.data():{};
-    // idx: 0=like, 1=super, 2=nope, 3=pendientes (solicitudes enviadas)
-    let swipes=[];
-    if(idx===3){
-      // Pendientes: solicitudes de seguir enviadas que aún no han respondido
-      const solSnap=await db.collection('solicitudes')
-        .where('deUid','==',currentUser.uid)
-        .where('tipo','==','solicitud_seguir')
-        .where('estado','==','pendiente').get();
-      listEl.innerHTML='';
-      if(solSnap.empty){emptyEl?.classList.remove('hidden');return;}
-      for(const doc of solSnap.docs){
-        const s=doc.data();
-        const uSnap=await db.collection('usuarios').doc(s.paraUid).get();
-        const u=uSnap.exists?uSnap.data():{username:s.paraUid};
-        const item=document.createElement('div');item.className='seg-user-item';
-        item.innerHTML=`
-          <div class="chat-avatar">${getInicial(u.username||u.nombre||'?')}</div>
-          <div class="seg-user-info"><p class="seg-username">@${u.username||u.nombre||s.paraUid}</p>
-            <p class="seg-realname" style="color:#f5a623">⏳ Solicitud pendiente</p>
-          </div>`;
-        listEl.appendChild(item);
-      }
-      return;
-    }
     const tipos=['like','super','nope'];const tipo=tipos[idx];
-    swipes=(yo.swipes||[]).filter(s=>s.tipo===tipo);
+    const swipes=(yo.swipes||[]).filter(s=>s.tipo===tipo);
     if(!swipes.length){listEl.innerHTML='';emptyEl?.classList.remove('hidden');return;}
     listEl.innerHTML='';
     for(const s of swipes){
@@ -1788,7 +1777,24 @@ function navTo(dest){
   }
 }
 
-
+// ── showScreen UNIFICADO (navegación + bottom nav) ──
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});
+  const t=document.getElementById(id);
+  if(!t){console.warn('Screen no encontrada:',id);return;}
+  t.style.display='flex';t.classList.add('active');
+  if(id==='screen-convocar'&&!editandoRutaId){resetForm();loadRutaNames();}
+  if(id==='screen-eventos'){const b=document.getElementById('btn-crear-evento');if(b)b.style.display=esAdmin()?'inline-flex':'none';}
+  // Bottom nav
+  const nav=document.getElementById('bottom-nav');
+  const esAuth=id==='screen-login'||id==='screen-registro';
+  if(nav) nav.style.display=(!esAuth&&currentUser)?'flex':'none';
+  document.body.classList.toggle('has-bottom-nav',!esAuth&&!!currentUser);
+  // Actualizar tab activo en bottom nav
+  const tabMap={'screen-inicio':'inicio','screen-buscar':'buscar','screen-chats':'chats','screen-ajustes':'ajustes'};
+  document.querySelectorAll('.bottom-nav-btn').forEach(b=>b.classList.remove('active'));
+  if(tabMap[id]){const ab=document.getElementById('bnav-'+tabMap[id]);if(ab)ab.classList.add('active');}
+}
 
 // Botón bloquear en perfil usuario
 function mostrarBotonesPerfilUsuario(uid, username){
@@ -1804,4 +1810,13 @@ function mostrarBotonesPerfilUsuario(uid, username){
   statsEl.appendChild(bloquearBtn);
 }
 
+// Parchear verPerfilUsuario para añadir botón bloquear
+const _verPerfilOrig=verPerfilUsuario;
+async function verPerfilUsuario(userData){
+  await _verPerfilOrig(userData);
+  if(userData?.uid&&userData?.uid!==currentUser?.uid){
+    const u=userData;
+    mostrarBotonesPerfilUsuario(u.uid,u.username||u.nombre||u.uid);
+  }
+}
 
