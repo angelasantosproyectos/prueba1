@@ -12,7 +12,7 @@
 <div id="screen-login" class="screen active">
   <div class="login-bg"></div>
   <div class="login-card">
-    <div class="logo-block"><span class="logo-icon">⚡</span><h1 class="logo-title" style="font-size:clamp(1.1rem,5.5vw,1.6rem);white-space:nowrap;overflow:hidden;letter-spacing:0.5px">RUTASKATE</h1></div>
+    <div class="logo-block"><span class="logo-icon">⚡</span><h1 class="logo-title" style="font-size:clamp(1.4rem,8vw,2.2rem);white-space:nowrap;overflow:hidden">RUTASKATE</h1></div>
     <p class="login-sub">Accede con tu cuenta</p>
     <div class="field"><label>Correo</label><input type="email" id="login-email" placeholder="correo@email.com"/></div>
     <div class="field"><label>Contraseña</label>
@@ -40,7 +40,7 @@
 <div id="screen-registro" class="screen">
   <div class="login-bg"></div>
   <div class="login-card registro-card">
-    <div class="logo-block"><span class="logo-icon">⚡</span><h1 class="logo-title" style="font-size:clamp(1.1rem,5.5vw,1.6rem);white-space:nowrap;overflow:hidden;letter-spacing:0.5px">RUTASKATE</h1></div>
+    <div class="logo-block"><span class="logo-icon">⚡</span><h1 class="logo-title" style="font-size:clamp(1.4rem,8vw,2.2rem);white-space:nowrap;overflow:hidden">RUTASKATE</h1></div>
     <p class="login-sub">Crea tu cuenta</p>
     <div class="field">
       <label>Nombre de usuario <span class="label-hint">(tu @, único)</span></label>
@@ -112,43 +112,6 @@
   </div>
 </div>
 
-<!-- ════ RUTAS HUB ════ -->
-<div id="screen-rutas" class="screen">
-  <header class="top-bar">
-    <div class="logo-area"><span class="logo-title small">RUTAS ⚡</span></div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="btn-tema-single" id="btn-tema-rutas" onclick="toggleTemaBtn()" title="Cambiar tema">🌙</button>
-      <div class="user-menu-wrap">
-        <button class="user-menu-btn" onclick="toggleUserMenu()" id="user-menu-btn-rutas">
-          <div class="user-avatar-sm" id="user-avatar-rutas">?</div>
-          <span id="user-display-rutas">—</span>
-          <svg class="chevron-menu" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="user-dropdown hidden" id="user-dropdown-rutas">
-          <button onclick="toggleUserMenu();navTo('ajustes')">⚙️ Ajustes</button>
-          <div id="user-dropdown-admin-rutas" style="display:none">
-            <div class="dropdown-sep"></div>
-            <button onclick="toggleUserMenu();loadPanelAdmin()">🛡️ Panel Admin</button>
-          </div>
-          <div class="dropdown-sep"></div>
-          <button class="danger" onclick="toggleUserMenu();doLogout()">🚪 Cerrar sesión</button>
-        </div>
-      </div>
-    </div>
-  </header>
-  <main class="home-main">
-    <div class="hero-text">
-      <h2 class="hero-heading">¿Hoy dónde<br>se patina?</h2>
-      <p class="hero-sub">Escoge tu ruta o lo que te apetezca</p>
-    </div>
-    <div class="action-grid">
-      <button class="action-card convocar" onclick="editandoRutaId=null;resetForm();loadRutaNames();showScreen('screen-convocar')"><span class="action-icon">📣</span><span class="action-label">CONVOCAR<br>RUTA</span><span class="action-arrow">→</span></button>
-      <button class="action-card ver" onclick="showScreen('screen-ver');loadRutas()"><span class="action-icon">🗺️</span><span class="action-label">VER<br>RUTAS</span><span class="action-arrow">→</span></button>
-      <button class="action-card eventos" onclick="showScreen('screen-eventos');loadEventos()"><span class="action-icon">🎪</span><span class="action-label">EVENTOS</span><span class="action-arrow">→</span></button>
-    </div>
-  </main>
-</div>
-
 <!-- ════ INICIO ════ -->
 <div id="screen-inicio" class="screen">
   <header class="top-bar">
@@ -183,10 +146,13 @@
     <div class="action-grid" id="action-grid-main">
       <button class="action-card convocar" onclick="editandoRutaId=null;resetForm();loadRutaNames();showScreen('screen-convocar')"><span class="action-icon">📣</span><span class="action-label">CONVOCAR<br>RUTA</span><span class="action-arrow">→</span></button>
       <button class="action-card ver" onclick="showScreen('screen-ver');loadRutas()"><span class="action-icon">🗺️</span><span class="action-label">VER<br>RUTAS</span><span class="action-arrow">→</span></button>
+      <button class="action-card chats" onclick="showScreen('screen-chats');loadChats()"><span class="action-icon">💬</span><span class="action-label">CHATS</span><span class="chat-badge hidden" id="home-chat-badge">0</span><span class="action-arrow">→</span></button>
       <button class="action-card eventos" onclick="showScreen('screen-eventos');loadEventos()"><span class="action-icon">🎪</span><span class="action-label">EVENTOS</span><span class="action-arrow">→</span></button>
-      <button class="action-card seguidores" onclick="showScreen('screen-seguidores');loadSeguidores()"><span class="action-icon">👥</span><span class="action-label">SEGUIDORES</span><span class="action-arrow">→</span></button>
+      <button class="action-card buscar" onclick="showScreen('screen-buscar');initBuscar()"><span class="action-icon">🔍</span><span class="action-label">BUSCAR</span><span class="action-arrow">→</span></button>
       <button class="action-card tarjetas" id="btn-tarjetas-grid" onclick="showScreen('screen-tarjetas');loadTarjetas()" style="display:none"><span class="action-icon">🃏</span><span class="action-label">TARJETAS</span><span class="action-arrow">→</span></button>
       <button class="action-card matches" id="btn-matches-grid" onclick="showScreen('screen-matches');loadMatches()" style="display:none"><span class="action-icon">💘</span><span class="action-label">MATCHES</span><span class="action-arrow">→</span></button>
+      <button class="action-card seguidores" onclick="showScreen('screen-seguidores');loadSeguidores()"><span class="action-icon">👥</span><span class="action-label">SEGUIDORES</span><span class="action-arrow">→</span></button>
+      <button class="action-card solicitudes" onclick="showScreen('screen-solicitudes');loadSolicitudes()"><span class="action-icon">🔔</span><span class="action-label">SOLICITUDES</span><span class="chat-badge hidden" id="home-sol-badge">0</span><span class="action-arrow">→</span></button>
     </div>
   </main>
 </div>
@@ -412,49 +378,55 @@
   </main>
 </div>
 
-<!-- matches movido a screen-buscar -->
+<!-- ════ MATCHES ════ -->
+<div id="screen-matches" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
+    <span class="logo-title small">MATCHES</span>
+    <div></div>
+  </header>
+  <main class="seguidores-main" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+    <div class="seg-tabs" id="matches-tabs-bar">
+      <button class="seg-tab active" onclick="swipeMatchesTo(0)">💘 Likes</button>
+      <button class="seg-tab" onclick="swipeMatchesTo(1)">🌟 Super</button>
+      <button class="seg-tab" onclick="swipeMatchesTo(2)">✕ Nope</button>
+      <button class="seg-tab" onclick="swipeMatchesTo(3)">⏳ Pendientes</button>
+    </div>
+    <div class="swipe-container" id="matches-swipe-container">
+      <div class="swipe-track" id="matches-swipe-track">
+        <div class="swipe-panel" id="matches-panel-0"><div id="matches-list-0"></div><div id="matches-empty-0" class="empty-msg hidden">Sin likes aún</div></div>
+        <div class="swipe-panel" id="matches-panel-1"><div id="matches-list-1"></div><div id="matches-empty-1" class="empty-msg hidden">Sin supermatches aún</div></div>
+        <div class="swipe-panel" id="matches-panel-2"><div id="matches-list-2"></div><div id="matches-empty-2" class="empty-msg hidden">Sin rechazados</div></div>
+        <div class="swipe-panel" id="matches-panel-3"><div id="matches-list-3"></div><div id="matches-empty-3" class="empty-msg hidden">Sin solicitudes pendientes</div></div>
+      </div>
+    </div>
+  </main>
+</div>
 
 <!-- ════ CHATS LISTA ════ -->
 <div id="screen-chats" class="screen">
   <header class="top-bar">
     <button class="btn-back" onclick="showScreen('screen-inicio')">← Volver</button>
     <span class="logo-title small">CHATS</span>
+    <button class="btn-icon" onclick="showScreen('screen-nuevo-chat');loadUsuarios()">✏️</button>
+  </header>
+  <main class="chats-main">
+    <div id="chats-list"></div>
+    <div id="chats-empty" class="empty-msg hidden">No tienes conversaciones aún.<br>Pulsa ✏️ para empezar una.</div>
+  </main>
+</div>
+
+<!-- ════ NUEVO CHAT ════ -->
+<div id="screen-nuevo-chat" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" onclick="showScreen('screen-chats');loadChats()">← Volver</button>
+    <span class="logo-title small">NUEVO CHAT</span>
     <div></div>
   </header>
-  <main class="chats-main" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
-    <div class="seg-tabs" id="chats-tabs-bar">
-      <button class="seg-tab active" onclick="swipeChatsTo(0)">💬 Mensajes</button>
-      <button class="seg-tab" onclick="swipeChatsTo(1)">🔔 Solicitudes<span class="chat-badge hidden" id="chats-sol-badge" style="position:relative;top:-6px;right:0;margin-left:4px;font-size:0.6rem">0</span></button>
-    </div>
-    <div class="swipe-container" id="chats-swipe-container">
-      <div class="swipe-track" id="chats-swipe-track">
-        <!-- Panel 0: chats + buscador -->
-        <div class="swipe-panel" id="chats-panel-0" style="display:flex;flex-direction:column">
-          <div class="buscar-input-wrap" style="margin:10px 14px;flex-shrink:0">
-            <span class="buscar-icon-prefix">🔍</span>
-            <input type="text" id="buscar-usuario-chat" placeholder="Busca o escribe a un usuario..." oninput="buscarUsuarioChat()" autocomplete="off"/>
-          </div>
-          <div id="buscar-usuario-chat-results" class="hidden" style="padding:0 14px;flex-shrink:0;max-height:160px;overflow-y:auto;border-bottom:1px solid var(--border)"></div>
-          <div id="chats-list" style="flex:1;overflow-y:auto"></div>
-          <div id="chats-empty" class="empty-msg hidden">Busca un usuario arriba para empezar a chatear.</div>
-        </div>
-        <!-- Panel 1: solicitudes -->
-        <div class="swipe-panel" id="chats-panel-1" style="display:flex;flex-direction:column;overflow:hidden">
-          <div class="seg-tabs" id="sol-tabs-bar" style="flex-shrink:0">
-            <button class="seg-tab active" onclick="swipeSolTo(0)">Nuevos seguidores</button>
-            <button class="seg-tab" onclick="swipeSolTo(1)">Rutas</button>
-            <button class="seg-tab" onclick="swipeSolTo(2)">Colabs</button>
-          </div>
-          <div class="swipe-container" id="sol-swipe-container">
-            <div class="swipe-track" id="sol-swipe-track">
-              <div class="swipe-panel" id="sol-panel-0"><div id="sol-list-0"></div><div id="sol-empty-0" class="empty-msg hidden">Sin solicitudes ✓</div></div>
-              <div class="swipe-panel" id="sol-panel-1"><div id="sol-list-1"></div><div id="sol-empty-1" class="empty-msg hidden">Sin solicitudes ✓</div></div>
-              <div class="swipe-panel" id="sol-panel-2"><div id="sol-list-2"></div><div id="sol-empty-2" class="empty-msg hidden">Sin solicitudes ✓</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <main class="form-main">
+    <div class="field"><label>Buscar usuario</label><input type="text" id="buscar-usuario" placeholder="@usuario..." oninput="filtrarUsuarios()"/></div>
+    <div id="usuarios-list"></div>
+    <div id="usuarios-empty" class="empty-msg hidden">No se encontraron usuarios.</div>
   </main>
 </div>
 
@@ -465,61 +437,15 @@
     <span class="logo-title small">BUSCAR</span>
     <div></div>
   </header>
-  <main class="buscar-main" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
-    <div class="seg-tabs" id="buscar-tabs-bar">
-      <button class="seg-tab active" onclick="swipeBuscarTo(0)">👥 Usuarios</button>
-      <button class="seg-tab" onclick="swipeBuscarTo(1)" id="tab-buscar-match">💘 Match</button>
-      <button class="seg-tab" onclick="swipeBuscarTo(2)" id="tab-buscar-matches">🏆 Mis Matches</button>
+  <main class="buscar-main">
+    <div class="buscar-input-wrap">
+      <span class="buscar-icon-prefix">🔍</span>
+      <input type="text" id="buscar-rt-input" placeholder="Busca por @usuario..." oninput="buscarTiempoReal()" autocomplete="off"/>
+      <button class="buscar-clear hidden" id="buscar-clear" onclick="limpiarBuscar()">✕</button>
     </div>
-    <div class="swipe-container" id="buscar-swipe-container">
-      <div class="swipe-track" id="buscar-swipe-track">
-        <!-- Panel 0: buscar usuarios -->
-        <div class="swipe-panel" id="buscar-panel-0" style="display:flex;flex-direction:column">
-          <div class="buscar-input-wrap" style="margin:12px 16px 0;flex-shrink:0">
-            <span class="buscar-icon-prefix">🔍</span>
-            <input type="text" id="buscar-rt-input" placeholder="Busca por @usuario..." oninput="buscarTiempoReal()" autocomplete="off"/>
-            <button class="buscar-clear hidden" id="buscar-clear" onclick="limpiarBuscar()">✕</button>
-          </div>
-          <div id="buscar-results" style="flex:1;overflow-y:auto;padding:0 16px"></div>
-          <div id="buscar-empty" class="empty-msg hidden">Sin resultados</div>
-          <div id="buscar-inicial" class="empty-msg">Escribe para buscar patinadores 🛼</div>
-        </div>
-        <!-- Panel 1: tarjetas swiper -->
-        <div class="swipe-panel" id="buscar-panel-1" style="display:flex;flex-direction:column;align-items:center;padding:12px 16px 0">
-          <div id="buscar-tarjetas-wrap" style="width:100%;max-width:360px;flex:1;position:relative">
-            <div id="buscar-card-stack" style="width:100%;height:100%;position:relative"></div>
-          </div>
-          <div id="buscar-tarjetas-empty" class="empty-msg hidden"></div>
-          <div class="tarjetas-hint-bar">
-            <span class="hint-nope">← Nope</span>
-            <span class="hint-match">💘 Super</span>
-            <span class="hint-like">Like →</span>
-          </div>
-          <div class="tarjetas-actions">
-            <button class="btn-swipe-action nope" onclick="swipeCardEn('buscar-card-stack','nope')" title="No me interesa">✕</button>
-            <button class="btn-swipe-action super" onclick="swipeCardEn('buscar-card-stack','super')" title="Supermatch">💘</button>
-            <button class="btn-swipe-action like" onclick="swipeCardEn('buscar-card-stack','like')" title="Me gusta">♥</button>
-          </div>
-        </div>
-        <!-- Panel 2: matches -->
-        <div class="swipe-panel" id="buscar-panel-2" style="display:flex;flex-direction:column;overflow:hidden">
-          <div class="seg-tabs" id="matches-tabs-bar2">
-            <button class="seg-tab active" onclick="swipeMatchesTo(0)">💘 Likes</button>
-            <button class="seg-tab" onclick="swipeMatchesTo(1)">🌟 Super</button>
-            <button class="seg-tab" onclick="swipeMatchesTo(2)">✕ Nope</button>
-            <button class="seg-tab" onclick="swipeMatchesTo(3)">⏳ Pendientes</button>
-          </div>
-          <div class="swipe-container" id="matches-swipe-container">
-            <div class="swipe-track" id="matches-swipe-track">
-              <div class="swipe-panel" id="matches-panel-0"><div id="matches-list-0"></div><div id="matches-empty-0" class="empty-msg hidden">Sin likes aún</div></div>
-              <div class="swipe-panel" id="matches-panel-1"><div id="matches-list-1"></div><div id="matches-empty-1" class="empty-msg hidden">Sin supermatches aún</div></div>
-              <div class="swipe-panel" id="matches-panel-2"><div id="matches-list-2"></div><div id="matches-empty-2" class="empty-msg hidden">Sin rechazados</div></div>
-              <div class="swipe-panel" id="matches-panel-3"><div id="matches-list-3"></div><div id="matches-empty-3" class="empty-msg hidden">Sin pendientes</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div id="buscar-results"></div>
+    <div id="buscar-empty" class="empty-msg hidden">Sin resultados</div>
+    <div id="buscar-inicial" class="empty-msg">Escribe para buscar patinadores 🛼</div>
   </main>
 </div>
 
@@ -576,11 +502,7 @@
       <div class="aj-accordion-body hidden" id="acc-perfil">
         <div class="perfil-avatar-block">
           <div class="perfil-avatar" id="perfil-avatar-display">?</div>
-          <div>
-            <p class="perfil-nombre" id="perfil-nombre-display">—</p>
-            <p class="perfil-email" id="perfil-email-display">—</p>
-            <div id="aj-perfil-stats" class="aj-stats-row"></div>
-          </div>
+          <div><p class="perfil-nombre" id="perfil-nombre-display">—</p><p class="perfil-email" id="perfil-email-display">—</p></div>
         </div>
         <div class="field"><label>Nombre para mostrar</label><input type="text" id="aj-nombre" placeholder="Tu nombre visible"/></div>
         <div class="field"><label>Correo electrónico</label><input type="email" id="aj-email" placeholder="tucorreo@email.com"/></div>
@@ -744,10 +666,6 @@
 
 <!-- ════ MENÚ INFERIOR DE NAVEGACIÓN ════ -->
 <nav class="bottom-nav" id="bottom-nav" style="display:none">
-  <button class="bottom-nav-btn" id="bnav-rutas" onclick="navTo('rutas')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-10"/><polyline points="14 7 21 7 21 14"/></svg>
-    <span>Rutas</span>
-  </button>
   <button class="bottom-nav-btn active" id="bnav-inicio" onclick="navTo('inicio')">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     <span>Inicio</span>
